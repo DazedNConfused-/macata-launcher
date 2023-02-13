@@ -101,7 +101,7 @@ public class SaveManager {
      * */
     public static boolean saveFilesExist() {
         File savesFolder = new File(CUSTOM_SAVE_PATH);
-        return savesFolder.exists() && savesFolder.length() > 0;
+        return savesFolder.exists() && Arrays.stream(Objects.requireNonNull(savesFolder.listFiles())).anyMatch(file -> !file.getName().equals(".DS_Store"));
     }
 
     /**
