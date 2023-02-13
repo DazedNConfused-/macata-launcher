@@ -14,7 +14,7 @@
 
 ## Requirements
 
-MaCata requires Java 18 to run.
+MaCata requires Java 11 to run.
 
 ## Features
 
