@@ -6,8 +6,13 @@
 \____|__  (____  /\______  (____  /__| (____  / |_______ (____  /____/|___|  /\___  >___|  /\___  >__|   
         \/     \/        \/     \/          \/          \/    \/           \/     \/     \/     \/       
 ```
-<p style="text-align:center">
+
+<p align="center">
     MaCata - A Cataclysm: DDA macOS Launcher
+</p>
+
+<p align="center">
+    <img src="readme/demo.gif" alt="animated" />
 </p>
 
 ---
@@ -15,6 +20,10 @@
 ## Requirements
 
 MaCata requires Java 11 to run.
+
+## Installation
+
+Just put the `macatalauncher.jar` in some folder of your choice and double click!
 
 ## Features
 
