@@ -16,6 +16,8 @@ public class FileExplorerManager {
      * Opens given {@link File} path in the underlying {@link Desktop}'s file explorer.
      * */
     public static void openFileInFileExplorer(File file) {
+        LOGGER.debug("Opening [{}] in file explorer...", file);
+
         if (Desktop.isDesktopSupported()) {
             Try.run(() -> Desktop.getDesktop().open(file)).onFailure(t -> LOGGER.error("There was an error while opening file [{}]", file, t));
         } else {

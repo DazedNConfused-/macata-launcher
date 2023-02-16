@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -307,6 +309,8 @@ public class MainWindow {
         });
 
         // SOUNDPACKS TABLE LISTENER ---
+        this.soundpacksTable.setName("Soundpacks table"); // needed in order to recognize component in generic methods
+
         this.soundpacksTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Soundpacks table row selected");
 
@@ -315,35 +319,12 @@ public class MainWindow {
             }
         });
 
-       this.soundpacksTable.addMouseListener(new MouseAdapter() {
+        this.soundpacksTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
-                LOGGER.trace("Soundpacks table clicked");
-                super.mouseClicked(e);
-
-                int r = soundpacksTable.rowAtPoint(e.getPoint());
-                if (r >= 0 && r < soundpacksTable.getRowCount()) {
-                    soundpacksTable.setRowSelectionInterval(r, r);
-                } else {
-                    soundpacksTable.clearSelection();
-                }
-
-                int rowindex = soundpacksTable.getSelectedRow();
-                if (rowindex < 0)
-                    return;
-                if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
-                    LOGGER.trace("Opening right-click popup for soundpacks table");
-
-                    JPopupMenu popup = new JPopupMenu();
-
-                    JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
-                    openInFinder.addActionListener(e1 -> {
-                        File selectedSoundpack = (File) soundpacksTable.getValueAt(soundpacksTable.getSelectedRow(), 1);
-                        FileExplorerManager.openFileInFileExplorer(selectedSoundpack);
-                    });
-                    popup.add(openInFinder);
-
-                    popup.show(e.getComponent(), e.getX(), e.getY());
-                }
+                getOnTableRightClickConsumer().accept(e, (JTable) e.getComponent());
+            }
+            public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
+                getOnTableRightClickConsumer().accept(e, (JTable) e.getComponent());
             }
         });
     }
@@ -553,5 +534,39 @@ public class MainWindow {
 
         TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns);
         this.soundpacksTable.setModel(tableModel);
+    }
+
+    /**
+     * Returns a generic right-click "open in files" context popup for usage in {@link JTable}s.
+     * */
+    private BiConsumer<MouseEvent, JTable> getOnTableRightClickConsumer() {
+        return (e, table) -> {
+            LOGGER.trace("[{}] clicked", table.getName());
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
+            }
+
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0)
+                return;
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
+                openInFinder.addActionListener(e1 -> {
+                    File selectedSoundpack = (File) table.getValueAt(table.getSelectedRow(), 1);
+                    FileExplorerManager.openFileInFileExplorer(selectedSoundpack);
+                });
+                popup.add(openInFinder);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
     }
 }
