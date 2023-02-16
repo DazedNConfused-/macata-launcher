@@ -24,6 +24,8 @@ fi
 # (keep arguments here without quotes - also, "$@" doesn't work)
 # ${2} is --savedir
 # ${3} is the custom save directory, in quotes in case there are spaces in the path
-# ${4} is --world
-# ${5} is the latest world's name, in quotes because it may have spaces (which is fairly common in randomized world names)
-./cataclysm-tiles ${2} "${3}" ${4} "${5}"
+# ${4} is --userdir
+# ${5} is the custom user directory, in quotes in case there are spaces in the path
+# ${5} is --world
+# ${6} is the latest world's name, in quotes because it may have spaces (which is fairly common in randomized world names)
+./cataclysm-tiles ${2} "${3}" ${4} "${5}" ${6} "${7}"
