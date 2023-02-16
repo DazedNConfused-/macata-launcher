@@ -7,6 +7,7 @@ import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_USER_DIR;
 
 import com.dazednconfused.catalauncher.backup.SaveManager;
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
+import com.dazednconfused.catalauncher.helper.FileExplorerManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.launcher.CDDALauncherManager;
@@ -19,6 +20,8 @@ import io.vavr.control.Try;
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,6 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -308,6 +312,38 @@ public class MainWindow {
 
             if (soundpacksTable.getSelectedRow() > -1) {
                 this.uninstallSoundpackButton.setEnabled(true);
+            }
+        });
+
+       this.soundpacksTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                LOGGER.trace("Soundpacks table clicked");
+                super.mouseClicked(e);
+
+                int r = soundpacksTable.rowAtPoint(e.getPoint());
+                if (r >= 0 && r < soundpacksTable.getRowCount()) {
+                    soundpacksTable.setRowSelectionInterval(r, r);
+                } else {
+                    soundpacksTable.clearSelection();
+                }
+
+                int rowindex = soundpacksTable.getSelectedRow();
+                if (rowindex < 0)
+                    return;
+                if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                    LOGGER.trace("Opening right-click popup for soundpacks table");
+
+                    JPopupMenu popup = new JPopupMenu();
+
+                    JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
+                    openInFinder.addActionListener(e1 -> {
+                        File selectedSoundpack = (File) soundpacksTable.getValueAt(soundpacksTable.getSelectedRow(), 1);
+                        FileExplorerManager.openFileInFileExplorer(selectedSoundpack);
+                    });
+                    popup.add(openInFinder);
+
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         });
     }

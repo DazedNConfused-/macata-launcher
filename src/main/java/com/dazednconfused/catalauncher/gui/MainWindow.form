@@ -246,7 +246,9 @@
                     <children>
                       <component id="dd00a" class="javax.swing.JTable" binding="saveBackupTable">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <enabled value="false"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
@@ -269,7 +271,9 @@
                     <children>
                       <component id="38613" class="javax.swing.JTable" binding="soundpacksTable">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <enabled value="false"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
