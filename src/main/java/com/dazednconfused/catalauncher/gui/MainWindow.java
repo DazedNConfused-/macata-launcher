@@ -7,6 +7,7 @@ import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_USER_DIR;
 
 import com.dazednconfused.catalauncher.backup.SaveManager;
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
+import com.dazednconfused.catalauncher.helper.FileExplorerManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.launcher.CDDALauncherManager;
@@ -19,11 +20,14 @@ import io.vavr.control.Try;
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,6 +39,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -171,7 +176,7 @@ public class MainWindow {
 
         // BACKUP NOW BUTTON LISTENER ---
         this.backupNowButton.addActionListener(e -> {
-            LOGGER.trace("Backup button clicked");
+            LOGGER.trace("Save backup button clicked");
 
             // enable backup progressbar
             this.globalProgressBar.setEnabled(true);
@@ -184,10 +189,10 @@ public class MainWindow {
 
         // BACKUP RESTORE BUTTON LISTENER ---
         backupRestoreButton.addActionListener(e -> {
-            LOGGER.trace("Backup restore button clicked");
+            LOGGER.trace("Save backup restore button clicked");
 
-            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 0);
-            LOGGER.trace("Backup currently on selection: [{}]", selectedBackup);
+            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 1);
+            LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
                 String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
@@ -219,8 +224,8 @@ public class MainWindow {
         this.backupDeleteButton.addActionListener(e -> {
             LOGGER.trace("Delete backup button clicked");
 
-            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 0);
-            LOGGER.trace("Backup currently on selection: [{}]", selectedBackup);
+            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 1);
+            LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
                 String.format("Are you sure you want to delete the backup [%s]? This action is irreversible!", selectedBackup.getName()),
@@ -239,13 +244,25 @@ public class MainWindow {
             confirmDialog.packCenterAndShow(this.mainPanel);
         });
 
-        // BACKUP TABLE LISTENER ---
+        // BACKUP TABLE LISTENER(S) ---
+        this.saveBackupTable.setName("Save backups table"); // needed in order to recognize component in generic methods
+
         this.saveBackupTable.getSelectionModel().addListSelectionListener(event -> {
-            LOGGER.trace("Backup table row selected");
+            LOGGER.trace("Save backups table row selected");
 
             if (saveBackupTable.getSelectedRow() > -1) {
                 this.backupDeleteButton.setEnabled(true);
                 this.backupRestoreButton.setEnabled(true);
+            }
+        });
+
+        this.saveBackupTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
+            }
+
+            public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
+                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
             }
         });
 
@@ -302,12 +319,24 @@ public class MainWindow {
             confirmDialog.packCenterAndShow(this.mainPanel);
         });
 
-        // SOUNDPACKS TABLE LISTENER ---
+        // SOUNDPACKS TABLE LISTENER(S) ---
+        this.soundpacksTable.setName("Soundpacks table"); // needed in order to recognize component in generic methods
+
         this.soundpacksTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Soundpacks table row selected");
 
             if (soundpacksTable.getSelectedRow() > -1) {
                 this.uninstallSoundpackButton.setEnabled(true);
+            }
+        });
+
+        this.soundpacksTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
+            }
+
+            public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
+                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
             }
         });
     }
@@ -482,11 +511,12 @@ public class MainWindow {
     private void refreshSaveBackupsTable() {
         LOGGER.trace("Refreshing save backups table...");
 
-        String[] columns = new String[]{"Backup", "Size", "Date"};
+        String[] columns = new String[]{"Name", "Path", "Size", "Date"};
 
         List<Object[]> values = new ArrayList<>();
         SaveManager.listAllBackups().stream().sorted(Comparator.comparing(File::lastModified).reversed()).forEach(backup ->
             values.add(new Object[]{
+                backup.getName(),
                 backup,
                 backup.length() / (1024 * 1024) + " MB",
                 new Date(backup.lastModified())
@@ -517,5 +547,41 @@ public class MainWindow {
 
         TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns);
         this.soundpacksTable.setModel(tableModel);
+    }
+
+    /**
+     * Returns a generic right-click "open in files" context popup for usage in {@link JTable}s.
+     * */
+    private BiConsumer<MouseEvent, JTable> genericTableOnClickEventListener() {
+        return (e, table) -> {
+            LOGGER.trace("[{}] clicked", table.getName());
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
+            }
+
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0) {
+                return;
+            }
+
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
+                openInFinder.addActionListener(e1 -> {
+                    File targetPath = (File) table.getValueAt(table.getSelectedRow(), 1);
+                    FileExplorerManager.openFileInFileExplorer(targetPath);
+                });
+                popup.add(openInFinder);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
     }
 }
