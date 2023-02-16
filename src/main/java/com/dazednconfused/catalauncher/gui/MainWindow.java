@@ -260,6 +260,7 @@ public class MainWindow {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
                 genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
             }
+
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
                 genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
             }
@@ -333,6 +334,7 @@ public class MainWindow {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
                 genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
             }
+
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
                 genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
             }
@@ -562,8 +564,10 @@ public class MainWindow {
             }
 
             int rowindex = table.getSelectedRow();
-            if (rowindex < 0)
+            if (rowindex < 0) {
                 return;
+            }
+
             if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
                 LOGGER.trace("Opening right-click popup for [{}]", table.getName());
 
