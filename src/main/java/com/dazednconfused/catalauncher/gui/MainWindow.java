@@ -19,6 +19,7 @@ import io.vavr.control.Try;
 
 import java.awt.Component;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -41,6 +42,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
@@ -73,7 +75,7 @@ public class MainWindow {
     private JButton runLatestWorldButton;
 
     // SAVE BACKUPS TAB ---
-    private JTable saveBackupTable;
+    private JTable saveBackupsTable;
     private JButton backupNowButton;
     private JButton backupDeleteButton;
     private JButton backupRestoreButton;
@@ -83,6 +85,7 @@ public class MainWindow {
     private JTable soundpacksTable;
     private JButton installSoundpackButton;
     private JButton uninstallSoundpackButton;
+    private JTabbedPane saveBackupsTabbedPane;
 
     /**
      * {@link MainWindow}'s main entrypoint.
@@ -188,10 +191,11 @@ public class MainWindow {
         });
 
         // BACKUP RESTORE BUTTON LISTENER ---
-        backupRestoreButton.addActionListener(e -> {
+        this.backupRestoreButton.setMnemonic(KeyEvent.VK_R);
+        this.backupRestoreButton.addActionListener(e -> {
             LOGGER.trace("Save backup restore button clicked");
 
-            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 1);
+            File selectedBackup = (File) this.saveBackupsTable.getValueAt(this.saveBackupsTable.getSelectedRow(), 1);
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
@@ -221,10 +225,11 @@ public class MainWindow {
         });
 
         // BACKUP DELETE BUTTON LISTENER ---
+        this.backupDeleteButton.setMnemonic(KeyEvent.VK_D);
         this.backupDeleteButton.addActionListener(e -> {
             LOGGER.trace("Delete backup button clicked");
 
-            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 1);
+            File selectedBackup = (File) this.saveBackupsTable.getValueAt(this.saveBackupsTable.getSelectedRow(), 1);
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
@@ -244,19 +249,40 @@ public class MainWindow {
             confirmDialog.packCenterAndShow(this.mainPanel);
         });
 
-        // BACKUP TABLE LISTENER(S) ---
-        this.saveBackupTable.setName("Save backups table"); // needed in order to recognize component in generic methods
+        // BACKUP TAB PANE LISTENER ---
+        this.saveBackupsTabbedPane.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                LOGGER.trace("Save backups tabbed pane - key pressed [{}]", e.getKeyCode());
+                super.keyTyped(e);
 
-        this.saveBackupTable.getSelectionModel().addListSelectionListener(event -> {
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    LOGGER.trace("Save backups tabbed pane - down arrow pressed. Shifting focus to underlying table...");
+                    saveBackupsTable.requestFocusInWindow(); // shift focus to jtable
+
+                    int r = saveBackupsTable.getSelectedRow();
+                    if (r >= 0 && r < saveBackupsTable.getRowCount()) {
+                        saveBackupsTable.setRowSelectionInterval(r+1, r+1);
+                    } else {
+                        saveBackupsTable.clearSelection();
+                    }
+                }
+            }
+        });
+
+        // BACKUP TABLE LISTENER(S) ---
+        this.saveBackupsTable.setName("Save backups table"); // needed in order to recognize component in generic methods
+
+        this.saveBackupsTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Save backups table row selected");
 
-            if (saveBackupTable.getSelectedRow() > -1) {
+            if (saveBackupsTable.getSelectedRow() > -1) {
                 this.backupDeleteButton.setEnabled(true);
                 this.backupRestoreButton.setEnabled(true);
             }
         });
 
-        this.saveBackupTable.addMouseListener(new MouseAdapter() {
+        this.saveBackupsTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
                 genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
             }
@@ -321,6 +347,7 @@ public class MainWindow {
 
         // SOUNDPACKS TABLE LISTENER(S) ---
         this.soundpacksTable.setName("Soundpacks table"); // needed in order to recognize component in generic methods
+        this.soundpacksTable.setDefaultEditor(Object.class, null); // make jtable non-editable
 
         this.soundpacksTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Soundpacks table row selected");
@@ -364,8 +391,7 @@ public class MainWindow {
         FlatDarkLaf.setup();
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarculaLaf"); // cascade look & feel to all children widgets from now on
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             throw new RuntimeException(e);
         }
     }
@@ -468,7 +494,7 @@ public class MainWindow {
         // DETERMINE IF BACKUP RESTORE BUTTON SHOULD BE DISABLED  ---
         // DETERMINE IF BACKUP DELETE BUTTON SHOULD BE DISABLED ---
         // (ie: if last backup was just deleted)
-        if (SaveManager.listAllBackups().size() == 0 || this.saveBackupTable.getSelectedRow() == -1) {
+        if (SaveManager.listAllBackups().size() == 0 || this.saveBackupsTable.getSelectedRow() == -1) {
             this.backupDeleteButton.setEnabled(false);
             this.backupRestoreButton.setEnabled(false);
         }
@@ -506,7 +532,7 @@ public class MainWindow {
     }
 
     /**
-     * Refreshes current {@link #saveBackupTable} with latest info coming from {@link SaveManager}.
+     * Refreshes current {@link #saveBackupsTable} with latest info coming from {@link SaveManager}.
      */
     private void refreshSaveBackupsTable() {
         LOGGER.trace("Refreshing save backups table...");
@@ -523,8 +549,13 @@ public class MainWindow {
             })
         );
 
-        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns);
-        this.saveBackupTable.setModel(tableModel);
+        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        this.saveBackupsTable.setModel(tableModel);
     }
 
     /**
@@ -545,7 +576,12 @@ public class MainWindow {
                 })
         );
 
-        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns);
+        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         this.soundpacksTable.setModel(tableModel);
     }
 
