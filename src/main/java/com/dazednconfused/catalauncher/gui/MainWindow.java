@@ -282,13 +282,51 @@ public class MainWindow {
             }
         });
 
+        BiConsumer<MouseEvent, JTable> onSaveBackupsTableRightClickEvent = (e, table) -> {
+            LOGGER.trace("[{}] clicked", table.getName());
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
+            }
+
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0) {
+                return;
+            }
+
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+                File targetFile = ((File) table.getValueAt(table.getSelectedRow(), 1));
+                LOGGER.trace("File under selection: [{}]", targetFile);
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open in file explorer");
+                openInFinder.addActionListener(e1 -> FileExplorerManager.openFileInFileExplorer(targetFile, true));
+                popup.add(openInFinder);
+
+                JMenuItem deleteBackup = new JMenuItem("Delete...");
+                deleteBackup.addActionListener(e1 -> backupDeleteButton.doClick());
+                popup.add(deleteBackup);
+
+                JMenuItem restoreBackup = new JMenuItem("Restore...");
+                restoreBackup.addActionListener(e1 -> backupRestoreButton.doClick());
+                popup.add(restoreBackup);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
+
         this.saveBackupsTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
-                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
+                onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
 
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
-                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
+                onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
         });
 
@@ -612,7 +650,7 @@ public class MainWindow {
                 JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
                 openInFinder.addActionListener(e1 -> {
                     File targetPath = (File) table.getValueAt(table.getSelectedRow(), 1);
-                    FileExplorerManager.openFileInFileExplorer(targetPath);
+                    FileExplorerManager.openFileInFileExplorer(targetPath, false);
                 });
                 popup.add(openInFinder);
 
