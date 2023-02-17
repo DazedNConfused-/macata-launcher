@@ -123,7 +123,18 @@ public class MainWindow {
     public MainWindow() {
 
         // SETUP ALL GUI ELEMENTS ---
+        this.setupMainExecutableGui();
+        this.setupSaveBackupsGui();
+        this.setupSoundpacksGui();
+
+        // INITIALIZE ALL GUI ELEMENTS ---
         this.refreshGuiElements();
+    }
+
+    /**
+     * Setups all GUI elements related to the main executable management.
+     * */
+    private void setupMainExecutableGui() {
 
         // GLOBAL PROGRESS BAR LISTENER ---
         this.globalProgressBar.addChangeListener(e -> {
@@ -176,6 +187,12 @@ public class MainWindow {
 
             this.refreshGuiElements();
         });
+    }
+
+    /**
+     * Setups all GUI elements related to save backup management.
+     * */
+    private void setupSaveBackupsGui() {
 
         // BACKUP NOW BUTTON LISTENER ---
         this.backupNowButton.addActionListener(e -> {
@@ -199,26 +216,26 @@ public class MainWindow {
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
-                ConfirmDialog.ConfirmDialogType.INFO,
-                confirmed -> {
-                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+                    String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
+                    ConfirmDialog.ConfirmDialogType.INFO,
+                    confirmed -> {
+                        LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
-                    if (confirmed) {
-                        // enable backup progressbar
-                        this.globalProgressBar.setEnabled(true);
+                        if (confirmed) {
+                            // enable backup progressbar
+                            this.globalProgressBar.setEnabled(true);
 
-                        // disable backup buttons (don't want to do multiple operations simultaneously)
-                        this.disableSaveBackupButtons();
+                            // disable backup buttons (don't want to do multiple operations simultaneously)
+                            this.disableSaveBackupButtons();
 
-                        SaveManager.restoreBackup(
-                            selectedBackup,
-                            percentageComplete -> this.globalProgressBar.setValue(percentageComplete)
-                        ).ifPresent(Thread::start);
+                            SaveManager.restoreBackup(
+                                    selectedBackup,
+                                    percentageComplete -> this.globalProgressBar.setValue(percentageComplete)
+                            ).ifPresent(Thread::start);
+                        }
+
+                        this.refreshGuiElements();
                     }
-
-                    this.refreshGuiElements();
-                }
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
@@ -233,17 +250,17 @@ public class MainWindow {
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to delete the backup [%s]? This action is irreversible!", selectedBackup.getName()),
-                ConfirmDialog.ConfirmDialogType.WARNING,
-                confirmed -> {
-                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+                    String.format("Are you sure you want to delete the backup [%s]? This action is irreversible!", selectedBackup.getName()),
+                    ConfirmDialog.ConfirmDialogType.WARNING,
+                    confirmed -> {
+                        LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
-                    if (confirmed) {
-                        SaveManager.deleteBackup(selectedBackup);
+                        if (confirmed) {
+                            SaveManager.deleteBackup(selectedBackup);
+                        }
+
+                        this.refreshGuiElements();
                     }
-
-                    this.refreshGuiElements();
-                }
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
@@ -329,6 +346,12 @@ public class MainWindow {
                 onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
         });
+    }
+
+    /**
+     * Setups all GUI elements related to soundpack management.
+     * */
+    private void setupSoundpacksGui() {
 
         // SOUNDPACK INSTALL BUTTON LISTENER ---
         this.installSoundpackButton.addActionListener(e -> {
@@ -367,17 +390,17 @@ public class MainWindow {
             LOGGER.trace("Soundpack currently on selection: [{}]", selectedSoundpack);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to delete the soundpack [%s]? This action is irreversible!", selectedSoundpack.getName()),
-                ConfirmDialog.ConfirmDialogType.WARNING,
-                confirmed -> {
-                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+                    String.format("Are you sure you want to delete the soundpack [%s]? This action is irreversible!", selectedSoundpack.getName()),
+                    ConfirmDialog.ConfirmDialogType.WARNING,
+                    confirmed -> {
+                        LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
-                    if (confirmed) {
-                        SoundpackManager.deleteSoundpack(selectedSoundpack);
+                        if (confirmed) {
+                            SoundpackManager.deleteSoundpack(selectedSoundpack);
+                        }
+
+                        this.refreshGuiElements();
                     }
-
-                    this.refreshGuiElements();
-                }
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
@@ -545,7 +568,6 @@ public class MainWindow {
         if (SoundpackManager.listAllSoundpacks().size() == 0 || this.soundpacksTable.getSelectedRow() == -1) {
             this.uninstallSoundpackButton.setEnabled(false);
         }
-
     }
 
     /**
