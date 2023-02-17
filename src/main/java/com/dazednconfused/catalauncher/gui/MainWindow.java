@@ -324,8 +324,6 @@ public class MainWindow {
         });
 
         // BACKUP TABLE LISTENER(S) ---
-        this.saveBackupsTable.setName("Save backups table"); // needed in order to recognize component in generic methods
-
         this.saveBackupsTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Save backups table row selected");
 
@@ -336,7 +334,7 @@ public class MainWindow {
         });
 
         BiConsumer<MouseEvent, JTable> onSaveBackupsTableRightClickEvent = (e, table) -> {
-            LOGGER.trace("[{}] clicked", table.getName());
+            LOGGER.trace("Save backups table clicked");
 
             int r = table.rowAtPoint(e.getPoint());
             if (r >= 0 && r < table.getRowCount()) {
@@ -377,7 +375,6 @@ public class MainWindow {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
                 onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
-
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
                 onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
@@ -469,7 +466,6 @@ public class MainWindow {
         });
 
         // SOUNDPACKS TABLE LISTENER(S) ---
-        this.soundpacksTable.setName("Soundpacks table"); // needed in order to recognize component in generic methods
         this.soundpacksTable.setDefaultEditor(Object.class, null); // make jtable non-editable
 
         this.soundpacksTable.getSelectionModel().addListSelectionListener(event -> {
@@ -480,13 +476,47 @@ public class MainWindow {
             }
         });
 
-        this.soundpacksTable.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
-                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
+        BiConsumer<MouseEvent, JTable> onSoundpacksTableRightClickEvent = (e, table) -> {
+            LOGGER.trace("Soundpacks table clicked");
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
             }
 
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0) {
+                return;
+            }
+
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+                File targetFile = ((File) table.getValueAt(table.getSelectedRow(), 1));
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
+                openInFinder.addActionListener(e1 -> {
+                    FileExplorerManager.openFileInFileExplorer(targetFile, false);
+                });
+                popup.add(openInFinder);
+
+                JMenuItem uninstall = new JMenuItem("Uninstall...");
+                uninstall.addActionListener(e1 -> uninstallSoundpackButton.doClick());
+                popup.add(uninstall);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
+
+        this.soundpacksTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                onSoundpacksTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
-                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
+                onSoundpacksTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
         });
 
@@ -671,41 +701,5 @@ public class MainWindow {
             }
         };
         this.soundpacksTable.setModel(tableModel);
-    }
-
-    /**
-     * Returns a generic right-click "open in files" context popup for usage in {@link JTable}s.
-     * */
-    private BiConsumer<MouseEvent, JTable> genericTableOpenFileExplorerOnRightClickEventListener() {
-        return (e, table) -> {
-            LOGGER.trace("[{}] clicked", table.getName());
-
-            int r = table.rowAtPoint(e.getPoint());
-            if (r >= 0 && r < table.getRowCount()) {
-                table.setRowSelectionInterval(r, r);
-            } else {
-                table.clearSelection();
-            }
-
-            int rowindex = table.getSelectedRow();
-            if (rowindex < 0) {
-                return;
-            }
-
-            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
-                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
-
-                JPopupMenu popup = new JPopupMenu();
-
-                JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
-                openInFinder.addActionListener(e1 -> {
-                    File targetPath = (File) table.getValueAt(table.getSelectedRow(), 1);
-                    FileExplorerManager.openFileInFileExplorer(targetPath, false);
-                });
-                popup.add(openInFinder);
-
-                popup.show(e.getComponent(), e.getX(), e.getY());
-            }
-        };
     }
 }
