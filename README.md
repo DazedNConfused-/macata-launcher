@@ -17,6 +17,10 @@
 
 ---
 
+![GitHub](https://img.shields.io/github/license/DazedNConfused-/macata-launcher)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=master&label=master)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=develop&label=develop)
+
 ## Requirements
 
 MaCata requires Java 11 to run.
