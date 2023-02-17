@@ -258,11 +258,11 @@ public class MainWindow {
 
         this.saveBackupTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
-                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
+                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
             }
 
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
-                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
+                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
             }
         });
 
@@ -332,11 +332,11 @@ public class MainWindow {
 
         this.soundpacksTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
-                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
+                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
             }
 
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
-                genericTableOnClickEventListener().accept(e, (JTable) e.getComponent());
+                genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
             }
         });
     }
@@ -552,7 +552,7 @@ public class MainWindow {
     /**
      * Returns a generic right-click "open in files" context popup for usage in {@link JTable}s.
      * */
-    private BiConsumer<MouseEvent, JTable> genericTableOnClickEventListener() {
+    private BiConsumer<MouseEvent, JTable> genericTableOpenFileExplorerOnRightClickEventListener() {
         return (e, table) -> {
             LOGGER.trace("[{}] clicked", table.getName());
 
