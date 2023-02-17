@@ -72,6 +72,7 @@ public class MainWindow {
 
     private JPanel mainPanel;
     private JProgressBar globalProgressBar; // global between all tabs
+    private JTabbedPane tabbedPane;
 
     // LAUNCHER TAB ---
     private JFormattedTextField cddaExecutableFTextField;
@@ -90,7 +91,6 @@ public class MainWindow {
     private JTable soundpacksTable;
     private JButton installSoundpackButton;
     private JButton uninstallSoundpackButton;
-    private JTabbedPane saveBackupsTabbedPane;
 
     /**
      * {@link MainWindow}'s main entrypoint.
@@ -129,12 +129,37 @@ public class MainWindow {
 
         // INITIALIZE ALL GUI ELEMENTS ---
         this.guiRefreshingRunnables = new Runnable[] {
+                this.setupTabbedPane(),
                 this.setupMainExecutableGui(),
                 this.setupSaveBackupsGui(),
                 this.setupSoundpacksGui()
         };
 
         this.refreshGuiElements();
+    }
+
+    /**
+     * Setups all GUI elements related to the tabbed pane management.
+     * */
+    private Runnable setupTabbedPane() {
+
+        // TABBED PANE LISTENER ---
+        this.tabbedPane.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                LOGGER.trace("Tabbed pane - key pressed [{}]", e.getKeyCode());
+                super.keyTyped(e);
+
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    LOGGER.trace("Down arrow pressed. Shifting focus to underlying panel, if possible...");
+
+                    saveBackupsTable.requestFocusInWindow();
+                    soundpacksTable.requestFocusInWindow();
+                }
+            }
+        });
+
+        return () -> {}; // no GUI-refreshing action necessary for tabbed pane
     }
 
     /**
@@ -300,27 +325,6 @@ public class MainWindow {
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
-        });
-
-        // BACKUP TAB PANE LISTENER ---
-        this.saveBackupsTabbedPane.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                LOGGER.trace("Save backups tabbed pane - key pressed [{}]", e.getKeyCode());
-                super.keyTyped(e);
-
-                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    LOGGER.trace("Save backups tabbed pane - down arrow pressed. Shifting focus to underlying table...");
-                    saveBackupsTable.requestFocusInWindow(); // shift focus to jtable
-
-                    int r = saveBackupsTable.getSelectedRow();
-                    if (r >= 0 && r < saveBackupsTable.getRowCount()) {
-                        saveBackupsTable.setRowSelectionInterval(r+1, r+1);
-                    } else {
-                        saveBackupsTable.clearSelection();
-                    }
-                }
-            }
         });
 
         // BACKUP TABLE LISTENER(S) ---
