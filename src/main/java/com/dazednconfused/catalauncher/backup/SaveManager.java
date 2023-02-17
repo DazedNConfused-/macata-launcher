@@ -87,6 +87,18 @@ public class SaveManager {
     }
 
     /**
+     * Renames given {@code toBeRenamed} backup.
+     * */
+    public static File renameBackup(File toBeRenamed, String newName) {
+        LOGGER.info("Renaming backup [{}] into [{}]...", toBeRenamed, newName);
+
+        File newFile = new File(toBeRenamed.getParentFile().getPath() + "/" + newName + ".zip");
+        return Try.of(() -> Files.move(toBeRenamed.toPath(), newFile.toPath())).onFailure(
+                t -> LOGGER.error("There was an error while renaming save [{}] into [{}]", toBeRenamed, newFile, t)
+        ).get().toFile();
+    }
+
+    /**
      * Returns all save backups currently found in {@link com.dazednconfused.catalauncher.helper.Constants#SAVE_BACKUP_PATH}.
      * */
     public static List<File> listAllBackups() {

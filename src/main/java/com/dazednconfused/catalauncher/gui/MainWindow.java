@@ -363,6 +363,25 @@ public class MainWindow {
                 openInFinder.addActionListener(e1 -> FileExplorerManager.openFileInFileExplorer(targetFile, true));
                 popup.add(openInFinder);
 
+                JMenuItem renameTo = new JMenuItem("Rename to...");
+                renameTo.addActionListener(e1 -> {
+                    LOGGER.trace("Rename backup menu clicked");
+
+                    StringInputDialog confirmDialog = new StringInputDialog(
+                            String.format("Rename backup [%s] to...", targetFile.getName()),
+                            newNameOptional -> {
+                                LOGGER.trace("User input dialog result: [{}]", newNameOptional);
+
+                                newNameOptional.ifPresent(newName -> SaveManager.renameBackup(targetFile, newName));
+
+                                this.refreshGuiElements();
+                            }
+                    );
+
+                    confirmDialog.packCenterAndShow(this.mainPanel);
+                });
+                popup.add(renameTo);
+
                 JMenuItem deleteBackup = new JMenuItem("Delete...");
                 deleteBackup.addActionListener(e1 -> backupDeleteButton.doClick());
                 popup.add(deleteBackup);
