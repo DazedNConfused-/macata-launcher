@@ -65,6 +65,11 @@ public class MainWindow {
     private static final String[] CUSTOM_SAVE_DIR_ARGS = { "--savedir", CUSTOM_SAVE_PATH };
     private static final String[] CUSTOM_USER_DIR_ARGS = { "--userdir", CUSTOM_USER_DIR };
 
+    /**
+     * The array of all {@link Runnable}s to be executed on invocation of {@link #refreshGuiElements()}.
+     * */
+    private final Runnable[] guiRefreshingRunnables;
+
     private JPanel mainPanel;
     private JProgressBar globalProgressBar; // global between all tabs
 
@@ -122,19 +127,22 @@ public class MainWindow {
      * */
     public MainWindow() {
 
-        // SETUP ALL GUI ELEMENTS ---
-        this.setupMainExecutableGui();
-        this.setupSaveBackupsGui();
-        this.setupSoundpacksGui();
-
         // INITIALIZE ALL GUI ELEMENTS ---
+        this.guiRefreshingRunnables = new Runnable[] {
+                this.setupMainExecutableGui(),
+                this.setupSaveBackupsGui(),
+                this.setupSoundpacksGui()
+        };
+
         this.refreshGuiElements();
     }
 
     /**
      * Setups all GUI elements related to the main executable management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
      * */
-    private void setupMainExecutableGui() {
+    private Runnable setupMainExecutableGui() {
 
         // GLOBAL PROGRESS BAR LISTENER ---
         this.globalProgressBar.addChangeListener(e -> {
@@ -187,12 +195,40 @@ public class MainWindow {
 
             this.refreshGuiElements();
         });
+
+        return () -> {
+            LOGGER.trace("Refreshing executable-management GUI elements...");
+
+            String cddaPath = ConfigurationManager.getInstance().getCddaPath();
+
+            boolean saveFilesExist = SaveManager.saveFilesExist();
+            boolean pathPointsToValidGameExecutable = cddaPath != null && !cddaPath.isBlank();
+
+            // SET EXECUTABLE TEXT FIELD WITH CDDA PATH FROM CONFIG ---
+            // DETERMINE IF RUN BUTTON SHOULD BE ENABLED ---
+            if (pathPointsToValidGameExecutable) {
+                this.cddaExecutableFTextField.setText(cddaPath);
+                this.runButton.setEnabled(true);
+            } else {
+                this.cddaExecutableFTextField.setText(null);
+                this.runButton.setEnabled(false);
+            }
+
+            // DETERMINE IF RUN LATEST WORLD BUTTON SHOULD BE ENABLED ---
+            if (pathPointsToValidGameExecutable && saveFilesExist) {
+                this.runLatestWorldButton.setEnabled(true);
+            } else {
+                this.runLatestWorldButton.setEnabled(false);
+            }
+        };
     }
 
     /**
      * Setups all GUI elements related to save backup management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
      * */
-    private void setupSaveBackupsGui() {
+    private Runnable setupSaveBackupsGui() {
 
         // BACKUP NOW BUTTON LISTENER ---
         this.backupNowButton.addActionListener(e -> {
@@ -346,12 +382,38 @@ public class MainWindow {
                 onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
         });
+
+        return () -> {
+            LOGGER.trace("Refreshing save-backup-management GUI elements...");
+
+            boolean saveFilesExist = SaveManager.saveFilesExist();
+
+            // DETERMINE IF BACKUP NOW BUTTON SHOULD BE ENABLED ---
+            if (saveFilesExist) {
+                this.backupNowButton.setEnabled(true);
+            } else {
+                this.backupNowButton.setEnabled(false);
+            }
+
+            // SET SAVE BACKUPS TABLE ---
+            this.refreshSaveBackupsTable();
+
+            // DETERMINE IF BACKUP RESTORE BUTTON SHOULD BE DISABLED  ---
+            // DETERMINE IF BACKUP DELETE BUTTON SHOULD BE DISABLED ---
+            // (ie: if last backup was just deleted)
+            if (SaveManager.listAllBackups().size() == 0 || this.saveBackupsTable.getSelectedRow() == -1) {
+                this.backupDeleteButton.setEnabled(false);
+                this.backupRestoreButton.setEnabled(false);
+            }
+        };
     }
 
     /**
      * Setups all GUI elements related to soundpack management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
      * */
-    private void setupSoundpacksGui() {
+    private Runnable setupSoundpacksGui() {
 
         // SOUNDPACK INSTALL BUTTON LISTENER ---
         this.installSoundpackButton.addActionListener(e -> {
@@ -427,6 +489,19 @@ public class MainWindow {
                 genericTableOpenFileExplorerOnRightClickEventListener().accept(e, (JTable) e.getComponent());
             }
         });
+
+        return () -> {
+            LOGGER.trace("Refreshing soundpack-management GUI elements...");
+
+            // SET SOUNDPACKS TABLE ---
+            this.refreshSoundpacksTable();
+
+            // DETERMINE IF SOUNDPACK DELETE BUTTON SHOULD BE DISABLED ---
+            // (ie: if last backup was just deleted)
+            if (SoundpackManager.listAllSoundpacks().size() == 0 || this.soundpacksTable.getSelectedRow() == -1) {
+                this.uninstallSoundpackButton.setEnabled(false);
+            }
+        };
     }
 
     /**
@@ -518,55 +593,8 @@ public class MainWindow {
      * Refreshes all GUI elements according to diverse app statuses.
      */
     private void refreshGuiElements() {
-        LOGGER.trace("Refreshing all GUI elements...");
-
-        String cddaPath = ConfigurationManager.getInstance().getCddaPath();
-
-        boolean saveFilesExist = SaveManager.saveFilesExist();
-        boolean pathPointsToValidGameExecutable = cddaPath != null && !cddaPath.isBlank();
-
-        // SET EXECUTABLE TEXT FIELD WITH CDDA PATH FROM CONFIG ---
-        // DETERMINE IF RUN BUTTON SHOULD BE ENABLED ---
-        if (pathPointsToValidGameExecutable) {
-            this.cddaExecutableFTextField.setText(cddaPath);
-            this.runButton.setEnabled(true);
-        } else {
-            this.cddaExecutableFTextField.setText(null);
-            this.runButton.setEnabled(false);
-        }
-
-        // DETERMINE IF RUN LATEST WORLD BUTTON SHOULD BE ENABLED ---
-        if (pathPointsToValidGameExecutable && saveFilesExist) {
-            this.runLatestWorldButton.setEnabled(true);
-        } else {
-            this.runLatestWorldButton.setEnabled(false);
-        }
-
-        // DETERMINE IF BACKUP NOW BUTTON SHOULD BE ENABLED ---
-        if (saveFilesExist) {
-            this.backupNowButton.setEnabled(true);
-        } else {
-            this.backupNowButton.setEnabled(false);
-        }
-
-        // SET SAVE BACKUPS TABLE ---
-        this.refreshSaveBackupsTable();
-
-        // DETERMINE IF BACKUP RESTORE BUTTON SHOULD BE DISABLED  ---
-        // DETERMINE IF BACKUP DELETE BUTTON SHOULD BE DISABLED ---
-        // (ie: if last backup was just deleted)
-        if (SaveManager.listAllBackups().size() == 0 || this.saveBackupsTable.getSelectedRow() == -1) {
-            this.backupDeleteButton.setEnabled(false);
-            this.backupRestoreButton.setEnabled(false);
-        }
-
-        // SET SOUNDPACKS TABLE ---
-        this.refreshSoundpacksTable();
-
-        // DETERMINE IF SOUNDPACK DELETE BUTTON SHOULD BE DISABLED ---
-        // (ie: if last backup was just deleted)
-        if (SoundpackManager.listAllSoundpacks().size() == 0 || this.soundpacksTable.getSelectedRow() == -1) {
-            this.uninstallSoundpackButton.setEnabled(false);
+        for (Runnable guiRefreshRunnable : this.guiRefreshingRunnables) {
+            guiRefreshRunnable.run();
         }
     }
 
