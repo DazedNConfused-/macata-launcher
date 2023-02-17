@@ -466,8 +466,6 @@ public class MainWindow {
         });
 
         // SOUNDPACKS TABLE LISTENER(S) ---
-        this.soundpacksTable.setDefaultEditor(Object.class, null); // make jtable non-editable
-
         this.soundpacksTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Soundpacks table row selected");
 
