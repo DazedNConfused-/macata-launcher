@@ -159,7 +159,7 @@ public class MainWindow {
             }
         });
 
-        return () -> {}; // no GUI-refreshing action necessary for tabbed pane
+        return () -> { }; // no GUI-refreshing action necessary for tabbed pane
     }
 
     /**
@@ -277,26 +277,26 @@ public class MainWindow {
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                    String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
-                    ConfirmDialog.ConfirmDialogType.INFO,
-                    confirmed -> {
-                        LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+                String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
+                ConfirmDialog.ConfirmDialogType.INFO,
+                confirmed -> {
+                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
-                        if (confirmed) {
-                            // enable backup progressbar
-                            this.globalProgressBar.setEnabled(true);
+                    if (confirmed) {
+                        // enable backup progressbar
+                        this.globalProgressBar.setEnabled(true);
 
-                            // disable backup buttons (don't want to do multiple operations simultaneously)
-                            this.disableSaveBackupButtons();
+                        // disable backup buttons (don't want to do multiple operations simultaneously)
+                        this.disableSaveBackupButtons();
 
-                            SaveManager.restoreBackup(
-                                    selectedBackup,
-                                    percentageComplete -> this.globalProgressBar.setValue(percentageComplete)
-                            ).ifPresent(Thread::start);
-                        }
-
-                        this.refreshGuiElements();
+                        SaveManager.restoreBackup(
+                            selectedBackup,
+                            percentageComplete -> this.globalProgressBar.setValue(percentageComplete)
+                        ).ifPresent(Thread::start);
                     }
+
+                    this.refreshGuiElements();
+                }
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
@@ -311,17 +311,17 @@ public class MainWindow {
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                    String.format("Are you sure you want to delete the backup [%s]? This action is irreversible!", selectedBackup.getName()),
-                    ConfirmDialog.ConfirmDialogType.WARNING,
-                    confirmed -> {
-                        LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+                String.format("Are you sure you want to delete the backup [%s]? This action is irreversible!", selectedBackup.getName()),
+                ConfirmDialog.ConfirmDialogType.WARNING,
+                confirmed -> {
+                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
-                        if (confirmed) {
-                            SaveManager.deleteBackup(selectedBackup);
-                        }
-
-                        this.refreshGuiElements();
+                    if (confirmed) {
+                        SaveManager.deleteBackup(selectedBackup);
                     }
+
+                    this.refreshGuiElements();
+                }
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
@@ -368,14 +368,14 @@ public class MainWindow {
                     LOGGER.trace("Rename backup menu clicked");
 
                     StringInputDialog confirmDialog = new StringInputDialog(
-                            String.format("Rename backup [%s] to...", targetFile.getName()),
-                            newNameOptional -> {
-                                LOGGER.trace("User input dialog result: [{}]", newNameOptional);
+                        String.format("Rename backup [%s] to...", targetFile.getName()),
+                        newNameOptional -> {
+                            LOGGER.trace("User input dialog result: [{}]", newNameOptional);
 
-                                newNameOptional.ifPresent(newName -> SaveManager.renameBackup(targetFile, newName));
+                            newNameOptional.ifPresent(newName -> SaveManager.renameBackup(targetFile, newName));
 
-                                this.refreshGuiElements();
-                            }
+                            this.refreshGuiElements();
+                        }
                     );
 
                     confirmDialog.packCenterAndShow(this.mainPanel);
@@ -398,6 +398,7 @@ public class MainWindow {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
                 onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
+
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
                 onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
@@ -472,17 +473,17 @@ public class MainWindow {
             LOGGER.trace("Soundpack currently on selection: [{}]", selectedSoundpack);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                    String.format("Are you sure you want to delete the soundpack [%s]? This action is irreversible!", selectedSoundpack.getName()),
-                    ConfirmDialog.ConfirmDialogType.WARNING,
-                    confirmed -> {
-                        LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+                String.format("Are you sure you want to delete the soundpack [%s]? This action is irreversible!", selectedSoundpack.getName()),
+                ConfirmDialog.ConfirmDialogType.WARNING,
+                confirmed -> {
+                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
-                        if (confirmed) {
-                            SoundpackManager.deleteSoundpack(selectedSoundpack);
-                        }
-
-                        this.refreshGuiElements();
+                    if (confirmed) {
+                        SoundpackManager.deleteSoundpack(selectedSoundpack);
                     }
+
+                    this.refreshGuiElements();
+                }
             );
 
             confirmDialog.packCenterAndShow(this.mainPanel);
@@ -536,6 +537,7 @@ public class MainWindow {
             public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
                 onSoundpacksTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }
+
             public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
                 onSoundpacksTableRightClickEvent.accept(e, (JTable) e.getComponent());
             }

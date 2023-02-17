@@ -64,6 +64,9 @@ public class StringInputDialog extends JDialog {
         this.setVisible(true);
     }
 
+    /**
+     * Action to do on {@link #buttonOK} click.
+     * */
     private void onOK(Consumer<Optional<String>> doOnResult) {
         doOnResult.accept(Optional.of(this.inputTextField.getText()).flatMap(s -> {
             if (s.isBlank()) {
@@ -75,6 +78,9 @@ public class StringInputDialog extends JDialog {
         dispose();
     }
 
+    /**
+     * Action to do on {@link #buttonCancel} click.
+     * */
     private void onCancel(Consumer<Optional<String>> doOnResult) {
         doOnResult.accept(Optional.empty());
         dispose();

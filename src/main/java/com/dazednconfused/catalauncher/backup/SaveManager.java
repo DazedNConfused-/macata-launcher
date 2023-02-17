@@ -94,7 +94,7 @@ public class SaveManager {
 
         File newFile = new File(toBeRenamed.getParentFile().getPath() + "/" + newName + ".zip");
         return Try.of(() -> Files.move(toBeRenamed.toPath(), newFile.toPath())).onFailure(
-                t -> LOGGER.error("There was an error while renaming save [{}] into [{}]", toBeRenamed, newFile, t)
+            t -> LOGGER.error("There was an error while renaming save [{}] into [{}]", toBeRenamed, newFile, t)
         ).get().toFile();
     }
 
