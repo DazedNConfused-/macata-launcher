@@ -22,7 +22,174 @@
             </activation>
 
             <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.github.akman</groupId>
+                            <artifactId>jpackage-maven-plugin</artifactId>
+                            <version>0.1.5</version>
+                            <configuration>
+                                <!--
+                                  Specifies the JDK home path which provides the tool needed.
+                                  If not specified the jpackage tool executable will be find in
+                                  the following order:
+
+                                    - user specified JDK home directory by toolchains-plugin
+                                    - JDK home directory specified by system variable JAVA_HOME
+                                    - system path specified by system variable PATH
+                                -->
+                                <toolhome>${java.home}</toolhome>
+
+                                <!--
+                                  Specifies the location in which generated output files are placed.
+                                  Default value: ${project.build.directory}/jpackage
+                                -->
+                                <dest>${project.build.directory}/jpackage</dest>
+
+                                <!--
+                                  Specifies the name of subdirectory relative to the destination
+                                  directory in which files of generated application image are placed.
+                                -->
+                                <name>MaCataLauncher</name>
+
+                                <!--
+                                  Specifies the type of package to
+                                  create: { PLATFORM | IMAGE | EXE | MSI }.
+                                  Default value: PLATFORM (a platform dependent default type)
+                                -->
+                                <type>IMAGE</type>
+
+                                <!--
+                                  Specifies the location of the predefined runtime
+                                  image (result of jlink) that will be copied into
+                                  the application image.
+                                  If not specified, jpackage will run jlink to create
+                                  the runtime image using options:
+                                    - strip-debug
+                                    - no-header-files
+                                    - no-man-pages
+                                    - strip-native-commands
+                                -->
+                                <!-- <runtimeimage>${project.build.directory}/jlink/runtime-image</runtimeimage> -->
+
+                                <!--
+                                  Specifies version of the application and/or package.
+                                -->
+                                <appversion>${project.version}</appversion>
+
+                                <!--
+                                  Specifies copyright for the application.
+                                -->
+                                <copyright>Copyright</copyright>
+
+                                <!--
+                                  Specifies description of the application.
+                                -->
+                                <description>Description</description>
+
+                                <!--
+                                  Specifies vendor of the application.
+                                -->
+                                <vendor>Vendor</vendor>
+
+                                <!--
+                                  Specifies the location of the icon of the application package.
+                                -->
+                                <icon>${project.basedir}/src/main/resources/logo/logo.png</icon>
+
+                                <!--
+                                    Specifies the module path. The path where the jlink tool
+                                    discovers observable modules: modular JAR files, JMOD files,
+                                    exploded modules. If this option is not specified, then
+                                    the default module path is $ JAVA_HOME/jmods. This directory
+                                    contains the java.base module and the other standard and
+                                    JDK modules. If this option is specified but the java.base
+                                    module cannot be resolved from it, then the jlink command
+                                    appends $ JAVA_HOME/jmods to the module path.
+                                    Pass on &dash;-modulepath option to jlink.
+
+                                    pathelements - passed to jlink as is
+                                    filesets - sets of files (without directories)
+                                    dirsets - sets of directories (without files)
+                                    dependencysets - sets of dependencies with specified includes
+                                                     and excludes patterns (glob: or regex:)
+                                                     for file names and regex patterns only
+                                                     for module names, and excludes
+                                                     for automatic modules
+                                -->
+                                <modulepath>
+                                    <dependencysets>
+                                        <dependencyset>
+                                            <includeoutput>true</includeoutput>
+                                            <excludeautomatic>true</excludeautomatic>
+                                        </dependencyset>
+                                    </dependencysets>
+                                </modulepath>
+
+                                <!--
+                                  Specifies the main module (and optionally main class) of
+                                  the application. This module must be located on the module path.
+                                  When this option is specified, the main module will be linked
+                                  in the Java runtime image.
+                                  Either module or main-jar option can be specified
+                                  but not both.
+                                -->
+                                <module>com.dazednconfused.catalauncher/Application</module>
+
+                                <!--
+                                  Specifies the command line arguments to pass to the main class
+                                  if no command line arguments are given to the launcher.
+                                -->
+                                <arguments>--opt</arguments>
+
+                                <!--
+                                  Specifies the options to pass to the Java runtime.
+                                -->
+                                <javaoptions>-Dfile.encoding=UTF-8 -Xms256m -Xmx512m</javaoptions>
+
+                                <!--
+                                  Specifies options are added to, or used to overwrite,
+                                  the original command line options to build additional
+                                  alternative launchers.
+                                -->
+                                <addlaunchers>
+                                    <addlauncher>
+                                        <name>appname-cli</name>
+                                        <module>appModuleName/appClassName</module>
+                                        <arguments>--help</arguments>
+                                        <javaoptions>-Xms256m -Xmx512m</javaoptions>
+                                        <appversion>1.0</appversion>
+                                        <icon>${project.basedir}/config/jpackage/resources/appname-cli.ico</icon>
+                                        <winconsole>true</winconsole>
+                                    </addlauncher>
+                                </addlaunchers>
+
+                                <!--
+                                  Specifies the location of a resources directory that override
+                                  jpackage resources. Icons, template files, and other resources
+                                  of jpackage can be overridden by adding replacement resources
+                                  to this directory.
+                                -->
+                                <!-- <resourcedir>${project.basedir}/config/jpackage/resources</resourcedir> -->
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                
                 <plugins>
+                    <plugin>
+                        <groupId>com.github.akman</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jpackage-image</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>jpackage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -165,7 +332,6 @@
                             <commitIdGenerationMode>full</commitIdGenerationMode>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
 
