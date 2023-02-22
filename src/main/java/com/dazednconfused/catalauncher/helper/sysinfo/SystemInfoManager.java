@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.helper;
+package com.dazednconfused.catalauncher.helper.sysinfo;
 
 public class SystemInfoManager {
 
@@ -48,12 +48,12 @@ public class SystemInfoManager {
     public static final String JAVA_VM_VENDOR = "java.vm.vendor";
 
     /**
-     * JVM  implementation name
+     * JVM  implementation name.
      * */
     public static final String JAVA_VM_NAME = "java.vm.name";
 
     /**
-     * The name of specification version Java Runtime Environment
+     * The name of specification version Java Runtime Environment.
      * */
     public static final String JAVA_SPECIFICATION_VERSION = "java.specification.version";
 
@@ -141,40 +141,5 @@ public class SystemInfoManager {
      * The current working directory of the user.
      * */
     public static final String USER_DIR = "user.dir";
-
-    /**
-     * Utility class comprising this {@link System}'s information.
-     * */
-    public static class SystemInformation {
-
-        private String javaVersion;
-        public String javaVendor;
-        public String javaVendorUrl;
-        public String javaHome;
-        public String javaVmSpecificationVersion;
-        public String javaVmSpecificationVendor;
-        public String javaVmSpecificationName;
-        public String javaVmVersion;
-        public String javaVmVendor;
-        public String javaVmName;
-        public String javaSpecificationVersion;
-        public String javaSpecificationVendor;
-        public String javaSpecificationName;
-        public String javaClassVersion;
-        public String javaClasspath;
-        public String javaLibraryPath;
-        public String javaIoTmpDir;
-        public String javaCompiler;
-        public String javaExtDirs;
-        public String osName;
-        public String osArch;
-        public String osVersion;
-        public String fileSeparator;
-        public String pathSeparator;
-        public String lineSeparator;
-        public String userName;
-        public String userHome;
-        public String userDir;
-    }
 
 }
