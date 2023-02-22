@@ -142,4 +142,39 @@ public class SystemInfoManager {
      * */
     public static final String USER_DIR = "user.dir";
 
+    /**
+     * Utility class comprising this {@link System}'s information.
+     * */
+    public static class SystemInformation {
+
+        private String javaVersion;
+        public String javaVendor;
+        public String javaVendorUrl;
+        public String javaHome;
+        public String javaVmSpecificationVersion;
+        public String javaVmSpecificationVendor;
+        public String javaVmSpecificationName;
+        public String javaVmVersion;
+        public String javaVmVendor;
+        public String javaVmName;
+        public String javaSpecificationVersion;
+        public String javaSpecificationVendor;
+        public String javaSpecificationName;
+        public String javaClassVersion;
+        public String javaClasspath;
+        public String javaLibraryPath;
+        public String javaIoTmpDir;
+        public String javaCompiler;
+        public String javaExtDirs;
+        public String osName;
+        public String osArch;
+        public String osVersion;
+        public String fileSeparator;
+        public String pathSeparator;
+        public String lineSeparator;
+        public String userName;
+        public String userHome;
+        public String userDir;
+    }
+
 }
