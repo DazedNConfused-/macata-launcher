@@ -10,6 +10,7 @@ import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.FileExplorerManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
+import com.dazednconfused.catalauncher.helper.sysinfo.SystemInfoManager;
 import com.dazednconfused.catalauncher.launcher.CDDALauncherManager;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -96,6 +97,10 @@ public class MainWindow {
      * {@link MainWindow}'s main entrypoint.
      * */
     public static void main(String[] args) {
+        LogLevelManager.changeGlobalLogLevelTo(ConfigurationManager.getInstance().isDebug() ? Level.TRACE : Level.INFO);
+
+        SystemInfoManager.logSystemInformation(LOGGER, Level.DEBUG);
+
         LOGGER.info(
                 "{} - Version {} - Build {} {}",
                 APP_NAME,
@@ -105,8 +110,6 @@ public class MainWindow {
         );
 
         LOGGER.debug("Initializing main window [{}]...", APP_NAME);
-
-        LogLevelManager.changeGlobalLogLevelTo(ConfigurationManager.getInstance().isDebug() ? Level.TRACE : Level.INFO);
 
         initializeLookAndFeel();
 
