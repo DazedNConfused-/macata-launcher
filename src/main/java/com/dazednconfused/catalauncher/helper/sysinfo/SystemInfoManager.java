@@ -8,8 +8,11 @@ import io.vavr.control.Try;
 
 import org.apache.log4j.Level;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SystemInfoManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemInfoManager.class);
 
     /**
      * The version of Java Runtime Environment.
@@ -152,21 +155,21 @@ public class SystemInfoManager {
     private static final String USER_DIR = "user.dir";
 
     /**
-     * Logs current {@link System} information using the provided {@link org.apache.log4j.Logger}. Defaults to {@link Level#DEBUG}
+     * Logs current {@link System} information using the {@link org.apache.log4j.Logger} for this class. Defaults to {@link Level#DEBUG}
      * if no valid {@code logLevel} is provided.
      * */
-    public static void logSystemInformation(Logger logger, Level logLevel) {
+    public static void logSystemInformation(Level logLevel) {
         Try.of(() -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(getSystemInformation()))
             .andThen(sysInfo -> {
                 if (Level.TRACE == logLevel) {
-                    logger.trace(sysInfo);
+                    LOGGER.trace(sysInfo);
                 } else if (Level.INFO == logLevel) {
-                    logger.info(sysInfo);
+                    LOGGER.info(sysInfo);
                 } else {
-                    logger.debug(sysInfo);
+                    LOGGER.debug(sysInfo);
                 }
             })
-            .onFailure(throwable -> logger.error("There was an error during the serialization of this system's information", throwable));
+            .onFailure(throwable -> LOGGER.error("There was an error during the serialization of this system's information", throwable));
     }
 
     /**

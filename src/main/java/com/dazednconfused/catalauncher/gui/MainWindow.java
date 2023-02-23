@@ -99,7 +99,7 @@ public class MainWindow {
     public static void main(String[] args) {
         LogLevelManager.changeGlobalLogLevelTo(ConfigurationManager.getInstance().isDebug() ? Level.TRACE : Level.INFO);
 
-        SystemInfoManager.logSystemInformation(LOGGER, Level.DEBUG);
+        SystemInfoManager.logSystemInformation(Level.DEBUG);
 
         LOGGER.info(
                 "{} - Version {} - Build {} {}",
