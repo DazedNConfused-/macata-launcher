@@ -3,17 +3,11 @@ package com.dazednconfused.catalauncher.gui;
 import static com.dazednconfused.catalauncher.gui.helper.GuiResource.extractIconFrom;
 import static com.dazednconfused.catalauncher.helper.Constants.ICONS_PATH;
 
-import io.vavr.control.Try;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;

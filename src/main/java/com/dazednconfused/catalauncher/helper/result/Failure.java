@@ -9,6 +9,9 @@ public class Failure<L extends Throwable,R> implements Result<L,R> {
 
     private final L error;
 
+    /**
+     * Protected constructor.
+     * */
     protected Failure(L error) {
         this.error = error;
     }

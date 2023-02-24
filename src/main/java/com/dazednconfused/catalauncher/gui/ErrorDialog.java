@@ -69,7 +69,7 @@ public class ErrorDialog extends JDialog {
      * Constructs a new {@link ErrorDialog} instance that does nothing more than showing the error message.
      * */
     public static ErrorDialog showErrorDialog(String message, Throwable t) {
-        return new ErrorDialog(message, t, () -> {});
+        return new ErrorDialog(message, t, () -> { });
     }
 
     /**

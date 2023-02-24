@@ -11,6 +11,9 @@ public class Success<L extends Throwable,R> implements Result<L,R> {
 
     private final R result;
 
+    /**
+     * Protected constructor.
+     * */
     protected Success(R result) {
         this.result = result;
     }
