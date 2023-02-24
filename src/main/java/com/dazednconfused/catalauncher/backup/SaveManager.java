@@ -5,6 +5,8 @@ import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_TRASHED_SA
 import static com.dazednconfused.catalauncher.helper.Constants.LAUNCHER_ROOT_FOLDER;
 import static com.dazednconfused.catalauncher.helper.Constants.SAVE_BACKUP_PATH;
 
+import com.dazednconfused.catalauncher.helper.result.Result;
+
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 
@@ -94,13 +96,13 @@ public class SaveManager {
      * @return {@link Either#right(Object)} with the new renamed {@link File}, or {@link Either#left(Object)} with the {@link Throwable}
      *         if there was an error during the operation.
      * */
-    public static Either<Throwable, File> renameBackup(File toBeRenamed, String newName) {
+    public static Result<Throwable, File> renameBackup(File toBeRenamed, String newName) {
         LOGGER.info("Renaming backup [{}] into [{}]...", toBeRenamed, newName);
 
         File newFile = new File(toBeRenamed.getParentFile().getPath() + "/" + newName + ".zip");
         return Try.of(() -> Files.move(toBeRenamed.toPath(), newFile.toPath())).map(Path::toFile).onFailure(
             t -> LOGGER.error("There was an error while renaming save [{}] into [{}]", toBeRenamed, newFile, t)
-        ).toEither();
+        ).map(Result::success).recover(Result::failure).get();
     }
 
     /**
