@@ -93,8 +93,8 @@ public class SaveManager {
     /**
      * Renames given {@code toBeRenamed} backup.
      *
-     * @return {@link Either#right(Object)} with the new renamed {@link File}, or {@link Either#left(Object)} with the {@link Throwable}
-     *         if there was an error during the operation.
+     * @return {@link Result#success(Object)} with the new renamed {@link File}, or {@link Result#failure(Throwable)} if there
+     *         was an error during the operation.
      * */
     public static Result<Throwable, File> renameBackup(File toBeRenamed, String newName) {
         LOGGER.info("Renaming backup [{}] into [{}]...", toBeRenamed, newName);
