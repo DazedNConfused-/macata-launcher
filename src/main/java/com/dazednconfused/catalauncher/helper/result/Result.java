@@ -15,6 +15,13 @@ public interface Result<L extends Throwable, R> {
     }
 
     /**
+     * Represents a {@link Result} that has ended in {@link Success}.
+     * */
+    static <L extends Throwable, R> Result<L,R> success() {
+        return new Success<>();
+    }
+
+    /**
      * Represents a {@link Result} that has ended in {@link Failure}.
      * */
     static <L extends Throwable, R> Result<L,R> failure(L error) {

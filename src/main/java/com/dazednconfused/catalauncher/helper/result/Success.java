@@ -18,6 +18,13 @@ public class Success<L extends Throwable,R> implements Result<L,R> {
         this.result = result;
     }
 
+    /**
+     * Protected constructor.
+     * */
+    protected Success() { // for those cases where the operation is a 'void'
+        this.result = null;
+    }
+
     public Optional<R> getResult() {
         return Optional.ofNullable(result);
     }
