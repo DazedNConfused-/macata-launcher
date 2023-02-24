@@ -13,4 +13,6 @@ public class Constants {
     public static final String CUSTOM_TRASHED_SAVE_PATH = LAUNCHER_ROOT_FOLDER + "/trashed/saves/";
     public static final String SAVE_BACKUP_PATH = LAUNCHER_ROOT_FOLDER + "/backups";
 
+    // resources
+    public static final String ICONS_PATH = "icon/svg";
 }
