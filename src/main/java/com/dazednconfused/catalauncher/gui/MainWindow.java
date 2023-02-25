@@ -375,7 +375,11 @@ public class MainWindow {
                         newNameOptional -> {
                             LOGGER.trace("User input dialog result: [{}]", newNameOptional);
 
-                            newNameOptional.ifPresent(newName -> SaveManager.renameBackup(targetFile, newName));
+                            newNameOptional.ifPresent(newName ->
+                                SaveManager.renameBackup(targetFile, newName).toEither().peekLeft(error ->
+                                    ErrorDialog.showErrorDialog("Could not rename save backup!", error.getError()).packCenterAndShow(this.mainPanel)
+                                )
+                            );
 
                             this.refreshGuiElements();
                         }

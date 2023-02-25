@@ -5,10 +5,13 @@ import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_TRASHED_SA
 import static com.dazednconfused.catalauncher.helper.Constants.LAUNCHER_ROOT_FOLDER;
 import static com.dazednconfused.catalauncher.helper.Constants.SAVE_BACKUP_PATH;
 
+import com.dazednconfused.catalauncher.helper.result.Result;
+
 import io.vavr.control.Try;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -88,14 +91,17 @@ public class SaveManager {
 
     /**
      * Renames given {@code toBeRenamed} backup.
+     *
+     * @return {@link Result#success(Object)} with the new renamed {@link File}, or {@link Result#failure(Throwable)} if there
+     *         was an error during the operation.
      * */
-    public static File renameBackup(File toBeRenamed, String newName) {
+    public static Result<Throwable, File> renameBackup(File toBeRenamed, String newName) {
         LOGGER.info("Renaming backup [{}] into [{}]...", toBeRenamed, newName);
 
         File newFile = new File(toBeRenamed.getParentFile().getPath() + "/" + newName + ".zip");
-        return Try.of(() -> Files.move(toBeRenamed.toPath(), newFile.toPath())).onFailure(
+        return Try.of(() -> Files.move(toBeRenamed.toPath(), newFile.toPath())).map(Path::toFile).onFailure(
             t -> LOGGER.error("There was an error while renaming save [{}] into [{}]", toBeRenamed, newFile, t)
-        ).get().toFile();
+        ).map(Result::success).recover(Result::failure).get();
     }
 
     /**

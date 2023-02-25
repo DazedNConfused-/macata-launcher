@@ -1,16 +1,13 @@
 package com.dazednconfused.catalauncher.gui;
 
-import io.vavr.control.Try;
+import static com.dazednconfused.catalauncher.gui.helper.GuiResource.extractIconFrom;
+import static com.dazednconfused.catalauncher.helper.Constants.ICONS_PATH;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
@@ -24,7 +21,6 @@ import org.apache.batik.swing.JSVGCanvas;
 
 public class ConfirmDialog extends JDialog {
 
-    private static final String ICONS_PATH = "icon/svg";
     private static final String ERROR_ICON = extractIconFrom(ICONS_PATH + "/" + "errorDialog.svg");
     private static final String INFO_ICON = extractIconFrom(ICONS_PATH + "/" + "informationDialog.svg");
     private static final String WARN_ICON = extractIconFrom(ICONS_PATH + "/" + "warningDialog.svg");
@@ -100,18 +96,6 @@ public class ConfirmDialog extends JDialog {
     private void onCancel(Consumer<Boolean> doOnResult) {
         doOnResult.accept(false);
         dispose();
-    }
-
-    /**
-     * Extracts the SVG in the provided {@code path} into a temporary {@link java.io.File} that {@link JSVGCanvas} can read
-     * and load from.
-     * */
-    private static String extractIconFrom(String path) {
-        return Try.of(() -> {
-            Path tmpFilePath = Files.createTempFile(null, null);
-            Objects.requireNonNull(ConfirmDialog.class.getClassLoader().getResourceAsStream(path)).transferTo(new FileOutputStream(tmpFilePath.toFile()));
-            return tmpFilePath.toFile().getPath();
-        }).getOrNull();
     }
 
     /**
