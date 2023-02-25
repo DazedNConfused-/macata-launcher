@@ -7,7 +7,6 @@ import static com.dazednconfused.catalauncher.helper.Constants.SAVE_BACKUP_PATH;
 
 import com.dazednconfused.catalauncher.helper.result.Result;
 
-import io.vavr.control.Either;
 import io.vavr.control.Try;
 
 import java.io.File;
