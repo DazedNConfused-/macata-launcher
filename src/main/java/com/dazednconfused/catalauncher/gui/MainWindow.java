@@ -93,6 +93,11 @@ public class MainWindow {
     private JButton installSoundpackButton;
     private JButton uninstallSoundpackButton;
 
+    // MODS TAB ---
+    private JTable modsTable;
+    private JButton uninstallModButton;
+    private JButton installModButton;
+
     /**
      * {@link MainWindow}'s main entrypoint.
      * */
