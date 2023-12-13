@@ -243,7 +243,7 @@ public class MainWindow {
             }
 
             // DETERMINE IF RUN LATEST WORLD BUTTON SHOULD BE ENABLED ---
-            if (pathPointsToValidGameExecutable && saveFilesExist) {
+            if (pathPointsToValidGameExecutable && saveFilesExist && !(SaveManager.getLatestSave().orElse(null) == null)) {
                 this.runLatestWorldButton.setEnabled(true);
             } else {
                 this.runLatestWorldButton.setEnabled(false);
