@@ -192,11 +192,10 @@ public class MainWindow {
 
             String[] launcherArgs = ArrayUtils.addAll(CUSTOM_SAVE_DIR_ARGS, CUSTOM_USER_DIR_ARGS);
 
-            CDDALauncherManager.executeCddaApplication(
+            Process cddaProcess = CDDALauncherManager.executeCddaApplication(
                     ConfigurationManager.getInstance().getCddaPath(), launcherArgs
             );
-
-            this.refreshGuiElements();
+            CDDALauncherManager.monitorCddaProcess(cddaProcess, this::refreshGuiElements);
         });
 
         // RUN LATEST WORLD BUTTON LISTENER ---
@@ -208,11 +207,10 @@ public class MainWindow {
                     ArrayUtils.addAll(CUSTOM_SAVE_DIR_ARGS, CUSTOM_USER_DIR_ARGS), lastWorldArgs
             );
 
-            CDDALauncherManager.executeCddaApplication(
+            Process cddaProcess = CDDALauncherManager.executeCddaApplication(
                     ConfigurationManager.getInstance().getCddaPath(), launcherArgs
             );
-
-            this.refreshGuiElements();
+            CDDALauncherManager.monitorCddaProcess(cddaProcess, this::refreshGuiElements);
         });
 
         // OPEN FINDER BUTTON LISTENER ---
