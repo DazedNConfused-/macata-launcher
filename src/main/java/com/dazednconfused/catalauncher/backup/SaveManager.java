@@ -113,10 +113,32 @@ public class SaveManager {
                 .filter(file -> !file.getName().equals(".DS_Store"))
                 .collect(Collectors.toList());
     }
+    /**
+     * If save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}, returns the last modified valid save file. Save file is valid if has a .sav file in it.
+     * */
 
+    public static Optional<File> getLastModifiedValidSave() {
+        File savesFolder = new File(CUSTOM_SAVE_PATH);
+        if (!saveFilesExist()) {
+            return Optional.empty();
+        }
+        File[] saveDirs = savesFolder.listFiles(file -> file.isDirectory() && !file.getName().equals(".DS_Store"));
+        Arrays.sort(saveDirs, Comparator.comparingLong(File::lastModified).reversed());
+
+        for (File directory : saveDirs) {
+            File[] savFiles = directory.listFiles((dir, name) -> name.endsWith(".sav"));
+            if (savFiles != null && savFiles.length > 0) {
+                return Optional.of(directory);
+            }
+        }
+
+        return Optional.empty(); // No directory with .sav file found
+
+    }
     /**
      * Determines whether save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}.
      * */
+
     public static boolean saveFilesExist() {
         File savesFolder = new File(CUSTOM_SAVE_PATH);
         return savesFolder.exists() && Arrays.stream(Objects.requireNonNull(savesFolder.listFiles())).anyMatch(file -> !file.getName().equals(".DS_Store"));
@@ -129,16 +151,11 @@ public class SaveManager {
      * */
     public static Optional<File> getLatestSave() {
 
-        if (!saveFilesExist()) {
+        if (!saveFilesExist() || (getLastModifiedValidSave().orElse(null) == null)) {
             LOGGER.debug("No saves found. No latest save can be retrieved.");
             return Optional.empty();
         }
-
-        File savesFolder = new File(CUSTOM_SAVE_PATH);
-
-        return Arrays.stream(Objects.requireNonNull(savesFolder.listFiles()))
-                .filter(file -> !file.getName().equals(".DS_Store"))
-                .max(Comparator.comparingLong(File::lastModified));
+        return getLastModifiedValidSave();
     }
 
     /**
