@@ -35,12 +35,13 @@ public class CDDALauncherManager {
         LOGGER.info("Executing command [{}]", (Object) cmdarray);
 
         return Try.of(() -> Runtime.getRuntime().exec(cmdarray)).onFailure(t -> LOGGER.error("There was an error executing [{}]", cmdarray, t)).getOrNull();
-
     }
 
     /**
-     * Used to refresh GUI after game exits. Creates a new thread to monitor the CDDA application after it's been run, and waits for it to exit.
-     * When it exits, it executes a Runnable object (in this case, it is passed refreshGuiElements in MainWindow.java)
+     * Used to refresh GUI after game exits.
+     * <br/><br/>
+     * Creates a new thread to monitor the CDDA application after it's been run, and waits for it to exit. When it does,
+     * it executes a Runnable object (in this case, it is passed {@code MainWindow#refreshGuiElements})
      * */
     public static void monitorCddaProcess(Process process, Runnable onExit) {
         new Thread(() -> {

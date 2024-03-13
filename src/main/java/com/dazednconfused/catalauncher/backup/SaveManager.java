@@ -114,9 +114,9 @@ public class SaveManager {
                 .collect(Collectors.toList());
     }
     /**
-     * If save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}, returns the last modified valid save file. Save file is valid if has a .sav file in it.
+     * If save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}, returns the last
+     * modified valid save file. Save file is valid if it has a .sav file in it.
      * */
-
     public static Optional<File> getLastModifiedValidSave() {
         File savesFolder = new File(CUSTOM_SAVE_PATH);
         if (!saveFilesExist()) {
