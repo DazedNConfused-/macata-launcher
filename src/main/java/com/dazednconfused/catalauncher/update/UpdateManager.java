@@ -24,6 +24,8 @@ public class UpdateManager {
      * Queries the latest binary release available to the public in the official remote repository.
      * */
     public static void openReleaseInDefaultBrowser(String tag) {
+        LOGGER.info("Opening latest release's homepage using default browser...");
+
         Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag))
             .onFailure(t -> LOGGER.error("There was an error opening the latest release tagged [{}] in remote repository [{}/{}]", tag, GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t));
     }
@@ -32,6 +34,8 @@ public class UpdateManager {
      * Queries the latest binary release available to the public in the official remote repository.
      * */
     public static Optional<String> getLatestRelease() {
+        LOGGER.info("Querying latest release's tag from internet repository...");
+
         return Try.of(() -> getLatestReleaseFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME))
             .onFailure(t -> LOGGER.error("There was an error retrieving the latest release from remote repository [{}/{}]", GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t))
             .toJavaOptional();
