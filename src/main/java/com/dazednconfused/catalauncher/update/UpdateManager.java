@@ -2,6 +2,9 @@ package com.dazednconfused.catalauncher.update;
 
 import static com.dazednconfused.catalauncher.helper.Constants.GITHUB_REPOSITORY_NAME;
 import static com.dazednconfused.catalauncher.helper.Constants.GITHUB_REPOSITORY_OWNER;
+import static java.util.function.Predicate.not;
+
+import com.dazednconfused.catalauncher.helper.GitInfoManager;
 
 import io.vavr.control.Try;
 
@@ -20,31 +23,75 @@ public class UpdateManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateManager.class);
 
-    /**
-     * Queries the latest binary release available to the public in the official remote repository.
-     * */
-    public static void openReleaseInDefaultBrowser(String tag) {
-        LOGGER.info("Opening latest release's homepage using default browser...");
+    private static UpdateManager instance;
+    private static final Object lock = new Object(); //thread-safety singleton lock
 
-        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag))
+    //Singleton
+    public static UpdateManager getInstance() {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) instance = new UpdateManager();
+            }
+        }
+        return instance;
+    }
+
+    //Constructor
+    private UpdateManager() {
+    }
+
+    /**
+     * Determines if a software update is available to the user to be downloaded.
+     * */
+    public boolean isUpdateAvailable() {
+        Optional<String> currentVersion = Optional.ofNullable(GitInfoManager.getInstance().getBuildVersion()).filter(not(String::isBlank));
+        Optional<Version> latestVersionAvailable = getLatestReleaseTag();
+
+        if (currentVersion.isEmpty() || latestVersionAvailable.isEmpty()) {
+            LOGGER.info("Could not gather all the required information to determine if an update should be carried out or not.");
+            LOGGER.debug("isUpdateAvailable defaulting to false. currentVersion=[{}]; latestVersionAvailable=[{}]", currentVersion, latestVersionAvailable);
+            return false;
+        }
+
+        Version current = new Version(currentVersion.get());
+        Version latest = latestVersionAvailable.get();
+
+        return latest.compareTo(current) > 0;
+    }
+
+    /**
+     * Opens the webpage for the latest binary release in the official remote repository.
+     * */
+    public static void openLatestReleaseInDefaultBrowser() {
+        getLatestReleaseTag().ifPresent(UpdateManager::openReleaseInDefaultBrowser);
+    }
+
+    /**
+     * Opens the webpage for the given binary release in the official remote repository.
+     * */
+    public static void openReleaseInDefaultBrowser(Version tag) {
+        LOGGER.info("Opening v[{}]'s release's homepage using default browser...", tag);
+
+        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.get()))
             .onFailure(t -> LOGGER.error("There was an error opening the latest release tagged [{}] in remote repository [{}/{}]", tag, GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t));
     }
 
     /**
-     * Queries the latest binary release available to the public in the official remote repository.
+     * Queries for the latest binary release's tag available to the public in the official remote repository.
      * */
-    public static Optional<String> getLatestRelease() {
+    public static Optional<Version> getLatestReleaseTag() {
         LOGGER.info("Querying latest release's tag from internet repository...");
 
-        return Try.of(() -> getLatestReleaseFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME))
+        return Try.of(() -> getLatestReleaseTagFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME))
+            .map(Version::new)
             .onFailure(t -> LOGGER.error("There was an error retrieving the latest release from remote repository [{}/{}]", GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t))
             .toJavaOptional();
     }
 
     /**
-     * Queries the remote GitHub repository in search for the latest release from the given {@code owner}/{@code repo} combination.
+     * Queries the remote GitHub repository in search for the latest release for the given {@code owner}/{@code repo} combination.
      * */
-    private static String getLatestReleaseFromGithub(String owner, String repo) throws IOException {
+    private static String getLatestReleaseTagFromGithub(String owner, String repo) throws IOException {
         String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
 
         URL url = new URL(apiUrl);
@@ -68,7 +115,7 @@ public class UpdateManager {
     }
 
     /**
-     * Opens the page for the remote GitHub repository in search for the latest release from the given {@code owner}/{@code repo}/{@code tag}
+     * Opens the page for the remote GitHub repository in search for the latest release for the given {@code owner}/{@code repo}/{@code tag}
      * combination.
      * */
     private static void openGithubReleaseInDefaultBrowser(String owner, String repo, String tag) throws IOException {
