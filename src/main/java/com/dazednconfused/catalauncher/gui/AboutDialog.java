@@ -2,10 +2,8 @@ package com.dazednconfused.catalauncher.gui;
 
 import static com.dazednconfused.catalauncher.helper.Constants.APP_NAME;
 
+import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
-
-import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
-
 import com.dazednconfused.catalauncher.update.UpdateManager;
 
 import io.vavr.control.Try;
@@ -72,16 +70,18 @@ public class AboutDialog extends JDialog {
 
             boolean updateAvailable = UpdateManager.isUpdateAvailable().orElse(false);
 
-            if (!updateAvailable) {
+            if (updateAvailable) {
+                LOGGER.debug("No update is available");
                 ConfirmDialog confirmDialog = new ConfirmDialog(
                     "There were no updates found",
                     ConfirmDialog.ConfirmDialogType.NONE,
-                    confirmed -> {}
+                    confirmed -> { }
                 );
 
                 confirmDialog.packCenterAndShow(contentPane);
                 confirmDialog.setModal(true);
             } else {
+                LOGGER.debug("Update is available");
                 ConfirmDialog confirmDialog = new ConfirmDialog(
                     "A new version is available! Check the releases page now?",
                     ConfirmDialog.ConfirmDialogType.INFO,
@@ -93,7 +93,11 @@ public class AboutDialog extends JDialog {
         });
 
         // configure auto-update checkbox ---
-        // TODO
+        this.autoUpdaterCheckbox.setSelected(ConfigurationManager.getInstance().isShouldLookForUpdates());
+        autoUpdaterCheckbox.addActionListener(e -> {
+            LOGGER.trace("Auto updater checkbox changed to [{}]", autoUpdaterCheckbox.isSelected());
+            ConfigurationManager.getInstance().setShouldLookForUpdates(autoUpdaterCheckbox.isSelected());
+        });
 
         // call onOK() when cross is clicked ---
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);

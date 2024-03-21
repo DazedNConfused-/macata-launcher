@@ -67,4 +67,12 @@ public class VersionTest {
 
         assertThat(a.equals(b)).isFalse();
     }
+
+    @Test
+    void versions_is_compatible_with_v_prefix() {
+        Version a = new Version("v1.0.1");
+        Version b = new Version("1.0.1");
+
+        assertThat(a.equals(b)).isTrue();
+    }
 }

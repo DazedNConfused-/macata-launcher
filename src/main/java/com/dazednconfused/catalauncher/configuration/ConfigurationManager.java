@@ -86,6 +86,15 @@ public class ConfigurationManager {
         save(this.configuration);
     }
 
+    public boolean isShouldLookForUpdates() {
+        return this.configuration.isShouldLookForUpdates();
+    }
+
+    public void setShouldLookForUpdates(boolean shouldLookForUpdates) {
+        this.configuration.setShouldLookForUpdates(shouldLookForUpdates);
+        save(this.configuration);
+    }
+
     /**
      * Saves the given {@link Configuration} to disk.
      * */
