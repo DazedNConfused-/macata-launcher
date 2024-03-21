@@ -67,29 +67,7 @@ public class AboutDialog extends JDialog {
         // configure update now button ---
         updateNowButton.addActionListener(e -> {
             LOGGER.trace("Update now button clicked");
-
-            boolean updateAvailable = UpdateManager.isUpdateAvailable().orElse(false);
-
-            if (updateAvailable) {
-                LOGGER.debug("No update is available");
-                ConfirmDialog confirmDialog = new ConfirmDialog(
-                    "There were no updates found",
-                    ConfirmDialog.ConfirmDialogType.NONE,
-                    confirmed -> { }
-                );
-
-                confirmDialog.packCenterAndShow(contentPane);
-                confirmDialog.setModal(true);
-            } else {
-                LOGGER.debug("Update is available");
-                ConfirmDialog confirmDialog = new ConfirmDialog(
-                    "A new version is available! Check the releases page now?",
-                    ConfirmDialog.ConfirmDialogType.INFO,
-                    confirmed -> UpdateManager.openLatestReleaseInDefaultBrowser()
-                );
-                confirmDialog.packCenterAndShow(contentPane);
-                confirmDialog.setModal(true);
-            }
+            checkForUpdates(contentPane, true);
         });
 
         // configure auto-update checkbox ---
@@ -109,6 +87,48 @@ public class AboutDialog extends JDialog {
 
         // call onOK() on ESCAPE ---
         contentPane.registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
+    }
+
+    /**
+     * Checks for new binary releases and prompts the user in case an update is available.
+     * */
+    public static void checkForUpdates(JPanel parent, boolean showDialogIfNoUpdateAvailable) {
+        LOGGER.info("Checking for updates...");
+
+        boolean updateAvailable = UpdateManager.isUpdateAvailable().orElse(false);
+
+        if (!updateAvailable) {
+            LOGGER.debug("No update is available");
+
+            if (!showDialogIfNoUpdateAvailable) {
+                LOGGER.trace("Skipping showing 'no update available' dialog because showDialogIfNoUpdateAvailable is false'");
+                return;
+            }
+
+            ConfirmDialog confirmDialog = new ConfirmDialog(
+                "There were no updates found",
+                ConfirmDialog.ConfirmDialogType.NONE,
+                confirmed -> { }
+            );
+
+            confirmDialog.packCenterAndShow(parent);
+            confirmDialog.setModal(true);
+        } else {
+            LOGGER.debug("Update is available");
+            ConfirmDialog confirmDialog = new ConfirmDialog(
+                "A new version is available! Check the releases page now?",
+                ConfirmDialog.ConfirmDialogType.INFO,
+                confirmed -> {
+                    if (confirmed) {
+                        UpdateManager.openLatestReleaseInDefaultBrowser();
+                    } else {
+                        LOGGER.debug("Aborting update process due to user input");
+                    }
+                }
+            );
+            confirmDialog.packCenterAndShow(parent);
+            confirmDialog.setModal(true);
+        }
     }
 
     /**

@@ -139,6 +139,8 @@ public class MainWindow {
         };
 
         this.refreshGuiElements();
+
+        new Thread(this::checkForUpdates).start(); // check for updates on a background thread, to not slow down application's startup
     }
 
     /**
@@ -729,5 +731,14 @@ public class MainWindow {
             }
         };
         this.soundpacksTable.setModel(tableModel);
+    }
+
+    /**
+     * Checks for new software releases if the {@link ConfigurationManager} dictates said process should be carried out.
+     * */
+    private void checkForUpdates() {
+        if (ConfigurationManager.getInstance().isShouldLookForUpdates()) {
+            AboutDialog.checkForUpdates(this.mainPanel, false);
+        }
     }
 }
