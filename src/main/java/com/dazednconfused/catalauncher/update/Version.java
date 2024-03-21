@@ -14,8 +14,14 @@ public class Version implements Comparable<Version> {
     public Version(String version) {
         if (version == null)
             throw new IllegalArgumentException("Version cannot be null");
-        if (!version.matches("[0-9]+(\\.[0-9]+)*"))
+        if (!version.matches("v?[0-9]+(\\.[0-9]+)*"))
             throw new IllegalArgumentException("Invalid version format");
+
+        if (version.startsWith("v")) {
+            // prune any potential version tags starting with a 'v'
+            version = version.substring(1);
+        }
+
         this.version = version;
     }
 

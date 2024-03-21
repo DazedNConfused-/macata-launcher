@@ -23,40 +23,23 @@ public class UpdateManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateManager.class);
 
-    private static UpdateManager instance;
-    private static final Object lock = new Object(); //thread-safety singleton lock
-
-    //Singleton
-    public static UpdateManager getInstance() {
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) instance = new UpdateManager();
-            }
-        }
-        return instance;
-    }
-
-    //Constructor
-    private UpdateManager() {
-    }
-
     /**
      * Determines if a software update is available to the user to be downloaded.
      * */
-    public boolean isUpdateAvailable() {
+    public static Optional<Boolean> isUpdateAvailable() {
         Optional<String> currentVersion = Optional.ofNullable(GitInfoManager.getInstance().getBuildVersion()).filter(not(String::isBlank));
         Optional<Version> latestVersionAvailable = getLatestReleaseTag();
 
         if (currentVersion.isEmpty() || latestVersionAvailable.isEmpty()) {
             LOGGER.info("Could not gather all the required information to determine if an update should be carried out or not.");
-            LOGGER.debug("isUpdateAvailable defaulting to false. currentVersion=[{}]; latestVersionAvailable=[{}]", currentVersion, latestVersionAvailable);
-            return false;
+            LOGGER.debug("currentVersion=[{}]; latestVersionAvailable=[{}]", currentVersion, latestVersionAvailable);
+            return Optional.empty();
         }
 
         Version current = new Version(currentVersion.get());
         Version latest = latestVersionAvailable.get();
 
-        return latest.compareTo(current) > 0;
+        return Optional.of(latest.compareTo(current) > 0);
     }
 
     /**
@@ -121,7 +104,7 @@ public class UpdateManager {
      * combination.
      * */
     private static void openGithubReleaseInDefaultBrowser(String owner, String repo, String tag) throws IOException {
-        String latestReleaseUrl = String.format("https://github.com/%s/%s/releases/tag/%s", owner, repo, tag);
+        String latestReleaseUrl = String.format("https://github.com/%s/%s/releases/tag/v%s", owner, repo, tag);
 
         Desktop desktop = Desktop.getDesktop();
         if (desktop.isSupported(Desktop.Action.BROWSE)) {
