@@ -61,6 +61,8 @@ public class UpdateManager {
 
     /**
      * Opens the webpage for the latest binary release in the official remote repository.
+     *
+     * @implNote Shortcut operation that chains both {@link #getLatestReleaseTag()} and {@link #openReleaseInDefaultBrowser(Version)}.
      * */
     public static void openLatestReleaseInDefaultBrowser() {
         getLatestReleaseTag().ifPresent(UpdateManager::openReleaseInDefaultBrowser);
