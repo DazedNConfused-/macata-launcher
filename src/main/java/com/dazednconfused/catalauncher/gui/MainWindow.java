@@ -641,8 +641,8 @@ public class MainWindow {
         about.addActionListener(e -> {
             LOGGER.trace("About button clicked");
 
-            AboutDialog aboutDialog = new AboutDialog();
-            aboutDialog.packCenterAndShow(parent);
+            VersionManagerWindow versionManagerWindow = new VersionManagerWindow();
+            versionManagerWindow.packCenterAndShow(parent);
         });
         helpMenu.add(about);
 
@@ -738,7 +738,7 @@ public class MainWindow {
      * */
     private void checkForUpdates() {
         if (ConfigurationManager.getInstance().isShouldLookForUpdates()) {
-            AboutDialog.checkForUpdates(this.mainPanel, false);
+            VersionManagerWindow.checkForUpdates(this.mainPanel, false);
         }
     }
 }

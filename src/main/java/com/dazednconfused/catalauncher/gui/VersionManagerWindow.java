@@ -28,9 +28,9 @@ import javax.swing.KeyStroke;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AboutDialog extends JDialog {
+public class VersionManagerWindow extends JDialog {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AboutDialog.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VersionManagerWindow.class);
 
     private static final String LOGO_PATH = "logo/logo.png";
 
@@ -46,7 +46,7 @@ public class AboutDialog extends JDialog {
     /**
      * Constructor.
      * */
-    public AboutDialog() {
+    public VersionManagerWindow() {
 
         // initialize dialog ---
         setContentPane(contentPane);
