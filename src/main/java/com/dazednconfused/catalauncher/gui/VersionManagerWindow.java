@@ -112,7 +112,6 @@ public class VersionManagerWindow extends JDialog {
             );
 
             confirmDialog.packCenterAndShow(parent);
-            confirmDialog.setModal(true);
         } else {
             LOGGER.debug("Update is available");
             ConfirmDialog confirmDialog = new ConfirmDialog(
@@ -127,7 +126,6 @@ public class VersionManagerWindow extends JDialog {
                 }
             );
             confirmDialog.packCenterAndShow(parent);
-            confirmDialog.setModal(true);
         }
     }
 
