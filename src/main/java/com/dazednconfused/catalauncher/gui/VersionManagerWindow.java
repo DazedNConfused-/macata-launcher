@@ -106,9 +106,7 @@ public class VersionManagerWindow extends JDialog {
             }
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                "There were no updates found",
-                ConfirmDialog.ConfirmDialogType.NONE,
-                ConfirmDialog.DO_NOTHING_ACTION
+                "There were no updates found"
             );
 
             confirmDialog.packCenterAndShow(parent);
