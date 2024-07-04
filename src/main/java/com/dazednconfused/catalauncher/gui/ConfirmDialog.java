@@ -21,6 +21,8 @@ import org.apache.batik.swing.JSVGCanvas;
 
 public class ConfirmDialog extends JDialog {
 
+    public static final Consumer<Boolean> DO_NOTHING_ACTION = bool -> { }; // does nothing - represents an empty action
+
     private static final String ERROR_ICON = extractIconFrom(ICONS_PATH + "/" + "errorDialog.svg");
     private static final String INFO_ICON = extractIconFrom(ICONS_PATH + "/" + "informationDialog.svg");
     private static final String WARN_ICON = extractIconFrom(ICONS_PATH + "/" + "warningDialog.svg");
@@ -76,6 +78,12 @@ public class ConfirmDialog extends JDialog {
 
         // call onCancel() on ESCAPE ---
         contentPane.registerKeyboardAction(e -> onCancel(doOnResult), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        // if defined action is DO_NOTHING_ACTION, then the OK/Cancel buttons do virtually the same thing: nothing
+        // hide the OK button from view, there is no need for redundancy
+        // also, make the Cancel feel like an 'OK' button from a user's perspective
+        buttonOK.setVisible(false);
+        buttonCancel.setText("OK");
     }
 
     /**
