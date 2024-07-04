@@ -1,6 +1,8 @@
 name: Run Commitlint on PR
+
 on:
   pull_request:
+
 jobs:
   run-commitlint-on-pr:
     runs-on: ubuntu-latest

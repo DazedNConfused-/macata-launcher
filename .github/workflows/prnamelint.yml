@@ -1,13 +1,21 @@
-name: pr-name-linter
+name: Run Commitlint on PR Title
+
 on:
   pull_request:
-    types: ['opened', 'edited', 'reopened', 'synchronize']
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Dependencies
-        run: npm install @commitlint/config-conventional
-      - uses: cognitedata/lint-pr-title-action@v0.2.0
+      - name: 🔖Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 📝Validate PR title with commitlint
+        uses: kevintyj/prlint@v2
+        # Optional (with default values)
+        with:
+          download-dependencies: ignore
+          body: false
+          timeout: 20000
