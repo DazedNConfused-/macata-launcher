@@ -38,6 +38,24 @@ public class CDDALauncherManager {
     }
 
     /**
+     * Used to refresh GUI after game exits.
+     * <br/><br/>
+     * Creates a new thread to monitor the CDDA application after it's been run, and waits for it to exit. When it does,
+     * it executes a Runnable object (in this case, it is passed {@code MainWindow#refreshGuiElements})
+     * */
+    public static void monitorCddaProcess(Process process, Runnable onExit) {
+        new Thread(() -> {
+            try {
+                int exitCode = process.waitFor();
+                LOGGER.info("CDDA process exited with code {}", exitCode);
+                onExit.run();
+            } catch (InterruptedException e) {
+                LOGGER.error("Interrupted while waiting for CDDA process to exit", e);
+            }
+        }).start();
+    }
+
+    /**
      * Loads a customized {@code cataclysm-tiles} wrapper launcher, closely resembling the one the official {@code Cataclysm.app}
      * comes bundled with, but with the distinct difference that this one allows arguments to be passed to the main binary (which
      * is something that can normally be done, but not from macOS' ".app" application).

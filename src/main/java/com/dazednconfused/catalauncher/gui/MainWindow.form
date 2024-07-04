@@ -16,7 +16,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <tabbedpane id="276d4">
+          <tabbedpane id="276d4" binding="tabbedPane">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                 <minimum-size width="800" height="400"/>
@@ -244,9 +244,11 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="dd00a" class="javax.swing.JTable" binding="saveBackupTable">
+                      <component id="dd00a" class="javax.swing.JTable" binding="saveBackupsTable">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <enabled value="true"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
@@ -269,7 +271,9 @@
                     <children>
                       <component id="38613" class="javax.swing.JTable" binding="soundpacksTable">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <enabled value="true"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>

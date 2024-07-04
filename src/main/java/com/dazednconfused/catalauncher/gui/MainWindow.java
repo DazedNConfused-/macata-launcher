@@ -7,8 +7,10 @@ import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_USER_DIR;
 
 import com.dazednconfused.catalauncher.backup.SaveManager;
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
+import com.dazednconfused.catalauncher.helper.FileExplorerManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
+import com.dazednconfused.catalauncher.helper.sysinfo.SystemInfoManager;
 import com.dazednconfused.catalauncher.launcher.CDDALauncherManager;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -18,12 +20,16 @@ import io.vavr.control.Try;
 
 import java.awt.Component;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,7 +41,9 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
@@ -58,8 +66,14 @@ public class MainWindow {
     private static final String[] CUSTOM_SAVE_DIR_ARGS = { "--savedir", CUSTOM_SAVE_PATH };
     private static final String[] CUSTOM_USER_DIR_ARGS = { "--userdir", CUSTOM_USER_DIR };
 
+    /**
+     * The array of all {@link Runnable}s to be executed on invocation of {@link #refreshGuiElements()}.
+     * */
+    private final Runnable[] guiRefreshingRunnables;
+
     private JPanel mainPanel;
     private JProgressBar globalProgressBar; // global between all tabs
+    private JTabbedPane tabbedPane;
 
     // LAUNCHER TAB ---
     private JFormattedTextField cddaExecutableFTextField;
@@ -68,7 +82,7 @@ public class MainWindow {
     private JButton runLatestWorldButton;
 
     // SAVE BACKUPS TAB ---
-    private JTable saveBackupTable;
+    private JTable saveBackupsTable;
     private JButton backupNowButton;
     private JButton backupDeleteButton;
     private JButton backupRestoreButton;
@@ -83,6 +97,10 @@ public class MainWindow {
      * {@link MainWindow}'s main entrypoint.
      * */
     public static void main(String[] args) {
+        LogLevelManager.changeGlobalLogLevelTo(ConfigurationManager.getInstance().isDebug() ? Level.TRACE : Level.INFO);
+
+        SystemInfoManager.logSystemInformation(Level.DEBUG);
+
         LOGGER.info(
                 "{} - Version {} - Build {} {}",
                 APP_NAME,
@@ -92,8 +110,6 @@ public class MainWindow {
         );
 
         LOGGER.debug("Initializing main window [{}]...", APP_NAME);
-
-        LogLevelManager.changeGlobalLogLevelTo(ConfigurationManager.getInstance().isDebug() ? Level.TRACE : Level.INFO);
 
         initializeLookAndFeel();
 
@@ -114,8 +130,49 @@ public class MainWindow {
      * */
     public MainWindow() {
 
-        // SETUP ALL GUI ELEMENTS ---
+        // INITIALIZE ALL GUI ELEMENTS ---
+        this.guiRefreshingRunnables = new Runnable[] {
+                this.setupTabbedPane(),
+                this.setupMainExecutableGui(),
+                this.setupSaveBackupsGui(),
+                this.setupSoundpacksGui()
+        };
+
         this.refreshGuiElements();
+
+        new Thread(this::checkForUpdates).start(); // check for updates on a background thread, to not slow down application's startup
+    }
+
+    /**
+     * Setups all GUI elements related to the tabbed pane management.
+     * */
+    private Runnable setupTabbedPane() {
+
+        // TABBED PANE LISTENER ---
+        this.tabbedPane.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                LOGGER.trace("Tabbed pane - key pressed [{}]", e.getKeyCode());
+                super.keyTyped(e);
+
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    LOGGER.trace("Down arrow pressed. Shifting focus to underlying panel, if possible...");
+
+                    saveBackupsTable.requestFocusInWindow();
+                    soundpacksTable.requestFocusInWindow();
+                }
+            }
+        });
+
+        return () -> { }; // no GUI-refreshing action necessary for tabbed pane
+    }
+
+    /**
+     * Setups all GUI elements related to the main executable management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
+     * */
+    private Runnable setupMainExecutableGui() {
 
         // GLOBAL PROGRESS BAR LISTENER ---
         this.globalProgressBar.addChangeListener(e -> {
@@ -137,11 +194,10 @@ public class MainWindow {
 
             String[] launcherArgs = ArrayUtils.addAll(CUSTOM_SAVE_DIR_ARGS, CUSTOM_USER_DIR_ARGS);
 
-            CDDALauncherManager.executeCddaApplication(
+            Process cddaProcess = CDDALauncherManager.executeCddaApplication(
                     ConfigurationManager.getInstance().getCddaPath(), launcherArgs
             );
-
-            this.refreshGuiElements();
+            CDDALauncherManager.monitorCddaProcess(cddaProcess, this::refreshGuiElements);
         });
 
         // RUN LATEST WORLD BUTTON LISTENER ---
@@ -153,11 +209,10 @@ public class MainWindow {
                     ArrayUtils.addAll(CUSTOM_SAVE_DIR_ARGS, CUSTOM_USER_DIR_ARGS), lastWorldArgs
             );
 
-            CDDALauncherManager.executeCddaApplication(
+            Process cddaProcess = CDDALauncherManager.executeCddaApplication(
                     ConfigurationManager.getInstance().getCddaPath(), launcherArgs
             );
-
-            this.refreshGuiElements();
+            CDDALauncherManager.monitorCddaProcess(cddaProcess, this::refreshGuiElements);
         });
 
         // OPEN FINDER BUTTON LISTENER ---
@@ -169,9 +224,43 @@ public class MainWindow {
             this.refreshGuiElements();
         });
 
+        return () -> {
+            LOGGER.trace("Refreshing executable-management GUI elements...");
+
+            String cddaPath = ConfigurationManager.getInstance().getCddaPath();
+
+            boolean saveFilesExist = SaveManager.saveFilesExist();
+            boolean pathPointsToValidGameExecutable = cddaPath != null && !cddaPath.isBlank();
+
+            // SET EXECUTABLE TEXT FIELD WITH CDDA PATH FROM CONFIG ---
+            // DETERMINE IF RUN BUTTON SHOULD BE ENABLED ---
+            if (pathPointsToValidGameExecutable) {
+                this.cddaExecutableFTextField.setText(cddaPath);
+                this.runButton.setEnabled(true);
+            } else {
+                this.cddaExecutableFTextField.setText(null);
+                this.runButton.setEnabled(false);
+            }
+
+            // DETERMINE IF RUN LATEST WORLD BUTTON SHOULD BE ENABLED ---
+            if (pathPointsToValidGameExecutable && saveFilesExist && SaveManager.getLatestSave().isPresent()) {
+                this.runLatestWorldButton.setEnabled(true);
+            } else {
+                this.runLatestWorldButton.setEnabled(false);
+            }
+        };
+    }
+
+    /**
+     * Setups all GUI elements related to save backup management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
+     * */
+    private Runnable setupSaveBackupsGui() {
+
         // BACKUP NOW BUTTON LISTENER ---
         this.backupNowButton.addActionListener(e -> {
-            LOGGER.trace("Backup button clicked");
+            LOGGER.trace("Save backup button clicked");
 
             // enable backup progressbar
             this.globalProgressBar.setEnabled(true);
@@ -183,11 +272,12 @@ public class MainWindow {
         });
 
         // BACKUP RESTORE BUTTON LISTENER ---
-        backupRestoreButton.addActionListener(e -> {
-            LOGGER.trace("Backup restore button clicked");
+        this.backupRestoreButton.setMnemonic(KeyEvent.VK_R);
+        this.backupRestoreButton.addActionListener(e -> {
+            LOGGER.trace("Save backup restore button clicked");
 
-            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 0);
-            LOGGER.trace("Backup currently on selection: [{}]", selectedBackup);
+            File selectedBackup = (File) this.saveBackupsTable.getValueAt(this.saveBackupsTable.getSelectedRow(), 1);
+            LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
                 String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
@@ -216,11 +306,12 @@ public class MainWindow {
         });
 
         // BACKUP DELETE BUTTON LISTENER ---
+        this.backupDeleteButton.setMnemonic(KeyEvent.VK_D);
         this.backupDeleteButton.addActionListener(e -> {
             LOGGER.trace("Delete backup button clicked");
 
-            File selectedBackup = (File) this.saveBackupTable.getValueAt(this.saveBackupTable.getSelectedRow(), 0);
-            LOGGER.trace("Backup currently on selection: [{}]", selectedBackup);
+            File selectedBackup = (File) this.saveBackupsTable.getValueAt(this.saveBackupsTable.getSelectedRow(), 1);
+            LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
                 String.format("Are you sure you want to delete the backup [%s]? This action is irreversible!", selectedBackup.getName()),
@@ -239,15 +330,118 @@ public class MainWindow {
             confirmDialog.packCenterAndShow(this.mainPanel);
         });
 
-        // BACKUP TABLE LISTENER ---
-        this.saveBackupTable.getSelectionModel().addListSelectionListener(event -> {
-            LOGGER.trace("Backup table row selected");
+        // BACKUP TABLE LISTENER(S) ---
+        this.saveBackupsTable.getSelectionModel().addListSelectionListener(event -> {
+            LOGGER.trace("Save backups table row selected");
 
-            if (saveBackupTable.getSelectedRow() > -1) {
+            if (saveBackupsTable.getSelectedRow() > -1) {
                 this.backupDeleteButton.setEnabled(true);
                 this.backupRestoreButton.setEnabled(true);
             }
         });
+
+        BiConsumer<MouseEvent, JTable> onSaveBackupsTableRightClickEvent = (e, table) -> {
+            LOGGER.trace("Save backups table clicked");
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
+            }
+
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0) {
+                return;
+            }
+
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+                File targetFile = ((File) table.getValueAt(table.getSelectedRow(), 1));
+                LOGGER.trace("File under selection: [{}]", targetFile);
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open in file explorer");
+                openInFinder.addActionListener(e1 -> FileExplorerManager.openFileInFileExplorer(targetFile, true));
+                popup.add(openInFinder);
+
+                JMenuItem renameTo = new JMenuItem("Rename to...");
+                renameTo.addActionListener(e1 -> {
+                    LOGGER.trace("Rename backup menu clicked");
+
+                    StringInputDialog confirmDialog = new StringInputDialog(
+                        String.format("Rename backup [%s] to...", targetFile.getName()),
+                        newNameOptional -> {
+                            LOGGER.trace("User input dialog result: [{}]", newNameOptional);
+
+                            newNameOptional.ifPresent(newName ->
+                                SaveManager.renameBackup(targetFile, newName).toEither().peekLeft(error ->
+                                    ErrorDialog.showErrorDialog("Could not rename save backup!", error.getError()).packCenterAndShow(this.mainPanel)
+                                )
+                            );
+
+                            this.refreshGuiElements();
+                        }
+                    );
+
+                    confirmDialog.packCenterAndShow(this.mainPanel);
+                });
+                popup.add(renameTo);
+
+                JMenuItem deleteBackup = new JMenuItem("Delete...");
+                deleteBackup.addActionListener(e1 -> backupDeleteButton.doClick());
+                popup.add(deleteBackup);
+
+                JMenuItem restoreBackup = new JMenuItem("Restore...");
+                restoreBackup.addActionListener(e1 -> backupRestoreButton.doClick());
+                popup.add(restoreBackup);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
+
+        this.saveBackupsTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
+
+            public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
+                onSaveBackupsTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
+        });
+
+        return () -> {
+            LOGGER.trace("Refreshing save-backup-management GUI elements...");
+
+            boolean saveFilesExist = SaveManager.saveFilesExist();
+
+            // DETERMINE IF BACKUP NOW BUTTON SHOULD BE ENABLED ---
+            if (saveFilesExist) {
+                this.backupNowButton.setEnabled(true);
+            } else {
+                this.backupNowButton.setEnabled(false);
+            }
+
+            // SET SAVE BACKUPS TABLE ---
+            this.refreshSaveBackupsTable();
+
+            // DETERMINE IF BACKUP RESTORE BUTTON SHOULD BE DISABLED  ---
+            // DETERMINE IF BACKUP DELETE BUTTON SHOULD BE DISABLED ---
+            // (ie: if last backup was just deleted)
+            if (SaveManager.listAllBackups().size() == 0 || this.saveBackupsTable.getSelectedRow() == -1) {
+                this.backupDeleteButton.setEnabled(false);
+                this.backupRestoreButton.setEnabled(false);
+            }
+        };
+    }
+
+    /**
+     * Setups all GUI elements related to soundpack management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
+     * */
+    private Runnable setupSoundpacksGui() {
 
         // SOUNDPACK INSTALL BUTTON LISTENER ---
         this.installSoundpackButton.addActionListener(e -> {
@@ -302,7 +496,7 @@ public class MainWindow {
             confirmDialog.packCenterAndShow(this.mainPanel);
         });
 
-        // SOUNDPACKS TABLE LISTENER ---
+        // SOUNDPACKS TABLE LISTENER(S) ---
         this.soundpacksTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Soundpacks table row selected");
 
@@ -310,6 +504,64 @@ public class MainWindow {
                 this.uninstallSoundpackButton.setEnabled(true);
             }
         });
+
+        BiConsumer<MouseEvent, JTable> onSoundpacksTableRightClickEvent = (e, table) -> {
+            LOGGER.trace("Soundpacks table clicked");
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
+            }
+
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0) {
+                return;
+            }
+
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+                File targetFile = ((File) table.getValueAt(table.getSelectedRow(), 1));
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
+                openInFinder.addActionListener(e1 -> {
+                    FileExplorerManager.openFileInFileExplorer(targetFile, false);
+                });
+                popup.add(openInFinder);
+
+                JMenuItem uninstall = new JMenuItem("Uninstall...");
+                uninstall.addActionListener(e1 -> uninstallSoundpackButton.doClick());
+                popup.add(uninstall);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
+
+        this.soundpacksTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                onSoundpacksTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
+
+            public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
+                onSoundpacksTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
+        });
+
+        return () -> {
+            LOGGER.trace("Refreshing soundpack-management GUI elements...");
+
+            // SET SOUNDPACKS TABLE ---
+            this.refreshSoundpacksTable();
+
+            // DETERMINE IF SOUNDPACK DELETE BUTTON SHOULD BE DISABLED ---
+            // (ie: if last backup was just deleted)
+            if (SoundpackManager.listAllSoundpacks().size() == 0 || this.soundpacksTable.getSelectedRow() == -1) {
+                this.uninstallSoundpackButton.setEnabled(false);
+            }
+        };
     }
 
     /**
@@ -335,8 +587,7 @@ public class MainWindow {
         FlatDarkLaf.setup();
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarculaLaf"); // cascade look & feel to all children widgets from now on
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             throw new RuntimeException(e);
         }
     }
@@ -390,8 +641,8 @@ public class MainWindow {
         about.addActionListener(e -> {
             LOGGER.trace("About button clicked");
 
-            AboutDialog aboutDialog = new AboutDialog();
-            aboutDialog.packCenterAndShow(parent);
+            VersionManagerWindow versionManagerWindow = new VersionManagerWindow();
+            versionManagerWindow.packCenterAndShow(parent);
         });
         helpMenu.add(about);
 
@@ -402,57 +653,9 @@ public class MainWindow {
      * Refreshes all GUI elements according to diverse app statuses.
      */
     private void refreshGuiElements() {
-        LOGGER.trace("Refreshing all GUI elements...");
-
-        String cddaPath = ConfigurationManager.getInstance().getCddaPath();
-
-        boolean saveFilesExist = SaveManager.saveFilesExist();
-        boolean pathPointsToValidGameExecutable = cddaPath != null && !cddaPath.isBlank();
-
-        // SET EXECUTABLE TEXT FIELD WITH CDDA PATH FROM CONFIG ---
-        // DETERMINE IF RUN BUTTON SHOULD BE ENABLED ---
-        if (pathPointsToValidGameExecutable) {
-            this.cddaExecutableFTextField.setText(cddaPath);
-            this.runButton.setEnabled(true);
-        } else {
-            this.cddaExecutableFTextField.setText(null);
-            this.runButton.setEnabled(false);
+        for (Runnable guiRefreshRunnable : this.guiRefreshingRunnables) {
+            guiRefreshRunnable.run();
         }
-
-        // DETERMINE IF RUN LATEST WORLD BUTTON SHOULD BE ENABLED ---
-        if (pathPointsToValidGameExecutable && saveFilesExist) {
-            this.runLatestWorldButton.setEnabled(true);
-        } else {
-            this.runLatestWorldButton.setEnabled(false);
-        }
-
-        // DETERMINE IF BACKUP NOW BUTTON SHOULD BE ENABLED ---
-        if (saveFilesExist) {
-            this.backupNowButton.setEnabled(true);
-        } else {
-            this.backupNowButton.setEnabled(false);
-        }
-
-        // SET SAVE BACKUPS TABLE ---
-        this.refreshSaveBackupsTable();
-
-        // DETERMINE IF BACKUP RESTORE BUTTON SHOULD BE DISABLED  ---
-        // DETERMINE IF BACKUP DELETE BUTTON SHOULD BE DISABLED ---
-        // (ie: if last backup was just deleted)
-        if (SaveManager.listAllBackups().size() == 0 || this.saveBackupTable.getSelectedRow() == -1) {
-            this.backupDeleteButton.setEnabled(false);
-            this.backupRestoreButton.setEnabled(false);
-        }
-
-        // SET SOUNDPACKS TABLE ---
-        this.refreshSoundpacksTable();
-
-        // DETERMINE IF SOUNDPACK DELETE BUTTON SHOULD BE DISABLED ---
-        // (ie: if last backup was just deleted)
-        if (SoundpackManager.listAllSoundpacks().size() == 0 || this.soundpacksTable.getSelectedRow() == -1) {
-            this.uninstallSoundpackButton.setEnabled(false);
-        }
-
     }
 
     /**
@@ -477,24 +680,30 @@ public class MainWindow {
     }
 
     /**
-     * Refreshes current {@link #saveBackupTable} with latest info coming from {@link SaveManager}.
+     * Refreshes current {@link #saveBackupsTable} with latest info coming from {@link SaveManager}.
      */
     private void refreshSaveBackupsTable() {
         LOGGER.trace("Refreshing save backups table...");
 
-        String[] columns = new String[]{"Backup", "Size", "Date"};
+        String[] columns = new String[]{"Name", "Path", "Size", "Date"};
 
         List<Object[]> values = new ArrayList<>();
         SaveManager.listAllBackups().stream().sorted(Comparator.comparing(File::lastModified).reversed()).forEach(backup ->
             values.add(new Object[]{
+                backup.getName(),
                 backup,
                 backup.length() / (1024 * 1024) + " MB",
                 new Date(backup.lastModified())
             })
         );
 
-        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns);
-        this.saveBackupTable.setModel(tableModel);
+        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        this.saveBackupsTable.setModel(tableModel);
     }
 
     /**
@@ -515,7 +724,21 @@ public class MainWindow {
                 })
         );
 
-        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns);
+        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         this.soundpacksTable.setModel(tableModel);
+    }
+
+    /**
+     * Checks for new software releases if the {@link ConfigurationManager} dictates said process should be carried out.
+     * */
+    private void checkForUpdates() {
+        if (ConfigurationManager.getInstance().isShouldLookForUpdates()) {
+            VersionManagerWindow.checkForUpdates(this.mainPanel, false);
+        }
     }
 }

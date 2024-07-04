@@ -17,6 +17,10 @@
 
 ---
 
+![GitHub](https://img.shields.io/github/license/DazedNConfused-/macata-launcher)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=master&label=master)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=develop&label=develop)
+
 ## Requirements
 
 MaCata requires Java 11 to run.
@@ -37,6 +41,7 @@ Just put the `macatalauncher.jar` in some folder of your choice and double click
   - No more having to move folders between `Cataclysm.app`s on each Experimental upgrade!
   - This shared data directory is located at `/<macata_launcher_folder>/userdir`
 - [x] Soundpack management
+- [x] Launcher autoupdater
 
 ### Planned
 
@@ -49,6 +54,10 @@ Just put the `macatalauncher.jar` in some folder of your choice and double click
 - [ ] Windows/Linux support
   - I want to focus mainly on macOS since there are already some excellent launchers for Windows and Linux already.
     - Having said that, given the current launcher architecture, I would like to think it wouldn't be terribly hard to support Linux and/or Windows. Just a couple of changes to the [launcher class](src/main/java/com/dazednconfused/catalauncher/launcher/CDDALauncherManager.java) maybe? PRs welcome!
+
+## Build
+
+Just run `mvn package` and a `macatalauncher-x.x.x.jar` binary will be built in the `target` directory.
 
 ## FAQ
 

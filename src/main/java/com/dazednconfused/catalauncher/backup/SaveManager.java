@@ -5,10 +5,13 @@ import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_TRASHED_SA
 import static com.dazednconfused.catalauncher.helper.Constants.LAUNCHER_ROOT_FOLDER;
 import static com.dazednconfused.catalauncher.helper.Constants.SAVE_BACKUP_PATH;
 
+import com.dazednconfused.catalauncher.helper.result.Result;
+
 import io.vavr.control.Try;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -87,6 +90,21 @@ public class SaveManager {
     }
 
     /**
+     * Renames given {@code toBeRenamed} backup.
+     *
+     * @return {@link Result#success(Object)} with the new renamed {@link File}, or {@link Result#failure(Throwable)} if there
+     *         was an error during the operation.
+     * */
+    public static Result<Throwable, File> renameBackup(File toBeRenamed, String newName) {
+        LOGGER.info("Renaming backup [{}] into [{}]...", toBeRenamed, newName);
+
+        File newFile = new File(toBeRenamed.getParentFile().getPath() + "/" + newName + ".zip");
+        return Try.of(() -> Files.move(toBeRenamed.toPath(), newFile.toPath())).map(Path::toFile).onFailure(
+            t -> LOGGER.error("There was an error while renaming save [{}] into [{}]", toBeRenamed, newFile, t)
+        ).map(Result::success).recover(Result::failure).get();
+    }
+
+    /**
      * Returns all save backups currently found in {@link com.dazednconfused.catalauncher.helper.Constants#SAVE_BACKUP_PATH}.
      * */
     public static List<File> listAllBackups() {
@@ -97,8 +115,31 @@ public class SaveManager {
     }
 
     /**
+     * If save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}, returns the last
+     * modified valid save file. Save file is valid if it has a .sav file in it.
+     * */
+    public static Optional<File> getLastModifiedValidSave() {
+        File savesFolder = new File(CUSTOM_SAVE_PATH);
+        if (!saveFilesExist()) {
+            return Optional.empty();
+        }
+        File[] saveDirs = savesFolder.listFiles(file -> file.isDirectory() && !file.getName().equals(".DS_Store"));
+        Arrays.sort(saveDirs, Comparator.comparingLong(File::lastModified).reversed());
+
+        for (File directory : saveDirs) {
+            File[] savFiles = directory.listFiles((dir, name) -> name.endsWith(".sav"));
+            if (savFiles != null && savFiles.length > 0) {
+                return Optional.of(directory);
+            }
+        }
+
+        return Optional.empty(); // No directory with .sav file found
+
+    }
+    /**
      * Determines whether save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}.
      * */
+
     public static boolean saveFilesExist() {
         File savesFolder = new File(CUSTOM_SAVE_PATH);
         return savesFolder.exists() && Arrays.stream(Objects.requireNonNull(savesFolder.listFiles())).anyMatch(file -> !file.getName().equals(".DS_Store"));
@@ -111,16 +152,11 @@ public class SaveManager {
      * */
     public static Optional<File> getLatestSave() {
 
-        if (!saveFilesExist()) {
+        if (!saveFilesExist() || (getLastModifiedValidSave().orElse(null) == null)) {
             LOGGER.debug("No saves found. No latest save can be retrieved.");
             return Optional.empty();
         }
-
-        File savesFolder = new File(CUSTOM_SAVE_PATH);
-
-        return Arrays.stream(Objects.requireNonNull(savesFolder.listFiles()))
-                .filter(file -> !file.getName().equals(".DS_Store"))
-                .max(Comparator.comparingLong(File::lastModified));
+        return getLastModifiedValidSave();
     }
 
     /**
