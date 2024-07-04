@@ -29,6 +29,16 @@ MaCata requires Java 11 to run.
 
 Just put the `macatalauncher.jar` in some folder of your choice and double click!
 
+## Build
+
+Just run `mvn package` and a `macatalauncher-x.x.x.jar` binary will be built in the `target` directory.
+
+## Development
+
+Before making changes to the codebase, installing `husky` is encouraged: https://typicode.github.io/husky/get-started.html
+
+While not mandatory, if commits are not properly formatted, they may get rejected by GitHub's `commitlint` action.
+
 ## Features
 
 ### Current
@@ -54,10 +64,6 @@ Just put the `macatalauncher.jar` in some folder of your choice and double click
 - [ ] Windows/Linux support
   - I want to focus mainly on macOS since there are already some excellent launchers for Windows and Linux already.
     - Having said that, given the current launcher architecture, I would like to think it wouldn't be terribly hard to support Linux and/or Windows. Just a couple of changes to the [launcher class](src/main/java/com/dazednconfused/catalauncher/launcher/CDDALauncherManager.java) maybe? PRs welcome!
-
-## Build
-
-Just run `mvn package` and a `macatalauncher-x.x.x.jar` binary will be built in the `target` directory.
 
 ## FAQ
 
