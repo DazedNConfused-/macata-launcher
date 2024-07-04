@@ -44,3 +44,10 @@ backups
 trashed
 userdir
 mods
+
+### Husky / CommitLint ###
+node_modules
+package-lock.json
+package.json
+.husky
+yarn.lock
