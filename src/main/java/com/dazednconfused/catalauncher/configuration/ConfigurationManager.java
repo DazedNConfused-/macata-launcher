@@ -24,7 +24,6 @@ public class ConfigurationManager {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final Object lock = new Object(); // thread-safety singleton lock
     private static ConfigurationManager instance;
 
     private final Configuration configuration;
