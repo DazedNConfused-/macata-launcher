@@ -8,14 +8,17 @@ module.exports = {
     },
     rules: {
         'type-enum': [2, 'always', [
+            'build',
+            'chore',
+            'ci',
+            'docs',
             'feat',
             'fix',
-            'chore',
-            'refactor',
-            'ci',
-            'test',
-            'revert',
             'perf',
+            'refactor',
+            'revert',
+            'style',
+            'test',
             'wip'
         ] ],
         'header-max-length': [2, 'always', 100],
