@@ -9,6 +9,7 @@ public class Configuration {
     private String cddaPath;
     private boolean backupOnExit;
     private boolean debug;
+    private boolean shouldLookForUpdates;
 
     public Configuration() {
     }
@@ -35,6 +36,14 @@ public class Configuration {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public boolean isShouldLookForUpdates() {
+        return shouldLookForUpdates;
+    }
+
+    public void setShouldLookForUpdates(boolean shouldLookForUpdates) {
+        this.shouldLookForUpdates = shouldLookForUpdates;
     }
 
     @Override

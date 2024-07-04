@@ -21,6 +21,8 @@ import org.apache.batik.swing.JSVGCanvas;
 
 public class ConfirmDialog extends JDialog {
 
+    public static final Consumer<Boolean> DO_NOTHING_ACTION = bool -> { }; // does nothing - represents an empty action
+
     private static final String ERROR_ICON = extractIconFrom(ICONS_PATH + "/" + "errorDialog.svg");
     private static final String INFO_ICON = extractIconFrom(ICONS_PATH + "/" + "informationDialog.svg");
     private static final String WARN_ICON = extractIconFrom(ICONS_PATH + "/" + "warningDialog.svg");
@@ -32,13 +34,30 @@ public class ConfirmDialog extends JDialog {
     private JSVGCanvas iconSvg;
 
     /**
-     * Constructor.
+     * Shows a confirmation dialog, which is basically a {@link JDialog} composed of a {@link String} {@code message}, a {@link ConfirmDialogType}
+     * which gives visual feedback of the severity of the message by means of different icons, and a {@link Consumer} action
+     * to be triggered upon confirmation or cancellation of the dialog.
+     *
+     * @param message The message to show in the dialog.
+     * @param dialogType The type of dialog, representing its severity. Applicable types are {@link ConfirmDialogType#INFO},
+     *                   {@link ConfirmDialogType#WARNING} and {@link ConfirmDialogType#ERROR}. {@link ConfirmDialogType#NONE}
+     *                   is equivalent to using {@link ConfirmDialogType#INFO}.
+     * @param doOnResult The action to be executed upon <i>confirmation</i> (user clicks the {@code OK} button) or <i>cancellation</i>
+     *                   (user clicks the {@code Cancel} button and/or exits the {@link JDialog} by simply closing it).
+     *                   <ul>
+     *                      <li>A <i>confirmation</i> will pass a {@code true} to the provided consumer.</li>
+     *                      <li>A <i>cancellation</i> will pass a {@code false} to the provided consumer.</li>
+     *                   </ul>
+     *                   If <i>confirmation</i> or <i>cancellation</i> is irrelevant for the desired {@link ConfirmDialog}
+     *                   (ie: we just want to show a non-actionable message to the user), then a {@link #DO_NOTHING_ACTION}
+     *                   may be passed to this parameter. This will make the resulting {@link JDialog} to only have an {@code OK}
+     *                   button that will just close the dialog and nothing else.
      * */
     public ConfirmDialog(String message, ConfirmDialogType dialogType, Consumer<Boolean> doOnResult) {
 
         // initialize dialog ---
         setContentPane(contentPane);
-        setModal(true);
+        setModalityType(ModalityType.APPLICATION_MODAL);
 
         // set default button ---
         getRootPane().setDefaultButton(buttonCancel);
@@ -76,6 +95,16 @@ public class ConfirmDialog extends JDialog {
 
         // call onCancel() on ESCAPE ---
         contentPane.registerKeyboardAction(e -> onCancel(doOnResult), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        // if defined action is DO_NOTHING_ACTION, then the OK/Cancel buttons do virtually the same thing: nothing
+        // hide the OK button from view, there is no need for redundancy
+        // also, make the Cancel feel like an 'OK' button from a user's perspective
+        if (doOnResult == DO_NOTHING_ACTION) {
+            buttonOK.setVisible(false);
+            buttonCancel.setText("OK");
+        }
+
+        this.spawnOnTopOfParentComponent(); // without this, dialog gets created _behind_ parent and doesn't come on top until Swing redraws, for some reason
     }
 
     /**
@@ -88,11 +117,31 @@ public class ConfirmDialog extends JDialog {
         this.setVisible(true);
     }
 
+    /**
+     * Forces this {@link JDialog} to always spawn on top of its parent.
+     * */
+    private void spawnOnTopOfParentComponent() {
+        final JDialog thisDialog = this;
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                thisDialog.toFront();
+                thisDialog.requestFocus();
+            }
+        });
+    }
+
+    /**
+     * Represents the action to be taken when the {@code OK} button is clicked.
+     * */
     private void onOK(Consumer<Boolean> doOnResult) {
         doOnResult.accept(true);
         dispose();
     }
 
+    /**
+     * Represents the action to be taken when the {@code Cancel} button is clicked.
+     * */
     private void onCancel(Consumer<Boolean> doOnResult) {
         doOnResult.accept(false);
         dispose();

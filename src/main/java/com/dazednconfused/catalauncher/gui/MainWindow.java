@@ -139,6 +139,8 @@ public class MainWindow {
         };
 
         this.refreshGuiElements();
+
+        new Thread(this::checkForUpdates).start(); // check for updates on a background thread, to not slow down application's startup
     }
 
     /**
@@ -639,8 +641,8 @@ public class MainWindow {
         about.addActionListener(e -> {
             LOGGER.trace("About button clicked");
 
-            AboutDialog aboutDialog = new AboutDialog();
-            aboutDialog.packCenterAndShow(parent);
+            VersionManagerWindow versionManagerWindow = new VersionManagerWindow();
+            versionManagerWindow.packCenterAndShow(parent);
         });
         helpMenu.add(about);
 
@@ -729,5 +731,14 @@ public class MainWindow {
             }
         };
         this.soundpacksTable.setModel(tableModel);
+    }
+
+    /**
+     * Checks for new software releases if the {@link ConfigurationManager} dictates said process should be carried out.
+     * */
+    private void checkForUpdates() {
+        if (ConfigurationManager.getInstance().isShouldLookForUpdates()) {
+            VersionManagerWindow.checkForUpdates(this.mainPanel, false);
+        }
     }
 }
