@@ -1,4 +1,4 @@
-name: Java Build & Test
+name: Java build & test
 
 on: [push]
 
