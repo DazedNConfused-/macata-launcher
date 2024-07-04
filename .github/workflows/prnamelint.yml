@@ -1,21 +1,25 @@
-name: Run Commitlint on PR Title
+name: Run Commitlint on PR's title
 
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
 
+
 jobs:
-  build:
+  run-commitlint-on-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔖Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: 📝Validate PR title with commitlint
-        uses: kevintyj/prlint@v2
-        # Optional (with default values)
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          download-dependencies: ignore
-          body: false
-          timeout: 20000
+          node-version: '16'
+
+      - name: Install Commitlint
+        run: npm install --save-dev @commitlint/{cli,config-conventional}
+
+      - name: Validate PR title using Commitlint
+        run: echo ${{ github.event.pull_request.title }} | npx commitlint
