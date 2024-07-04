@@ -1,24 +1,13 @@
-name: Commitlint
+name: Lint Commit Messages
+on: [pull_request]
 
-on:
-  pull_request:
-    types: [opened, edited, synchronize]
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   commitlint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install Commitlint
-        run: npm install --save-dev @commitlint/{cli,config-conventional}
-
-      - name: Run Commitlint
-        run: npx commitlint --from=$GITHUB_BASE_REF --to=$GITHUB_HEAD_REF
+      - uses: actions/checkout@v3
+      - uses: wagoid/commitlint-github-action@v6
