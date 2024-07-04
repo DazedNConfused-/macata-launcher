@@ -32,13 +32,9 @@ public class ConfigurationManager {
     /**
      * Singleton.
      * */
-    public static ConfigurationManager getInstance() {
+    public static synchronized ConfigurationManager getInstance() {
         if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new ConfigurationManager();
-                }
-            }
+            instance = new ConfigurationManager();
         }
         return instance;
     }
