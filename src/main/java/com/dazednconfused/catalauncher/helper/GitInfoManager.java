@@ -26,7 +26,6 @@ public class GitInfoManager {
     private static final String GIT_PROPERTIES_BUILD_TIME_FILE = "git.properties";
 
     private static GitInfoManager instance;
-    private static final Object lock = new Object(); //thread-safety singleton lock
 
     @Nullable
     private final Properties properties;
@@ -34,13 +33,9 @@ public class GitInfoManager {
     /**
      * Singleton.
      * */
-    public static GitInfoManager getInstance() {
+    public static synchronized GitInfoManager getInstance() {
         if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new GitInfoManager();
-                }
-            }
+            instance = new GitInfoManager();
         }
         return instance;
     }

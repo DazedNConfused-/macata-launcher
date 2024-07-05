@@ -24,7 +24,6 @@ public class ConfigurationManager {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final Object lock = new Object(); // thread-safety singleton lock
     private static ConfigurationManager instance;
 
     private final Configuration configuration;
@@ -32,13 +31,9 @@ public class ConfigurationManager {
     /**
      * Singleton.
      * */
-    public static ConfigurationManager getInstance() {
+    public static synchronized ConfigurationManager getInstance() {
         if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new ConfigurationManager();
-                }
-            }
+            instance = new ConfigurationManager();
         }
         return instance;
     }

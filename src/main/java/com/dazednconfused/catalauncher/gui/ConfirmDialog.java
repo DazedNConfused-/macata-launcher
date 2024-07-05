@@ -34,6 +34,19 @@ public class ConfirmDialog extends JDialog {
     private JSVGCanvas iconSvg;
 
     /**
+     * Same as {@link #ConfirmDialog(String, ConfirmDialogType, Consumer)}, with the following defaults:
+     * <ul>
+     *     <li>{@code dialogType} is {@link ConfirmDialogType#NONE}.</li>
+     *     <li>{@code doOnResult} is {@link #DO_NOTHING_ACTION}.</li>
+     * </ul>
+     *
+     * @param message The message to show in the dialog.
+     * */
+    public ConfirmDialog(String message) {
+        this(message, ConfirmDialogType.NONE, DO_NOTHING_ACTION);
+    }
+
+    /**
      * Shows a confirmation dialog, which is basically a {@link JDialog} composed of a {@link String} {@code message}, a {@link ConfirmDialogType}
      * which gives visual feedback of the severity of the message by means of different icons, and a {@link Consumer} action
      * to be triggered upon confirmation or cancellation of the dialog.

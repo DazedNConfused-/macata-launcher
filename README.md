@@ -21,6 +21,18 @@
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=master&label=master)
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=develop&label=develop)
 
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=bugs)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=code_smells)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=coverage)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=ncloc)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=alert_status)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=security_rating)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=sqale_index)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+
 ## Requirements
 
 MaCata requires Java 11 to run.
@@ -28,6 +40,16 @@ MaCata requires Java 11 to run.
 ## Installation
 
 Just put the `macatalauncher.jar` in some folder of your choice and double click!
+
+## Build
+
+Just run `mvn package` and a `macatalauncher-x.x.x.jar` binary will be built in the `target` directory.
+
+## Development
+
+Before making changes to the codebase, installing `husky` is encouraged: https://typicode.github.io/husky/get-started.html
+
+While not mandatory, if commits are not properly formatted, they may get rejected by GitHub's `commitlint` action.
 
 ## Features
 
@@ -54,10 +76,6 @@ Just put the `macatalauncher.jar` in some folder of your choice and double click
 - [ ] Windows/Linux support
   - I want to focus mainly on macOS since there are already some excellent launchers for Windows and Linux already.
     - Having said that, given the current launcher architecture, I would like to think it wouldn't be terribly hard to support Linux and/or Windows. Just a couple of changes to the [launcher class](src/main/java/com/dazednconfused/catalauncher/launcher/CDDALauncherManager.java) maybe? PRs welcome!
-
-## Build
-
-Just run `mvn package` and a `macatalauncher-x.x.x.jar` binary will be built in the `target` directory.
 
 ## FAQ
 
