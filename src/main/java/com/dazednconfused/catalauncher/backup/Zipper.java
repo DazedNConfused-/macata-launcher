@@ -61,7 +61,9 @@ public class Zipper {
                 LOGGER.error("Compression task [{}] to zip [{}] cancelled", sourceDir, outputFile);
             }
 
-            onPercentDoneCallback.accept(100); // whatever the result, set operation as "100% completed"
+            if (onPercentDoneCallback != null) {
+                onPercentDoneCallback.accept(100); // whatever the result, set operation as "100% completed"
+            }
 
         } catch (InterruptedException | IOException e) {
             LOGGER.error("There was an error while compressing folder [{}] into [{}]", sourceDir, outputFile, e);
@@ -108,7 +110,9 @@ public class Zipper {
                 LOGGER.error("Decompression task [{}] to [{}] cancelled", sourceFile, destinationPath);
             }
 
-            onPercentDoneCallback.accept(100); // whatever the result, set operation as "100% completed"
+            if (onPercentDoneCallback != null) {
+                onPercentDoneCallback.accept(100); // whatever the result, set operation as "100% completed"
+            }
 
         } catch (InterruptedException | IOException e) {
             LOGGER.error("There was an error while decompressing zip [{}] into [{}]", sourceFile, destinationPath, e);
