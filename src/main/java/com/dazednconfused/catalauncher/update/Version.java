@@ -1,11 +1,13 @@
 package com.dazednconfused.catalauncher.update;
 
+import java.util.Objects;
+
 /**
  * @see <a href="https://stackoverflow.com/a/11024200">https://stackoverflow.com/a/11024200</a>
  * */
 public class Version implements Comparable<Version> {
 
-    private String version;
+    private final String version;
 
     public final String get() {
         return this.version;
@@ -63,6 +65,11 @@ public class Version implements Comparable<Version> {
             return false;
         }
         return this.compareTo((Version) that) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(version);
     }
 
     @Override
