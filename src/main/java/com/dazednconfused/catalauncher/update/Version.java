@@ -7,29 +7,29 @@ import java.util.Objects;
  * */
 public class Version implements Comparable<Version> {
 
-    private final String version;
+    private final String semver;
 
     public final String get() {
-        return this.version;
+        return this.semver;
     }
 
     /**
      * Constructor.
      * */
-    public Version(String version) {
-        if (version == null) {
+    public Version(String semver) {
+        if (semver == null) {
             throw new IllegalArgumentException("Version cannot be null");
         }
-        if (!version.matches("v?[0-9]+(\\.[0-9]+)*")) {
+        if (!semver.matches("v?[0-9]+(\\.[0-9]+)*")) {
             throw new IllegalArgumentException("Invalid version format");
 
         }
-        if (version.startsWith("v")) {
+        if (semver.startsWith("v")) {
             // prune any potential version tags starting with a 'v'
-            version = version.substring(1);
+            semver = semver.substring(1);
         }
 
-        this.version = version;
+        this.semver = semver;
     }
 
     @Override
@@ -69,11 +69,11 @@ public class Version implements Comparable<Version> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(version);
+        return Objects.hashCode(semver);
     }
 
     @Override
     public String toString() {
-        return this.version;
+        return this.semver;
     }
 }
