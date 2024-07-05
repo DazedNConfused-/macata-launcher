@@ -51,6 +51,8 @@ public class CDDALauncherManager {
                 onExit.run();
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted while waiting for CDDA process to exit", e);
+                // no further cleanup needed - just go ahead and proceed with the interruption
+                Thread.currentThread().interrupt();
             }
         }).start();
     }
