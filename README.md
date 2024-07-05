@@ -21,6 +21,18 @@
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=master&label=master)
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/DazedNConfused-/macata-launcher/build.yml?branch=develop&label=develop)
 
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=bugs)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=code_smells)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=coverage)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=ncloc)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=alert_status)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=security_rating)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=sqale_index)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=dazednconfused_macata-launcher&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=dazednconfused_macata-launcher)
+
 ## Requirements
 
 MaCata requires Java 11 to run.
