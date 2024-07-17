@@ -3,6 +3,7 @@ package com.dazednconfused.catalauncher.database.mod;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.dazednconfused.catalauncher.database.BaseDAO;
+import com.dazednconfused.catalauncher.database.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import java.util.List;
@@ -14,13 +15,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ModfilesDAOTest {
+public class ModfileDAOTest {
 
     private static BaseDAO<ModfileEntity> dao;
 
     @BeforeAll
     public static void setup() {
-        dao = new ModfilesH2DAOImpl();
+        dao = new ModfileH2DAOImpl();
     }
 
     @BeforeEach
@@ -30,12 +31,31 @@ public class ModfilesDAOTest {
 
     @AfterEach
     public void teardown() {
-        ((ModfilesH2DAOImpl) dao).wipe();
+        ((ModfileH2DAOImpl) dao).wipe();
     }
 
     @AfterAll
     public static void cleanup() {
-        ((ModfilesH2DAOImpl) dao).destroy();
+        ((ModfileH2DAOImpl) dao).destroy();
+    }
+
+    @Test
+    void initialize_table_success() {
+
+        // prepare mock data ---
+        ModDAO modDAO = new ModH2DAOImpl();
+        modDAO.initializeTable();
+
+        // pre-test assertions ---
+        boolean fkTableExists = ((H2Database) dao).doesTableExist(ModDAO.TABLE_NAME);
+        assertThat(fkTableExists).isTrue();
+
+        // execute test ---
+        dao.initializeTable();
+
+        // verify assertions ---
+        ((H2Database) dao).doesColumnExist(ModfileDAO.TABLE_NAME, "mod_id");
+
     }
 
     @Test

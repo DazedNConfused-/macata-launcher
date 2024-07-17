@@ -1,6 +1,5 @@
 package com.dazednconfused.catalauncher.database.mod;
 
-import com.dazednconfused.catalauncher.database.BaseDAO;
 import com.dazednconfused.catalauncher.database.DAOException;
 import com.dazednconfused.catalauncher.database.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
@@ -17,21 +16,17 @@ import org.h2.api.H2Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ModsH2DAOImpl extends H2Database implements BaseDAO<ModEntity> {
+public class ModH2DAOImpl extends H2Database implements ModDAO {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ModsH2DAOImpl.class);
+    public static final String MODS_TABLE_NAME = "mod";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModH2DAOImpl.class);
 
     private static final String DATABASE_FILE = "mods";
-    private static final String MODS_TABLE_NAME = "mod";
 
     @Override
     public String getDatabaseName() {
         return DATABASE_FILE;
-    }
-
-    @Override
-    public String getTableName() {
-        return MODS_TABLE_NAME;
     }
 
     /**

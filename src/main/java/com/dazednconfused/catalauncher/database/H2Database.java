@@ -8,6 +8,9 @@ import io.vavr.control.Try;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +37,42 @@ public abstract class H2Database {
             .getOrElseThrow(() -> new RuntimeException("Could not establish database connection to [" + getDatabaseName() + "]"))
             .getResult()
             .orElseThrow(() -> new RuntimeException("Expected database connection to [" + getDatabaseName() + "], but object was empty! Aborting operation"));
+    }
+
+    public boolean doesTableExist(String tableName) {
+        String sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?";
+
+        try (Connection conn = this.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, tableName.toUpperCase());
+            try (var rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("There was an error while checking if table [{}] exists in database [{}]", tableName, this.getDatabaseName(), e);
+        }
+
+        return false;
+    }
+
+    public boolean doesColumnExist(String tableName, String columnName) {
+        String sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?";
+
+        try (Connection conn = this.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, tableName.toUpperCase());
+            pstmt.setString(2, columnName.toUpperCase());
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("There was an error while checking if column [{}] exists within table [{}] in database [{}]", columnName, tableName, this.getDatabaseName(), e);
+
+        }
+        return false;
     }
 
     /**
