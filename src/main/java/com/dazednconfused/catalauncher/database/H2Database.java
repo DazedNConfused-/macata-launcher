@@ -36,30 +36,6 @@ public abstract class H2Database {
     }
 
     /**
-     * Completely wipes this database of any and all data.
-     *
-     * @apiNote Callers of this method are responsible for making sure any and all open {@link Connection}s are properly
-     *          disposed of before triggering the wipe.
-     *
-     * @implNote Equivalent to calling {@link #wipe(String)} with {@link #getDatabaseName()} as argument.
-     * */
-    public Result<Throwable, ?> wipe() {
-        return H2Database.wipe(getDatabaseName());
-    }
-
-    /**
-     * Completely destroys this database file.
-     *
-     * @apiNote Callers of this method are responsible for making sure any and all open {@link Connection}s are properly
-     *          disposed of before triggering the wipe.
-     *
-     * @implNote Equivalent to calling {@link #destroy(String)} with {@link #getDatabaseName()} as argument.
-     * */
-    public Result<Throwable, ?> destroy() {
-        return H2Database.destroy(getDatabaseName());
-    }
-
-    /**
      * Establishes a connection to the provided {@code database}.
      * */
     protected static Result<Throwable, Connection> openConnection(String database) {
@@ -76,6 +52,19 @@ public abstract class H2Database {
         )).onFailure(
             t -> LOGGER.error("There was an error while opening database file [{}]", database, t)
         ).map(Result::success).recover(Result::failure).get();
+    }
+
+
+    /**
+     * Completely wipes this database of any and all data.
+     *
+     * @apiNote Callers of this method are responsible for making sure any and all open {@link Connection}s are properly
+     *          disposed of before triggering the wipe.
+     *
+     * @implNote Equivalent to calling {@link #wipe(String)} with {@link #getDatabaseName()} as argument.
+     * */
+    public Result<Throwable, ?> wipe() {
+        return H2Database.wipe(getDatabaseName());
     }
 
     /**
@@ -98,6 +87,18 @@ public abstract class H2Database {
             Statement stmt = connection.createStatement();
             stmt.execute("DROP ALL OBJECTS");
         }).map(connection -> Result.success()).recover(Result::failure).get();
+    }
+
+    /**
+     * Completely destroys this database file.
+     *
+     * @apiNote Callers of this method are responsible for making sure any and all open {@link Connection}s are properly
+     *          disposed of before triggering the wipe.
+     *
+     * @implNote Equivalent to calling {@link #destroy(String)} with {@link #getDatabaseName()} as argument.
+     * */
+    public Result<Throwable, ?> destroy() {
+        return H2Database.destroy(getDatabaseName());
     }
 
     /**
