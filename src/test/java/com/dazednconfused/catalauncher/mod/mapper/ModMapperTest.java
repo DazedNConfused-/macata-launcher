@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-public class ModMapperTest {
+class ModMapperTest {
 
     @Test
     void to_dto_success() {

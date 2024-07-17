@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
-public class ModfileMapperTest {
+class ModfileMapperTest {
 
     @Test
     void to_dto_success() {

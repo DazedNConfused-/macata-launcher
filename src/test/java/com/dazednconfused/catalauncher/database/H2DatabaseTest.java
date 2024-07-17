@@ -14,7 +14,7 @@ import java.sql.Statement;
 
 import org.junit.jupiter.api.Test;
 
-public class H2DatabaseTest {
+class H2DatabaseTest {
 
     /**
      * Mock database used to test basic functionality of the {@link H2Database} interface.
