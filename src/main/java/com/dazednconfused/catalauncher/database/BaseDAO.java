@@ -5,8 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +95,65 @@ public interface BaseDAO<T extends BaseEntity> {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Retrieves all the {@link BaseEntity}(ies) with the supplied IDs.
+     *
+     * @apiNote This operation may not be performant at all with large datasets. Consider overriding it according to the
+     *          use-case.
+     * */
+    default List<T> findById(long... ids) throws DAOException {
+        LOGGER.debug("Finding Entities with IDs [{}]...", ids);
+
+        return Arrays.stream(ids).mapToObj(this::findById)
+            .map(opt -> opt.orElse(null))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all the {@link BaseEntity}(ies) managed by this DAO.
+     *
+     * @apiNote This operation may not be performant at all with large datasets.
+     * */
+    default List<T> findAll() throws DAOException {
+        LOGGER.debug("Finding all Entities for [{}]...", getTableName());
+
+        String sql = "SELECT * FROM " + getTableName();
+        try (Connection conn = this.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+            List<T> result = new ArrayList<>();
+
+            while (rs.next()) {
+                result.add(this.buildFromResultSet(rs));
+            }
+
+            return result;
+        } catch (SQLException e) {
+            LOGGER.error("An error occurred while retrieving entities for [{}]", getTableName(), e);
+            throw new DAOException(e);
+        }
+    }
+
+    /**
+     * Retrieves a {@code COUNT(*)} of all {@link BaseEntity}(ies) managed by this DAO.
+     * */
+    default long countAll() throws DAOException {
+        LOGGER.debug("Counting all Entities for [{}]...", getTableName());
+
+        String sql = "SELECT COUNT(*) FROM " + getTableName();
+        try (Connection conn = this.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.error("An error occurred while counting entities for [{}]", getTableName(), e);
+            throw new DAOException(e);
+        }
+
+        return 0;
     }
 
     /**
