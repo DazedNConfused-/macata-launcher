@@ -74,7 +74,7 @@ public interface BaseDAO<T extends BaseEntity> {
             LOGGER.error("An error occurred while deleting entity [{}]", t, e);
             throw new DAOException(e);
         }
-    };
+    }
 
     /**
      * Finds the given {@link BaseEntity} by ID.

@@ -10,11 +10,12 @@ import lombok.Data;
 @Builder
 public class ModDTO {
 
-    private long id;
+    private Long id;
     private String name;
     private String modinfo;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
     private List<ModfileDTO> modfiles;
+
 }

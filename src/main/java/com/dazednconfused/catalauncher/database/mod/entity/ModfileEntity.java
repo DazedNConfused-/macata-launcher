@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ModfileEntity extends BaseEntity {
 
+    private Long modId;
     private String path;
     private String hash;
 

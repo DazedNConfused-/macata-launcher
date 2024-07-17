@@ -12,18 +12,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 class H2DatabaseTest {
 
-    /**
-     * Mock database used to test basic functionality of the {@link H2Database} interface.
-     * */
-    private class TestDatabase extends H2Database {
-        @Override
-        public String getDatabaseName() {
-            return "test";
-        }
+    @AfterAll
+    public static void cleanup() {
+        H2Database.destroy(TestDatabase.MOCK_DATABASE_NAME);
     }
 
     @Test
@@ -262,5 +258,18 @@ class H2DatabaseTest {
 
         // cleanup ---
         db.wipe(); // this was individually tested in another unit test
+    }
+
+    /**
+     * Mock database used to test basic functionality of the {@link H2Database} interface.
+     * */
+    private static class TestDatabase extends H2Database {
+
+        public static String MOCK_DATABASE_NAME = "test";
+
+        @Override
+        public String getDatabaseName() {
+            return MOCK_DATABASE_NAME;
+        }
     }
 }

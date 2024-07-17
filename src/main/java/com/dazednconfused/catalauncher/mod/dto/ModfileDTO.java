@@ -9,7 +9,8 @@ import lombok.Data;
 @Builder
 public class ModfileDTO {
 
-    private long id;
+    private Long id;
+    private Long modId;
     private String path;
     private String hash;
     private LocalDateTime createdDate;

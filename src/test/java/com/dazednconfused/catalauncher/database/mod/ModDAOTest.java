@@ -8,16 +8,23 @@ import org.junit.jupiter.api.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ModDAOTest {
 
+    private static final UUID uuid = UUID.randomUUID();
     private static BaseDAO<ModEntity> dao;
 
     @BeforeAll
     public static void setup() {
-        dao = new ModH2DAOImpl();
+        dao = new ModH2DAOImpl(){
+            @Override
+            public String getDatabaseName() {
+                return super.getDatabaseName() + "_" + uuid;
+            }
+        };
     }
 
     @BeforeEach

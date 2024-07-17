@@ -21,7 +21,7 @@ class ModMapperTest {
 
         // prepare mock data ---
         ModEntity entity = ModEntity.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(new Timestamp(System.currentTimeMillis()))
             .updatedDate(new Timestamp(System.currentTimeMillis()))
@@ -29,7 +29,7 @@ class ModMapperTest {
             .build();
 
         ModDTO dto = ModDTO.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(entity.getCreatedDate().toLocalDateTime())
             .updatedDate(entity.getUpdatedDate().toLocalDateTime())
@@ -48,7 +48,7 @@ class ModMapperTest {
 
         // prepare mock data ---
         ModfileEntity childEntity1 = ModfileEntity.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(new Timestamp(System.currentTimeMillis()))
@@ -56,7 +56,7 @@ class ModMapperTest {
             .build();
 
         ModfileEntity childEntity2 = ModfileEntity.builder()
-            .id(2)
+            .id(2L)
             .path("testPath2")
             .hash("testHash2")
             .createdDate(new Timestamp(System.currentTimeMillis()))
@@ -64,7 +64,7 @@ class ModMapperTest {
             .build();
 
         ModfileEntity childEntity3 = ModfileEntity.builder()
-            .id(3)
+            .id(3L)
             .path("testPath3")
             .hash("testHash3")
             .createdDate(new Timestamp(System.currentTimeMillis()))
@@ -72,7 +72,7 @@ class ModMapperTest {
             .build();
 
         ModEntity entity = ModEntity.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(new Timestamp(System.currentTimeMillis()))
             .updatedDate(new Timestamp(System.currentTimeMillis()))
@@ -82,7 +82,7 @@ class ModMapperTest {
             .build();
 
         ModfileDTO childDto1 = ModfileDTO.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(childEntity1.getCreatedDate().toLocalDateTime())
@@ -90,7 +90,7 @@ class ModMapperTest {
             .build();
 
         ModfileDTO childDto2 = ModfileDTO.builder()
-            .id(2)
+            .id(2L)
             .path("testPath2")
             .hash("testHash2")
             .createdDate(childEntity2.getCreatedDate().toLocalDateTime())
@@ -98,7 +98,7 @@ class ModMapperTest {
             .build();
 
         ModfileDTO childDto3 = ModfileDTO.builder()
-            .id(3)
+            .id(3L)
             .path("testPath3")
             .hash("testHash3")
             .createdDate(childEntity3.getCreatedDate().toLocalDateTime())
@@ -106,7 +106,7 @@ class ModMapperTest {
             .build();
 
         ModDTO dto = ModDTO.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(entity.getCreatedDate().toLocalDateTime())
             .updatedDate(entity.getUpdatedDate().toLocalDateTime())
@@ -127,7 +127,7 @@ class ModMapperTest {
 
         // prepare mock data ---
         ModDTO dto = ModDTO.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
@@ -135,7 +135,7 @@ class ModMapperTest {
             .build();
 
         ModEntity entity = ModEntity.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(Timestamp.valueOf(dto.getCreatedDate()))
             .updatedDate(Timestamp.valueOf(dto.getUpdatedDate()))
@@ -154,7 +154,7 @@ class ModMapperTest {
 
         // prepare mock data ---
         ModfileDTO childDto1 = ModfileDTO.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(LocalDateTime.now())
@@ -162,7 +162,7 @@ class ModMapperTest {
             .build();
 
         ModfileDTO childDto2 = ModfileDTO.builder()
-            .id(2)
+            .id(2L)
             .path("testPath2")
             .hash("testHash2")
             .createdDate(LocalDateTime.now())
@@ -170,7 +170,7 @@ class ModMapperTest {
             .build();
 
         ModfileDTO childDto3 = ModfileDTO.builder()
-            .id(3)
+            .id(3L)
             .path("testPath3")
             .hash("testHash3")
             .createdDate(LocalDateTime.now())
@@ -178,7 +178,7 @@ class ModMapperTest {
             .build();
 
         ModDTO dto = ModDTO.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
@@ -188,7 +188,7 @@ class ModMapperTest {
             .build();
 
         ModfileEntity childEntity1 = ModfileEntity.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(Timestamp.valueOf(childDto1.getCreatedDate()))
@@ -196,7 +196,7 @@ class ModMapperTest {
             .build();
 
         ModfileEntity childEntity2 = ModfileEntity.builder()
-            .id(2)
+            .id(2L)
             .path("testPath2")
             .hash("testHash2")
             .createdDate(Timestamp.valueOf(childDto2.getCreatedDate()))
@@ -204,7 +204,7 @@ class ModMapperTest {
             .build();
 
         ModfileEntity childEntity3 = ModfileEntity.builder()
-            .id(3)
+            .id(3L)
             .path("testPath3")
             .hash("testHash3")
             .createdDate(Timestamp.valueOf(childDto3.getCreatedDate()))
@@ -212,7 +212,7 @@ class ModMapperTest {
             .build();
 
         ModEntity entity = ModEntity.builder()
-            .id(1)
+            .id(1L)
             .name("test")
             .createdDate(Timestamp.valueOf(dto.getCreatedDate()))
             .updatedDate(Timestamp.valueOf(dto.getUpdatedDate()))

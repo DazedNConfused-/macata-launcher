@@ -17,7 +17,7 @@ class ModfileMapperTest {
 
         // prepare mock data ---
         ModfileEntity entity = ModfileEntity.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(new Timestamp(System.currentTimeMillis()))
@@ -25,7 +25,7 @@ class ModfileMapperTest {
             .build();
 
         ModfileDTO dto = ModfileDTO.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(entity.getCreatedDate().toLocalDateTime())
@@ -44,7 +44,7 @@ class ModfileMapperTest {
 
         // prepare mock data ---
         ModfileDTO dto = ModfileDTO.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(LocalDateTime.now())
@@ -52,7 +52,7 @@ class ModfileMapperTest {
             .build();
 
         ModfileEntity entity = ModfileEntity.builder()
-            .id(1)
+            .id(1L)
             .path("testPath1")
             .hash("testHash1")
             .createdDate(Timestamp.valueOf(dto.getCreatedDate()))

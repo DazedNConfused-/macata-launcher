@@ -8,9 +8,8 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class BaseEntity {
-    
-    private long id;
+
+    private Long id;
     private Timestamp createdDate;
     private Timestamp updatedDate;
-
 }

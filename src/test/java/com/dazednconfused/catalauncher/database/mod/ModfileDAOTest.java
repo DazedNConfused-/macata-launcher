@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.dazednconfused.catalauncher.database.BaseDAO;
 import com.dazednconfused.catalauncher.database.H2Database;
+import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -17,45 +19,49 @@ import org.junit.jupiter.api.Test;
 
 public class ModfileDAOTest {
 
+    private static final UUID uuid = UUID.randomUUID();
+
+    private static ModDAO modDAO = new ModH2DAOImpl();
     private static BaseDAO<ModfileEntity> dao;
+
+    private long parentModId;
 
     @BeforeAll
     public static void setup() {
-        dao = new ModfileH2DAOImpl();
+        modDAO = new ModH2DAOImpl() {
+            @Override
+            public String getDatabaseName() {
+                return super.getDatabaseName() + "_" + uuid;
+            }
+        };
+        dao = new ModfileH2DAOImpl() {
+            @Override
+            public String getDatabaseName() {
+                return super.getDatabaseName() + "_" + uuid;
+            }
+        };
     }
 
     @BeforeEach
     public void before() {
+        modDAO.initializeTable();
         dao.initializeTable();
+
+        parentModId = modDAO.insert(ModEntity.builder()
+            .name("parentTestName")
+            .modinfo("parentModinfo")
+            .build()
+        ).getId();
     }
 
     @AfterEach
     public void teardown() {
-        ((ModfileH2DAOImpl) dao).wipe();
+        ((H2Database) dao).wipe();
     }
 
     @AfterAll
     public static void cleanup() {
-        ((ModfileH2DAOImpl) dao).destroy();
-    }
-
-    @Test
-    void initialize_table_success() {
-
-        // prepare mock data ---
-        ModDAO modDAO = new ModH2DAOImpl();
-        modDAO.initializeTable();
-
-        // pre-test assertions ---
-        boolean fkTableExists = ((H2Database) dao).doesTableExist(ModDAO.TABLE_NAME);
-        assertThat(fkTableExists).isTrue();
-
-        // execute test ---
-        dao.initializeTable();
-
-        // verify assertions ---
-        ((H2Database) dao).doesColumnExist(ModfileDAO.TABLE_NAME, "mod_id");
-
+        ((H2Database) dao).destroy();
     }
 
     @Test
@@ -63,6 +69,7 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         ModfileEntity entity = ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build();
@@ -85,18 +92,21 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
         ModfileEntity entity = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
             .build()
@@ -119,18 +129,21 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         ModfileEntity entity1 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
         ModfileEntity entity2 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
         ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
             .build()
@@ -153,18 +166,21 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         ModfileEntity entity1 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
         ModfileEntity entity2 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
         ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
             .build()
@@ -184,18 +200,21 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
             .build()
@@ -213,18 +232,21 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
         ModfileEntity entity = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
             .build()
@@ -253,18 +275,21 @@ public class ModfileDAOTest {
 
         // prepare mock data ---
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
         ModfileEntity entity = dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
         dao.insert(ModfileEntity.builder()
+            .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
             .build()
