@@ -163,7 +163,7 @@ public abstract class H2Database {
             t -> LOGGER.error("There was an error while shutting down database [{}]", database, t)
         ).andThenTry(connection -> {
             Statement stmt = connection.createStatement();
-            stmt.execute("SHUTDOWN");
+            stmt.executeUpdate("SHUTDOWN");
             connection.close();
         }).map(connection -> Result.success()).recover(Result::failure).get();
     }
