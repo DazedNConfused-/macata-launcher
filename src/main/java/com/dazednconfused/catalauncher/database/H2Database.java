@@ -22,6 +22,7 @@ public abstract class H2Database {
 
     private static final String USER = null;
     private static final String PASSWORD = null;
+    public static final String DATABASE_NAME_BLANK_ERROR = "Database name cannot be blank! Aborting operation";
 
     /**
      * Opens a connection to {@link #getDatabaseName()}.
@@ -40,8 +41,7 @@ public abstract class H2Database {
      * */
     protected static Result<Throwable, Connection> openConnection(String database) {
         if (StringUtils.isBlank(database)) {
-            LOGGER.error("Database name cannot be blank! Aborting operation");
-            return Result.failure(new Throwable("Database name cannot be blank! Aborting operation"));
+            return Result.failure(new Throwable(DATABASE_NAME_BLANK_ERROR));
         }
 
         LOGGER.trace("Opening connection for database [{}]...", database);
@@ -72,8 +72,7 @@ public abstract class H2Database {
      * */
     protected static Result<Throwable, ?> wipe(String database) {
         if (StringUtils.isBlank(database)) {
-            LOGGER.error("Database name cannot be blank! Aborting operation");
-            return Result.failure(new Throwable("Database name cannot be blank! Aborting operation"));
+            return Result.failure(new Throwable(DATABASE_NAME_BLANK_ERROR));
         }
 
         LOGGER.trace("Wiping database [{}]...", database);
@@ -106,12 +105,10 @@ public abstract class H2Database {
      * */
     protected static Result<Throwable, ?> destroy(String database) {
         if (StringUtils.isBlank(database)) {
-            LOGGER.error("Database name cannot be blank! Aborting operation");
-            return Result.failure(new Throwable("Database name cannot be blank! Aborting operation"));
+            return Result.failure(new Throwable(DATABASE_NAME_BLANK_ERROR));
         }
 
         LOGGER.trace("Destroying database [{}]...", database);
-
 
         return Try.of(() -> {
             String dbFilePath = Constants.LAUNCHER_FILES + "/db/" + database + ".mv.db";
