@@ -20,8 +20,8 @@ public abstract class H2Database {
 
     private static final String JDBC_URL_TEMPLATE = "jdbc:h2:%s/db/%s;AUTO_SERVER=TRUE";
 
-    private static final String USER = "macata";
-    private static final String PASSWORD = "macata";
+    private static final String USER = null;
+    private static final String PASSWORD = null;
 
     /**
      * Opens a connection to {@link #getDatabaseName()}.
