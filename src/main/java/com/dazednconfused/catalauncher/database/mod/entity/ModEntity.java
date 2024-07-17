@@ -1,20 +1,20 @@
 package com.dazednconfused.catalauncher.database.mod.entity;
 
-import java.sql.Timestamp;
+import com.dazednconfused.catalauncher.database.BaseEntity;
+
 import java.util.List;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class ModEntity {
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
+public class ModEntity extends BaseEntity {
 
-    private long id;
     private String name;
     private String modinfo;
-    private Timestamp createdDate;
-    private Timestamp updatedDate;
 
     private List<ModfileEntity> modfiles;
 
