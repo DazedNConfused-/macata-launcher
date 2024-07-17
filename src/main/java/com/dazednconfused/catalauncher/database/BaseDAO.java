@@ -29,7 +29,7 @@ public interface BaseDAO<T> {
     /**
      * Deletes the given entity. It must have an ID set.
      * */
-    void delete(T t) throws DAOException;
+    default void delete(T t) throws DAOException {};
 
     /**
      * Finds the given entity by ID.

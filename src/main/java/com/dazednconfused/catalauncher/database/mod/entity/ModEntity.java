@@ -12,6 +12,7 @@ public class ModEntity {
 
     private long id;
     private String name;
+    private String modinfo;
     private Timestamp createdDate;
     private Timestamp updatedDate;
 

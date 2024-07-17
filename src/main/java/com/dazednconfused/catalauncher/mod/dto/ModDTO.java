@@ -12,6 +12,7 @@ public class ModDTO {
 
     private long id;
     private String name;
+    private String modinfo;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
