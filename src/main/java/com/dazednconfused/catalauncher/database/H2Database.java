@@ -63,14 +63,14 @@ public abstract class H2Database {
      *
      * @implNote Equivalent to calling {@link #wipe(String)} with {@link #getDatabaseName()} as argument.
      * */
-    public Result<Throwable, ?> wipe() {
+    public Result<Throwable, Object> wipe() {
         return H2Database.wipe(getDatabaseName());
     }
 
     /**
      * Completely wipes the given {@code database} of any and all data.
      * */
-    protected static Result<Throwable, ?> wipe(String database) {
+    protected static Result<Throwable, Object> wipe(String database) {
         if (StringUtils.isBlank(database)) {
             return Result.failure(new Throwable(DATABASE_NAME_BLANK_ERROR));
         }
@@ -96,14 +96,14 @@ public abstract class H2Database {
      *
      * @implNote Equivalent to calling {@link #destroy(String)} with {@link #getDatabaseName()} as argument.
      * */
-    public Result<Throwable, ?> destroy() {
+    public Result<Throwable, Object> destroy() {
         return H2Database.destroy(getDatabaseName());
     }
 
     /**
      * Completely destroys the {@code database} file.
      * */
-    protected static Result<Throwable, ?> destroy(String database) {
+    protected static Result<Throwable, Object> destroy(String database) {
         if (StringUtils.isBlank(database)) {
             return Result.failure(new Throwable(DATABASE_NAME_BLANK_ERROR));
         }
