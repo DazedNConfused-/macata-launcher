@@ -36,7 +36,7 @@
                             <excludes></excludes>
                             <reportFormat>plain</reportFormat>
                             <reuseForks>true</reuseForks>
-                            <forkCount>1C</forkCount>
+                            <forkCount>4C</forkCount>
                             <forkedProcessExitTimeoutInSeconds>3000</forkedProcessExitTimeoutInSeconds>
                             <forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
                             <parallel>all</parallel>
