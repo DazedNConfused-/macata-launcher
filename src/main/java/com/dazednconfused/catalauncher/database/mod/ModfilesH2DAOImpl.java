@@ -57,13 +57,14 @@ public class ModfilesH2DAOImpl extends H2Database implements BaseDAO<ModfileEnti
     public ModfileEntity insert(ModfileEntity entity) throws DAOException {
         LOGGER.debug("Inserting ModfileEntity [{}]...", entity);
 
-        String sql = "INSERT INTO " + MOD_FILES_TABLE_NAME + " VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO " + MOD_FILES_TABLE_NAME + "" +
+            "(path, hash, created_date, updated_date) " +
+            "VALUES " +
+            "(?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())";
 
         try (Connection conn = this.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, entity.getPath());
             pstmt.setString(2, entity.getHash());
-            pstmt.setTimestamp(3, entity.getCreatedDate());
-            pstmt.setTimestamp(4, entity.getUpdatedDate());
 
             pstmt.executeUpdate();
 
@@ -76,7 +77,13 @@ public class ModfilesH2DAOImpl extends H2Database implements BaseDAO<ModfileEnti
 
     @Override
     public ModfileEntity update(ModfileEntity entity) throws DAOException {
-        LOGGER.debug("Updating ModfileEntity [{}]...", entity);
+        Optional<ModfileEntity> originalEntity = this.findById(entity.getId());
+
+        if (originalEntity.isEmpty()) {
+            throw new DAOException("No entity with id [" + entity.getId() + "] found");
+        }
+
+        LOGGER.debug("Updating ModfileEntity from [{}] to [{}]...", originalEntity.get(), entity);
 
         String sql = "UPDATE " + MOD_FILES_TABLE_NAME + " SET " +
             "path = ?, " +
@@ -89,7 +96,7 @@ public class ModfilesH2DAOImpl extends H2Database implements BaseDAO<ModfileEnti
             pstmt.setString(2, entity.getHash());
             pstmt.setLong(3, entity.getId());
 
-            pstmt.executeUpdate(sql);
+            pstmt.executeUpdate();
 
             return this.findById(entity.getId()).orElseThrow(DAOException::new);
         } catch (SQLException e) {
@@ -100,7 +107,13 @@ public class ModfilesH2DAOImpl extends H2Database implements BaseDAO<ModfileEnti
 
     @Override
     public void delete(ModfileEntity entity) throws DAOException {
-        LOGGER.debug("Deleting ModfileEntity [{}]...", entity);
+        Optional<ModfileEntity> originalEntity = this.findById(entity.getId());
+
+        if (originalEntity.isEmpty()) {
+            throw new DAOException("No entity with id [" + entity.getId() + "] found");
+        }
+
+        LOGGER.debug("Deleting ModfileEntity [{}]...", originalEntity.get());
 
         String sql = "DELETE FROM " + MOD_FILES_TABLE_NAME + " WHERE id = ? ";
 
