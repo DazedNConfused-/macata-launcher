@@ -274,7 +274,6 @@ public class ModfileDAOTest {
         dao.delete(entity);
         Optional<ModfileEntity> result = dao.findById(entity.getId());
 
-
         // verify assertions ---
         assertThat(result).isEmpty();
     }
