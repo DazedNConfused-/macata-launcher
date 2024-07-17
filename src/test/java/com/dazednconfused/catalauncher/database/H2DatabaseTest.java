@@ -60,7 +60,7 @@ class H2DatabaseTest {
             pstmt.setString(1, MOCKED_TABLE.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    assertThat(rs.getInt(1)).isGreaterThan(0);
+                    assertThat(rs.getInt(1)).isPositive();
                 }
             }
         } catch (SQLException e) {
@@ -79,7 +79,7 @@ class H2DatabaseTest {
             pstmt.setString(1, MOCKED_TABLE.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    assertThat(rs.getInt(1)).isEqualTo(0);
+                    assertThat(rs.getInt(1)).isZero();
                 }
             }
         } catch (SQLException e) {
@@ -107,7 +107,7 @@ class H2DatabaseTest {
             pstmt.setString(1, MOCKED_TABLE.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    assertThat(rs.getInt(1)).isGreaterThan(0);
+                    assertThat(rs.getInt(1)).isPositive();
                 }
             }
         } catch (SQLException e) {
@@ -126,7 +126,7 @@ class H2DatabaseTest {
             pstmt.setString(1, MOCKED_TABLE.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    assertThat(rs.getInt(1)).isEqualTo(0);
+                    assertThat(rs.getInt(1)).isZero();
                 }
             }
         } catch (SQLException e) {
@@ -158,7 +158,7 @@ class H2DatabaseTest {
         String dbFilePath = Constants.LAUNCHER_FILES + "/db/" + db.getDatabaseName() + ".mv.db";
         File dbFile = new File(dbFilePath);
 
-        assertThat(dbFile.exists()).isFalse();
+        assertThat(dbFile).doesNotExist();
     }
 
     @Test
@@ -185,6 +185,6 @@ class H2DatabaseTest {
         String dbFilePath = Constants.LAUNCHER_FILES + "/db/" + db.getDatabaseName() + ".mv.db";
         File dbFile = new File(dbFilePath);
 
-        assertThat(dbFile.exists()).isFalse();
+        assertThat(dbFile).doesNotExist();
     }
 }

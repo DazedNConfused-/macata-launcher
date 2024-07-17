@@ -52,7 +52,7 @@ public class ModfilesDAOTest {
         // verify assertions ---
         assertThat(result).isNotNull();
 
-        assertThat(result.getId()).isNotEqualTo(0);
+        assertThat(result.getId()).isNotZero();
         assertThat(result.getCreatedDate()).isNotNull();
         assertThat(result.getUpdatedDate()).isNotNull();
 
@@ -63,60 +63,60 @@ public class ModfilesDAOTest {
     void find_by_id_success() {
 
         // prepare mock data ---
-        ModfileEntity entity1 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
-        ModfileEntity entity2 = dao.insert(ModfileEntity.builder()
+        ModfileEntity entity = dao.insert(ModfileEntity.builder()
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
-        ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .path("testPath3")
             .hash("testHash3")
             .build()
         );
 
         // execute test ---
-        Optional<ModfileEntity> resultOpt = dao.findById(entity2.getId());
+        Optional<ModfileEntity> resultOpt = dao.findById(entity.getId());
 
         // verify assertions ---
         assertThat(resultOpt).isPresent();
 
         ModfileEntity result = resultOpt.get();
 
-        assertThat(result.getPath()).isEqualTo(entity2.getPath());
-        assertThat(result.getHash()).isEqualTo(entity2.getHash());
+        assertThat(result.getPath()).isEqualTo(entity.getPath());
+        assertThat(result.getHash()).isEqualTo(entity.getHash());
     }
 
     @Test
     void update_success() {
 
         // prepare mock data ---
-        ModfileEntity entity1 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
-        ModfileEntity entity2 = dao.insert(ModfileEntity.builder()
+        ModfileEntity entity = dao.insert(ModfileEntity.builder()
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
-        ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .path("testPath3")
             .hash("testHash3")
             .build()
         );
 
         ModfileEntity updatedEntity2 = ModfileEntity.builder()
-            .id(entity2.getId())
+            .id(entity.getId())
             .path("updatedTestPath2")
             .hash("updatedTestHash2")
             .build();
@@ -129,35 +129,35 @@ public class ModfilesDAOTest {
 
         assertThat(result.getPath()).isEqualTo(updatedEntity2.getPath());
         assertThat(result.getHash()).isEqualTo(updatedEntity2.getHash());
-        assertThat(result.getCreatedDate()).isEqualTo(entity2.getCreatedDate());
-        assertThat(result.getUpdatedDate()).isAfter(entity2.getUpdatedDate());
+        assertThat(result.getCreatedDate()).isEqualTo(entity.getCreatedDate());
+        assertThat(result.getUpdatedDate()).isAfter(entity.getUpdatedDate());
     }
 
     @Test
     void delete_success() {
 
         // prepare mock data ---
-        ModfileEntity entity1 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .path("testPath1")
             .hash("testHash1")
             .build()
         );
 
-        ModfileEntity entity2 = dao.insert(ModfileEntity.builder()
+        ModfileEntity entity = dao.insert(ModfileEntity.builder()
             .path("testPath2")
             .hash("testHash2")
             .build()
         );
 
-        ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .path("testPath3")
             .hash("testHash3")
             .build()
         );
 
         // execute test ---
-        dao.delete(entity2);
-        Optional<ModfileEntity> result = dao.findById(entity2.getId());
+        dao.delete(entity);
+        Optional<ModfileEntity> result = dao.findById(entity.getId());
 
 
         // verify assertions ---
