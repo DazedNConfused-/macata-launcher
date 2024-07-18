@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.database.mod;
+package com.dazednconfused.catalauncher.database.mod.dao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

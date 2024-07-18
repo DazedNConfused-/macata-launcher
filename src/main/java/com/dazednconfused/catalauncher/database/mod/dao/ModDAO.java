@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.database.mod;
+package com.dazednconfused.catalauncher.database.mod.dao;
 
 import com.dazednconfused.catalauncher.database.BaseDAO;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
