@@ -1,13 +1,10 @@
-package com.dazednconfused.catalauncher.database.mod.dao;
+package com.dazednconfused.catalauncher.database.mod.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,14 +17,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ModDAOTest {
+public class ModRepositoryTest {
 
     private static final UUID uuid = UUID.randomUUID();
-    private static ModDAO dao;
 
+    private static ModRepository repository;
+    
     @BeforeAll
     public static void setup() {
-        dao = new ModH2DAOImpl(){
+        repository = new ModH2RepositoryImpl() {
             @Override
             public String getDatabaseName() {
                 return super.getDatabaseName() + "_" + uuid;
@@ -37,49 +35,17 @@ public class ModDAOTest {
 
     @BeforeEach
     public void before() {
-        dao.initializeTable();
+        repository.initializeTable();
     }
 
     @AfterEach
     public void teardown() {
-        ((ModH2DAOImpl) dao).wipe();
+        ((ModH2RepositoryImpl) repository).wipe();
     }
 
     @AfterAll
     public static void cleanup() {
-        ((ModH2DAOImpl) dao).destroy();
-    }
-
-    @Test
-    void build_from_result_set_success() throws Exception {
-
-        // prepare mock data ---
-        Long MOCKED_ID = 1L;
-        String MOCKED_NAME = "mockedName";
-        String MOCKED_MOD_INFO = "mockedModInfo";
-        Timestamp MOCKED_CREATED_DATE = new Timestamp(System.currentTimeMillis());
-        Timestamp MOCKED_UPDATED_DATE = new Timestamp(System.currentTimeMillis());
-
-        ResultSet MOCKED_RESULT_SET = mock(ResultSet.class);
-        when(MOCKED_RESULT_SET.getLong("id")).thenReturn(MOCKED_ID);
-        when(MOCKED_RESULT_SET.getString("name")).thenReturn(MOCKED_NAME);
-        when(MOCKED_RESULT_SET.getString("modinfo")).thenReturn(MOCKED_MOD_INFO);
-        when(MOCKED_RESULT_SET.getTimestamp("created_date")).thenReturn(MOCKED_CREATED_DATE);
-        when(MOCKED_RESULT_SET.getTimestamp("updated_date")).thenReturn(MOCKED_UPDATED_DATE);
-
-        // execute test ---
-        ModEntity result = dao.buildFromResultSet(MOCKED_RESULT_SET);
-
-        // verify assertions ---
-        ModEntity expected = ModEntity.builder()
-            .id(MOCKED_ID)
-            .name(MOCKED_NAME)
-            .modinfo(MOCKED_MOD_INFO)
-            .createdDate(MOCKED_CREATED_DATE)
-            .updatedDate(MOCKED_UPDATED_DATE)
-            .build();
-
-        assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+        ((ModH2RepositoryImpl) repository).destroy();
     }
 
     @Test
@@ -91,8 +57,23 @@ public class ModDAOTest {
             .modinfo("testModinfo1")
             .build();
 
+        ModfileEntity childEntity1 = ModfileEntity.builder()
+            .path("testPath1")
+            .hash("testHash1")
+            .build();
+        ModfileEntity childEntity2 = ModfileEntity.builder()
+            .path("testPath2")
+            .hash("testHash2")
+            .build();
+        ModfileEntity childEntity3 = ModfileEntity.builder()
+            .path("testPath3")
+            .hash("testHash3")
+            .build();
+
+        entity.setModfiles(Arrays.asList(childEntity1, childEntity2, childEntity3));
+
         // execute test ---
-        ModEntity result = dao.insert(entity);
+        ModEntity result = repository.insert(entity);
 
         // verify assertions ---
         assertThat(result).isNotNull();
@@ -100,34 +81,59 @@ public class ModDAOTest {
         assertThat(result.getId()).isNotZero();
         assertThat(result.getCreatedDate()).isNotNull();
         assertThat(result.getUpdatedDate()).isNotNull();
-
         assertThat(result.getCreatedDate()).isEqualTo(result.getUpdatedDate());
+
+        assertThat(result.getModfiles()).hasSize(entity.getModfiles().size());
+
+        ModfileEntity resultChildEntity1 = result.getModfiles().stream().filter(mf -> mf.getPath().endsWith("1")).findFirst().orElseThrow();
+        assertThat(resultChildEntity1.getModId()).isEqualTo(result.getId());
+        assertThat(resultChildEntity1.getPath()).isEqualTo(childEntity1.getPath());
+        assertThat(resultChildEntity1.getHash()).isEqualTo(childEntity1.getHash());
+        assertThat(resultChildEntity1.getCreatedDate()).isNotNull();
+        assertThat(resultChildEntity1.getUpdatedDate()).isNotNull();
+        assertThat(resultChildEntity1.getCreatedDate()).isEqualTo(resultChildEntity1.getUpdatedDate());
+
+        ModfileEntity resultChildEntity2 = result.getModfiles().stream().filter(mf -> mf.getPath().endsWith("2")).findFirst().orElseThrow();
+        assertThat(resultChildEntity2.getModId()).isEqualTo(result.getId());
+        assertThat(resultChildEntity2.getPath()).isEqualTo(childEntity2.getPath());
+        assertThat(resultChildEntity2.getHash()).isEqualTo(childEntity2.getHash());
+        assertThat(resultChildEntity2.getCreatedDate()).isNotNull();
+        assertThat(resultChildEntity2.getUpdatedDate()).isNotNull();
+        assertThat(resultChildEntity2.getCreatedDate()).isEqualTo(resultChildEntity2.getUpdatedDate());
+
+        ModfileEntity resultChildEntity3 = result.getModfiles().stream().filter(mf -> mf.getPath().endsWith("3")).findFirst().orElseThrow();
+        assertThat(resultChildEntity3.getModId()).isEqualTo(result.getId());
+        assertThat(resultChildEntity3.getPath()).isEqualTo(childEntity3.getPath());
+        assertThat(resultChildEntity3.getHash()).isEqualTo(childEntity3.getHash());
+        assertThat(resultChildEntity3.getCreatedDate()).isNotNull();
+        assertThat(resultChildEntity3.getUpdatedDate()).isNotNull();
+        assertThat(resultChildEntity3.getCreatedDate()).isEqualTo(resultChildEntity3.getUpdatedDate());
     }
 
     @Test
     void find_by_id_success() {
 
         // prepare mock data ---
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
             .build()
         );
 
-        ModEntity entity = dao.insert(ModEntity.builder()
+        ModEntity entity = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
             .build()
         );
 
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
             .build()
         );
 
         // execute test ---
-        Optional<ModEntity> resultOpt = dao.findById(entity.getId());
+        Optional<ModEntity> resultOpt = repository.findById(entity.getId());
 
         // verify assertions ---
         assertThat(resultOpt).isPresent();
@@ -142,26 +148,26 @@ public class ModDAOTest {
     void find_by_ids_success() {
 
         // prepare mock data ---
-        ModEntity entity1 = dao.insert(ModEntity.builder()
+        ModEntity entity1 = repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
             .build()
         );
 
-        ModEntity entity2 = dao.insert(ModEntity.builder()
+        ModEntity entity2 = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
             .build()
         );
 
-        ModEntity entity3 = dao.insert(ModEntity.builder()
+        ModEntity entity3 = repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
             .build()
         );
 
         // execute test ---
-        List<ModEntity> result = dao.findById(
+        List<ModEntity> result = repository.findById(
             entity1.getId(), entity2.getId(), entity3.getId(),
             23232L // random ID that won't be found
         );
@@ -176,26 +182,26 @@ public class ModDAOTest {
     void find_all_success() {
 
         // prepare mock data ---
-        ModEntity entity1 = dao.insert(ModEntity.builder()
+        ModEntity entity1 = repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
             .build()
         );
 
-        ModEntity entity2 = dao.insert(ModEntity.builder()
+        ModEntity entity2 = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
             .build()
         );
 
-        ModEntity entity3 = dao.insert(ModEntity.builder()
+        ModEntity entity3 = repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
             .build()
         );
 
         // execute test ---
-        List<ModEntity> result = dao.findAll();
+        List<ModEntity> result = repository.findAll();
 
         // verify assertions ---
         assertThat(result).isNotEmpty();
@@ -207,26 +213,26 @@ public class ModDAOTest {
     void count_all_success() {
 
         // prepare mock data ---
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
             .build()
         );
 
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
             .build()
         );
 
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
             .build()
         );
 
         // execute test ---
-        long result = dao.countAll();
+        long result = repository.countAll();
 
         // verify assertions ---
         assertThat(result).isEqualTo(3);
@@ -236,19 +242,19 @@ public class ModDAOTest {
     void update_success() {
 
         // prepare mock data ---
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
             .build()
         );
 
-        ModEntity entity = dao.insert(ModEntity.builder()
+        ModEntity entity = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
             .build()
         );
 
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
             .build()
@@ -261,7 +267,7 @@ public class ModDAOTest {
             .build();
 
         // execute test ---
-        ModEntity result = dao.update(updatedEntity2);
+        ModEntity result = repository.update(updatedEntity2);
 
         // verify assertions ---
         assertThat(result).isNotNull();
@@ -276,27 +282,27 @@ public class ModDAOTest {
     void delete_success() {
 
         // prepare mock data ---
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
             .build()
         );
 
-        ModEntity entity = dao.insert(ModEntity.builder()
+        ModEntity entity = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
             .build()
         );
 
-        dao.insert(ModEntity.builder()
+        repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
             .build()
         );
 
         // execute test ---
-        dao.delete(entity);
-        Optional<ModEntity> result = dao.findById(entity.getId());
+        repository.delete(entity);
+        Optional<ModEntity> result = repository.findById(entity.getId());
         
         // verify assertions ---
         assertThat(result).isEmpty();

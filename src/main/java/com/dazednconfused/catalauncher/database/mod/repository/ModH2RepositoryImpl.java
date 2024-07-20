@@ -49,9 +49,9 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
 
         ModEntity result = this.modDAO.insert(entity);
 
-        LOGGER.debug("Inserting ModfileEntity(s): [{}]", entity.getModfiles());
-        List<ModfileEntity> modfiles = entity.getModfiles().stream().map(modfileDAO::insert).collect(Collectors.toList());
-        result.setModfiles(modfiles);
+        result.setModfiles(
+            this.insertChildEntities(result.getId(), entity.getModfiles())
+        );
 
         return result;
     }
@@ -61,34 +61,47 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
         LOGGER.debug("Updating ModEntity: [{}]", entity);
         ModEntity result = this.modDAO.update(entity);
 
-        this.deleteChildEntitiesFor(entity);
-
-        LOGGER.debug("Reinserting ModfileEntity(s) associated to modID [{}]...", entity.getId());
-        List<ModfileEntity> insertedChildEntities = entity.getModfiles().stream().map(modfileDAO::insert).collect(Collectors.toList());
-        LOGGER.debug("Inserted [{}] ModfileEntity(s) associated to modId [{}]", insertedChildEntities.size(), entity.getId());
-
-        result.setModfiles(insertedChildEntities);
+        this.deleteChildEntitiesFor(entity.getId());
+        result.setModfiles(
+            this.insertChildEntities(result.getId(), entity.getModfiles())
+        );
 
         return result;
     }
 
     @Override
     public void delete(ModEntity entity) throws DAOException {
-        this.deleteChildEntitiesFor(entity);
+        this.deleteChildEntitiesFor(entity.getId());
 
         LOGGER.debug("Deleting ModEntity with ID [{}]...", entity.getId());
         this.modDAO.delete(entity);
     }
 
     /**
-     * Deletes all {@link ModfileEntity}(ies) associated to the given {@link ModEntity}.
+     * Inserts all given {@link ModfileEntity}(ies) associated to the provided {@code modId}.
      * */
-    private void deleteChildEntitiesFor(ModEntity entity) {
-        LOGGER.debug("Deleting ModfileEntity(s) associated to modID [{}]...", entity.getId());
+    private List<ModfileEntity> insertChildEntities(long modId, List<ModfileEntity> entities) throws DAOException {
+        LOGGER.debug("Inserting [{}] ModfileEntity(s) associated to modId [{}]", entities.size(), modId);
 
-        int deletedChildEntities = this.modfileDAO.deleteAllByModId(entity.getId());
+        List<ModfileEntity> result = entities.stream()
+            .peek(e -> e.setModId(modId)) // set/overwrite with entity ID
+            .map(modfileDAO::insert)
+            .collect(Collectors.toList());
 
-        LOGGER.debug("Deleted [{}] ModfileEntity(s) associated to modId [{}]", deletedChildEntities, entity.getId());
+        LOGGER.debug("Inserted [{}] ModfileEntity(s) associated to modId [{}]", result.size(), modId);
+
+        return result;
+    }
+
+    /**
+     * Deletes all {@link ModfileEntity}(ies) associated to the given {@code modId}.
+     * */
+    private void deleteChildEntitiesFor(long modId) {
+        LOGGER.debug("Deleting ModfileEntity(s) associated to modID [{}]...",modId);
+
+        int deletedChildEntities = this.modfileDAO.deleteAllByModId(modId);
+
+        LOGGER.debug("Deleted [{}] ModfileEntity(s) associated to modId [{}]", deletedChildEntities, modId);
     }
 
     @Override

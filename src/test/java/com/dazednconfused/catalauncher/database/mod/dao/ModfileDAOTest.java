@@ -1,11 +1,15 @@
 package com.dazednconfused.catalauncher.database.mod.dao;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.dazednconfused.catalauncher.database.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,6 +68,41 @@ public class ModfileDAOTest {
     }
 
     @Test
+    void build_from_result_set_success() throws Exception {
+
+        // prepare mock data ---
+        Long MOCKED_ID = 1L;
+        Long MOCKED_MOD_ID = 2L;
+        String MOCKED_PATH = "mockedPath";
+        String MOCKED_HASH = "mockedHash";
+        Timestamp MOCKED_CREATED_DATE = new Timestamp(System.currentTimeMillis());
+        Timestamp MOCKED_UPDATED_DATE = new Timestamp(System.currentTimeMillis());
+
+        ResultSet MOCKED_RESULT_SET = mock(ResultSet.class);
+        when(MOCKED_RESULT_SET.getLong("id")).thenReturn(MOCKED_ID);
+        when(MOCKED_RESULT_SET.getLong("mod_id")).thenReturn(MOCKED_MOD_ID);
+        when(MOCKED_RESULT_SET.getString("path")).thenReturn(MOCKED_PATH);
+        when(MOCKED_RESULT_SET.getString("hash")).thenReturn(MOCKED_HASH);
+        when(MOCKED_RESULT_SET.getTimestamp("created_date")).thenReturn(MOCKED_CREATED_DATE);
+        when(MOCKED_RESULT_SET.getTimestamp("updated_date")).thenReturn(MOCKED_UPDATED_DATE);
+
+        // execute test ---
+        ModfileEntity result = dao.buildFromResultSet(MOCKED_RESULT_SET);
+
+        // verify assertions ---
+        ModfileEntity expected = ModfileEntity.builder()
+            .id(MOCKED_ID)
+            .modId(MOCKED_MOD_ID)
+            .path(MOCKED_PATH)
+            .hash(MOCKED_HASH)
+            .createdDate(MOCKED_CREATED_DATE)
+            .updatedDate(MOCKED_UPDATED_DATE)
+            .build();
+
+        assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+    }
+
+    @Test
     void insert_success() {
 
         // prepare mock data ---
@@ -80,6 +119,7 @@ public class ModfileDAOTest {
         assertThat(result).isNotNull();
 
         assertThat(result.getId()).isNotZero();
+        assertThat(result.getModId()).isEqualTo(parentModId);
         assertThat(result.getCreatedDate()).isNotNull();
         assertThat(result.getUpdatedDate()).isNotNull();
 
@@ -119,6 +159,7 @@ public class ModfileDAOTest {
 
         ModfileEntity result = resultOpt.get();
 
+        assertThat(result.getModId()).isEqualTo(parentModId);
         assertThat(result.getPath()).isEqualTo(entity.getPath());
         assertThat(result.getHash()).isEqualTo(entity.getHash());
     }
@@ -263,6 +304,7 @@ public class ModfileDAOTest {
         // verify assertions ---
         assertThat(result).isNotNull();
 
+        assertThat(result.getModId()).isEqualTo(parentModId);
         assertThat(result.getPath()).isEqualTo(updatedEntity2.getPath());
         assertThat(result.getHash()).isEqualTo(updatedEntity2.getHash());
         assertThat(result.getCreatedDate()).isEqualTo(entity.getCreatedDate());

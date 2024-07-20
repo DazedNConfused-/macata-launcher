@@ -108,6 +108,7 @@ public class ModfileH2DAOImpl extends H2Database implements ModfileDAO {
         try {
             return ModfileEntity.builder()
                 .id(rs.getLong("id"))
+                .modId(rs.getLong("mod_id"))
                 .path(rs.getString("path"))
                 .hash(rs.getString("hash"))
                 .createdDate(rs.getTimestamp("created_date"))
