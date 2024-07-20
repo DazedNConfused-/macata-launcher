@@ -2,14 +2,19 @@ package com.dazednconfused.catalauncher.database.mod.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.dazednconfused.catalauncher.database.DAOException;
+import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
+import com.dazednconfused.catalauncher.database.mod.dao.ModH2DAOImpl;
+import com.dazednconfused.catalauncher.database.mod.dao.ModfileDAO;
+import com.dazednconfused.catalauncher.database.mod.dao.ModfileH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
+import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -25,7 +30,21 @@ public class ModRepositoryTest {
     
     @BeforeAll
     public static void setup() {
-        repository = new ModH2RepositoryImpl() {
+        ModDAO modDAO = new ModH2DAOImpl() {
+            @Override
+            public String getDatabaseName() {
+                return super.getDatabaseName() + "_" + uuid;
+            }
+        };
+
+        ModfileDAO modfileDAO = new ModfileH2DAOImpl() {
+            @Override
+            public String getDatabaseName() {
+                return super.getDatabaseName() + "_" + uuid;
+            }
+        };
+
+        repository = new ModH2RepositoryImpl(modDAO, modfileDAO) {
             @Override
             public String getDatabaseName() {
                 return super.getDatabaseName() + "_" + uuid;
@@ -114,34 +133,36 @@ public class ModRepositoryTest {
     void find_by_id_success() {
 
         // prepare mock data ---
-        repository.insert(ModEntity.builder()
+        ModEntity entity = ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
-            .build()
-        );
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath1")
+                    .hash("testHash1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2")
+                    .hash("testHash2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3")
+                    .hash("testHash3")
+                    .build()
+            ))
+            .build();
 
-        ModEntity entity = repository.insert(ModEntity.builder()
-            .name("testName2")
-            .modinfo("testModinfo2")
-            .build()
-        );
-
-        repository.insert(ModEntity.builder()
-            .name("testName3")
-            .modinfo("testModinfo3")
-            .build()
-        );
+        ModEntity inserted = repository.insert(entity);
 
         // execute test ---
-        Optional<ModEntity> resultOpt = repository.findById(entity.getId());
+        Optional<ModEntity> resultOpt = repository.findById(inserted.getId());
 
         // verify assertions ---
         assertThat(resultOpt).isPresent();
 
         ModEntity result = resultOpt.get();
 
-        assertThat(result.getName()).isEqualTo(entity.getName());
-        assertThat(result.getModinfo()).isEqualTo(entity.getModinfo());
+        assertThat(result).usingRecursiveComparison().isEqualTo(inserted);
     }
 
     @Test
@@ -151,18 +172,60 @@ public class ModRepositoryTest {
         ModEntity entity1 = repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath1_1")
+                    .hash("testHash1_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_2")
+                    .hash("testHash1_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_3")
+                    .hash("testHash1_3")
+                    .build()
+            ))
             .build()
         );
 
         ModEntity entity2 = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath2_1")
+                    .hash("testHash2_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_2")
+                    .hash("testHash2_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_3")
+                    .hash("testHash2_3")
+                    .build()
+            ))
             .build()
         );
 
         ModEntity entity3 = repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath3_1")
+                    .hash("testHash3_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_2")
+                    .hash("testHash3_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_3")
+                    .hash("testHash3_3")
+                    .build()
+            ))
             .build()
         );
 
@@ -175,7 +238,7 @@ public class ModRepositoryTest {
         // verify assertions ---
         assertThat(result).isNotEmpty();
 
-        assertThat(result).containsExactlyInAnyOrder(entity1, entity2, entity3);
+        assertThat(result).usingRecursiveFieldByFieldElementComparator().containsExactlyInAnyOrder(entity1, entity2, entity3);
     }
 
     @Test
@@ -185,18 +248,60 @@ public class ModRepositoryTest {
         ModEntity entity1 = repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath1_1")
+                    .hash("testHash1_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_2")
+                    .hash("testHash1_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_3")
+                    .hash("testHash1_3")
+                    .build()
+            ))
             .build()
         );
 
         ModEntity entity2 = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath2_1")
+                    .hash("testHash2_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_2")
+                    .hash("testHash2_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_3")
+                    .hash("testHash2_3")
+                    .build()
+            ))
             .build()
         );
 
         ModEntity entity3 = repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath3_1")
+                    .hash("testHash3_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_2")
+                    .hash("testHash3_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_3")
+                    .hash("testHash3_3")
+                    .build()
+            ))
             .build()
         );
 
@@ -206,7 +311,7 @@ public class ModRepositoryTest {
         // verify assertions ---
         assertThat(result).isNotEmpty();
 
-        assertThat(result).containsExactlyInAnyOrder(entity1, entity2, entity3);
+        assertThat(result).usingRecursiveFieldByFieldElementComparator().containsExactlyInAnyOrder(entity1, entity2, entity3);
     }
 
     @Test
@@ -216,18 +321,60 @@ public class ModRepositoryTest {
         repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath1_1")
+                    .hash("testHash1_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_2")
+                    .hash("testHash1_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_3")
+                    .hash("testHash1_3")
+                    .build()
+            ))
             .build()
         );
 
         repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath2_1")
+                    .hash("testHash2_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_2")
+                    .hash("testHash2_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_3")
+                    .hash("testHash2_3")
+                    .build()
+            ))
             .build()
         );
 
         repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath3_1")
+                    .hash("testHash3_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_2")
+                    .hash("testHash3_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_3")
+                    .hash("testHash3_3")
+                    .build()
+            ))
             .build()
         );
 
@@ -245,18 +392,60 @@ public class ModRepositoryTest {
         repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath1_1")
+                    .hash("testHash1_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_2")
+                    .hash("testHash1_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_3")
+                    .hash("testHash1_3")
+                    .build()
+            ))
             .build()
         );
 
         ModEntity entity = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath2_1")
+                    .hash("testHash2_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_2")
+                    .hash("testHash2_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_3")
+                    .hash("testHash2_3")
+                    .build()
+            ))
             .build()
         );
 
         repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath3_1")
+                    .hash("testHash3_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_2")
+                    .hash("testHash3_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_3")
+                    .hash("testHash3_3")
+                    .build()
+            ))
             .build()
         );
 
@@ -264,6 +453,12 @@ public class ModRepositoryTest {
             .id(entity.getId())
             .name("updatedName2")
             .modinfo("updatedModinfo2")
+            .modfiles(Collections.singletonList(
+                ModfileEntity.builder()
+                    .path("updatedPath2")
+                    .hash("updatedHash2")
+                    .build()
+            ))
             .build();
 
         // execute test ---
@@ -272,10 +467,21 @@ public class ModRepositoryTest {
         // verify assertions ---
         assertThat(result).isNotNull();
 
+        assertThat(result.getId()).isEqualTo(updatedEntity2.getId());
         assertThat(result.getName()).isEqualTo(updatedEntity2.getName());
         assertThat(result.getModinfo()).isEqualTo(updatedEntity2.getModinfo());
         assertThat(result.getCreatedDate()).isEqualTo(entity.getCreatedDate());
         assertThat(result.getUpdatedDate()).isAfter(entity.getUpdatedDate());
+
+        assertThat(result.getModfiles()).hasSize(1);
+
+        ModfileEntity childResult = result.getModfiles().get(0);
+        assertThat(childResult.getModId()).isEqualTo(updatedEntity2.getId());
+        assertThat(childResult.getPath()).isEqualTo(updatedEntity2.getModfiles().get(0).getPath());
+        assertThat(childResult.getHash()).isEqualTo(updatedEntity2.getModfiles().get(0).getHash());
+        assertThat(childResult.getCreatedDate()).isNotNull();
+        assertThat(childResult.getUpdatedDate()).isNotNull();
+        assertThat(childResult.getCreatedDate()).isEqualTo(childResult.getUpdatedDate());
     }
 
     @Test
@@ -285,18 +491,60 @@ public class ModRepositoryTest {
         repository.insert(ModEntity.builder()
             .name("testName1")
             .modinfo("testModinfo1")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath1_1")
+                    .hash("testHash1_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_2")
+                    .hash("testHash1_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath1_3")
+                    .hash("testHash1_3")
+                    .build()
+            ))
             .build()
         );
 
         ModEntity entity = repository.insert(ModEntity.builder()
             .name("testName2")
             .modinfo("testModinfo2")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath2_1")
+                    .hash("testHash2_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_2")
+                    .hash("testHash2_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath2_3")
+                    .hash("testHash2_3")
+                    .build()
+            ))
             .build()
         );
 
         repository.insert(ModEntity.builder()
             .name("testName3")
             .modinfo("testModinfo3")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder()
+                    .path("testPath3_1")
+                    .hash("testHash3_1")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_2")
+                    .hash("testHash3_2")
+                    .build(),
+                ModfileEntity.builder()
+                    .path("testPath3_3")
+                    .hash("testHash3_3")
+                    .build()
+            ))
             .build()
         );
 

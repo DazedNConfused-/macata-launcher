@@ -3,9 +3,7 @@ package com.dazednconfused.catalauncher.database.mod.repository;
 import com.dazednconfused.catalauncher.database.DAOException;
 import com.dazednconfused.catalauncher.database.H2Database;
 import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
-import com.dazednconfused.catalauncher.database.mod.dao.ModH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.dao.ModfileDAO;
-import com.dazednconfused.catalauncher.database.mod.dao.ModfileH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
@@ -27,9 +25,9 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
     private final ModDAO modDAO;
     private final ModfileDAO modfileDAO;
 
-    public ModH2RepositoryImpl() {
-        this.modDAO = new ModH2DAOImpl();
-        this.modfileDAO = new ModfileH2DAOImpl();
+    public ModH2RepositoryImpl(ModDAO modDAO, ModfileDAO modfileDAO) {
+        this.modDAO = modDAO;
+        this.modfileDAO = modfileDAO;
     }
 
     @Override
