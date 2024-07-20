@@ -2,7 +2,6 @@ package com.dazednconfused.catalauncher.database.mod.dao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.dazednconfused.catalauncher.database.BaseDAO;
 import com.dazednconfused.catalauncher.database.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
@@ -22,7 +21,7 @@ public class ModfileDAOTest {
     private static final UUID uuid = UUID.randomUUID();
 
     private static ModDAO modDAO = new ModH2DAOImpl();
-    private static BaseDAO<ModfileEntity> dao;
+    private static ModfileDAO dao;
 
     private long parentModId;
 
@@ -288,7 +287,7 @@ public class ModfileDAOTest {
             .build()
         );
 
-        dao.insert(ModfileEntity.builder()
+        ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
             .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
@@ -301,5 +300,207 @@ public class ModfileDAOTest {
 
         // verify assertions ---
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void find_all_by_mod_id_success() {
+
+        // prepare mock data ---
+        Long parentModId1 = modDAO.insert(ModEntity.builder()
+            .name("parentTestName1")
+            .modinfo("parentModinfo1")
+            .build()
+        ).getId();
+
+        Long parentModId2 = modDAO.insert(ModEntity.builder()
+            .name("parentTestName2")
+            .modinfo("parentModinfo2")
+            .build()
+        ).getId();
+
+        Long parentModId3 = modDAO.insert(ModEntity.builder()
+            .name("parentTestName3")
+            .modinfo("parentModinfo3")
+            .build()
+        ).getId();
+
+
+        ModfileEntity entity1_1 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId1)
+            .path("testPath1_1")
+            .hash("testHash1_2")
+            .build()
+        );
+
+        ModfileEntity entity1_2 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId1)
+            .path("testPath1_2")
+            .hash("testHash1_2")
+            .build()
+        );
+
+        ModfileEntity entity1_3 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId1)
+            .path("testPath1_3")
+            .hash("testHash1_3")
+            .build()
+        );
+
+
+        dao.insert(ModfileEntity.builder()
+            .modId(parentModId2)
+            .path("testPath2_1")
+            .hash("testHash2_2")
+            .build()
+        );
+
+        dao.insert(ModfileEntity.builder()
+            .modId(parentModId2)
+            .path("testPath2_2")
+            .hash("testHash2_2")
+            .build()
+        );
+
+        dao.insert(ModfileEntity.builder()
+            .modId(parentModId2)
+            .path("testPath2_3")
+            .hash("testHash2_3")
+            .build()
+        );
+
+
+        dao.insert(ModfileEntity.builder()
+            .modId(parentModId3)
+            .path("testPath3_1")
+            .hash("testHash3_2")
+            .build()
+        );
+
+        dao.insert(ModfileEntity.builder()
+            .modId(parentModId3)
+            .path("testPath3_2")
+            .hash("testHash3_2")
+            .build()
+        );
+
+        dao.insert(ModfileEntity.builder()
+            .modId(parentModId3)
+            .path("testPath3_3")
+            .hash("testHash3_3")
+            .build()
+        );
+
+        // execute test ---
+        List<ModfileEntity> result = dao.findAllByModId(parentModId1);
+
+        // verify assertions ---
+        assertThat(result).containsExactlyInAnyOrder(entity1_1, entity1_2, entity1_3);
+    }
+
+    @Test
+    void delete_all_by_mod_id_success() {
+
+        // prepare mock data ---
+        Long parentModId1 = modDAO.insert(ModEntity.builder()
+            .name("parentTestName1")
+            .modinfo("parentModinfo1")
+            .build()
+        ).getId();
+
+        Long parentModId2 = modDAO.insert(ModEntity.builder()
+            .name("parentTestName2")
+            .modinfo("parentModinfo2")
+            .build()
+        ).getId();
+
+        Long parentModId3 = modDAO.insert(ModEntity.builder()
+            .name("parentTestName3")
+            .modinfo("parentModinfo3")
+            .build()
+        ).getId();
+
+
+        ModfileEntity entity1_1 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId1)
+            .path("testPath1_1")
+            .hash("testHash1_2")
+            .build()
+        );
+
+        ModfileEntity entity1_2 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId1)
+            .path("testPath1_2")
+            .hash("testHash1_2")
+            .build()
+        );
+
+        ModfileEntity entity1_3 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId1)
+            .path("testPath1_3")
+            .hash("testHash1_3")
+            .build()
+        );
+
+
+        ModfileEntity entity2_1 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId2)
+            .path("testPath2_1")
+            .hash("testHash2_2")
+            .build()
+        );
+
+        ModfileEntity entity2_2 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId2)
+            .path("testPath2_2")
+            .hash("testHash2_2")
+            .build()
+        );
+
+        ModfileEntity entity2_3 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId2)
+            .path("testPath2_3")
+            .hash("testHash2_3")
+            .build()
+        );
+
+
+        ModfileEntity entity3_1 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId3)
+            .path("testPath3_1")
+            .hash("testHash3_2")
+            .build()
+        );
+
+        ModfileEntity entity3_2 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId3)
+            .path("testPath3_2")
+            .hash("testHash3_2")
+            .build()
+        );
+
+        ModfileEntity entity3_3 = dao.insert(ModfileEntity.builder()
+            .modId(parentModId3)
+            .path("testPath3_3")
+            .hash("testHash3_3")
+            .build()
+        );
+
+        // pre-test assertions ---
+        assertThat(dao.findAll()).containsExactlyInAnyOrder(
+            entity1_1, entity1_2, entity1_3,
+            entity2_1, entity2_2, entity2_3,
+            entity3_1, entity3_2, entity3_3
+        );
+
+        // execute test ---
+        int result = dao.deleteAllByModId(parentModId1);
+
+        // verify assertions ---
+        assertThat(result).isEqualTo(3);
+
+        assertThat(dao.findAll()).containsExactlyInAnyOrder(
+            entity2_1, entity2_2, entity2_3,
+            entity3_1, entity3_2, entity3_3
+        );
     }
 }

@@ -1,20 +1,23 @@
 package com.dazednconfused.catalauncher.database.mod.dao;
 
-import com.dazednconfused.catalauncher.database.BaseDAO;
-import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.*;
+import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ModDAOTest {
 
     private static final UUID uuid = UUID.randomUUID();
-    private static BaseDAO<ModEntity> dao;
+    private static ModDAO dao;
 
     @BeforeAll
     public static void setup() {
