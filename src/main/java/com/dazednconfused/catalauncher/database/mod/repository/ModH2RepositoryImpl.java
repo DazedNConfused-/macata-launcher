@@ -9,7 +9,9 @@ import com.dazednconfused.catalauncher.database.mod.dao.ModfileH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -61,9 +63,7 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
         LOGGER.debug("Updating ModEntity: [{}]", entity);
         ModEntity result = this.modDAO.update(entity);
 
-        LOGGER.debug("Deleting ModfileEntity(s) associated to modID [{}]...", entity.getId());
-        int deletedChildEntities = this.modfileDAO.deleteAllByModId(entity.getId());
-        LOGGER.debug("Deleted [{}] ModfileEntity(s) associated to modId [{}]", deletedChildEntities, entity.getId());
+        this.deleteChildEntitiesFor(entity);
 
         LOGGER.debug("Reinserting ModfileEntity(s) associated to modID [{}]...", entity.getId());
         List<ModfileEntity> insertedChildEntities = entity.getModfiles().stream().map(modfileDAO::insert).collect(Collectors.toList());
@@ -76,21 +76,54 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
 
     @Override
     public void delete(ModEntity entity) throws DAOException {
-        ModRepository.super.delete(entity);
+        this.deleteChildEntitiesFor(entity);
+
+        LOGGER.debug("Deleting ModEntity with ID [{}]...", entity.getId());
+        this.modDAO.delete(entity);
+    }
+
+    /**
+     * Deletes all {@link ModfileEntity}(ies) associated to the given {@link ModEntity}.
+     * */
+    private void deleteChildEntitiesFor(ModEntity entity) {
+        LOGGER.debug("Deleting ModfileEntity(s) associated to modID [{}]...", entity.getId());
+
+        int deletedChildEntities = this.modfileDAO.deleteAllByModId(entity.getId());
+
+        LOGGER.debug("Deleted [{}] ModfileEntity(s) associated to modId [{}]", deletedChildEntities, entity.getId());
     }
 
     @Override
     public Optional<ModEntity> findById(long id) throws DAOException {
-        return ModRepository.super.findById(id);
+        LOGGER.debug("Finding ModEntity with ID [{}]...", id);
+
+        Optional<ModEntity> result = modDAO.findById(id);
+
+        result.ifPresent(entity -> {
+            LOGGER.debug("Finding child ModfileEntity(s) associated to modID [{}]...", entity.getId());
+            entity.setModfiles(this.modfileDAO.findAllByModId(id));
+        });
+
+        return result;
     }
 
     @Override
     public List<ModEntity> findById(long... ids) throws DAOException {
-        return ModRepository.super.findById(ids);
+        LOGGER.debug("Finding ModEntity(ies) with IDs [{}]...", ids);
+
+        return Arrays.stream(ids).mapToObj(this::findById)
+            .map(opt -> opt.orElse(null))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     @Override
     public List<ModEntity> findAll() throws DAOException {
-        return ModRepository.super.findAll();
+        LOGGER.debug("Finding all ModEntity(ies) for [{}]...", getTableName());
+
+        List<ModEntity> result = this.modDAO.findAll();
+        result.forEach(entity -> entity.setModfiles(this.modfileDAO.findAllByModId(entity.getId())));
+
+        return result;
     }
 }
