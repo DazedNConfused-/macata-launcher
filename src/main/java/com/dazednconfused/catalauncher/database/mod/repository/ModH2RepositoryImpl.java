@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 
 public class ModH2RepositoryImpl extends H2Database implements ModRepository {
 
-    public static final String MODS_TABLE_NAME = "mod";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ModH2RepositoryImpl.class);
 
     private static final String DATABASE_FILE = "mods";
