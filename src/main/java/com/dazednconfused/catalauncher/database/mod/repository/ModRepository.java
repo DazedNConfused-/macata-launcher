@@ -1,6 +1,7 @@
 package com.dazednconfused.catalauncher.database.mod.repository;
 
 import com.dazednconfused.catalauncher.database.DAOException;
+import com.dazednconfused.catalauncher.database.NotImplementedException;
 import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 
@@ -18,11 +19,11 @@ public interface ModRepository extends ModDAO {
 
     @Override
     default ModEntity buildFromResultSet(ResultSet rs) throws DAOException {
-        throw new RuntimeException("Method not implemented at Repository level");
+        throw new NotImplementedException("Method not implemented at Repository level");
     }
 
     @Override
     default Map.Entry<Connection, PreparedStatement> getTableCreationStatement() throws DAOException {
-        throw new RuntimeException("Method not implemented at Repository level");
+        throw new NotImplementedException("Method not implemented at Repository level");
     }
 }

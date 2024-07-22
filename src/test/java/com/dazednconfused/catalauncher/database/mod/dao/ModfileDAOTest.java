@@ -329,7 +329,7 @@ public class ModfileDAOTest {
             .build()
         );
 
-        ModfileEntity entity3 = dao.insert(ModfileEntity.builder()
+        dao.insert(ModfileEntity.builder()
             .modId(parentModId)
             .path("testPath3")
             .hash("testHash3")
