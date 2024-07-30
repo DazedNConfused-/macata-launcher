@@ -5,35 +5,19 @@ import com.dazednconfused.catalauncher.helper.result.Result;
 
 import io.vavr.control.Try;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class H2Database {
-
-    protected static final String DATABASE_MIGRATIONS_RESOURCE_PATH = "db/migrations/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(H2Database.class);
 
@@ -237,130 +221,6 @@ public abstract class H2Database {
         }).onFailure(
             t -> LOGGER.error("There was an error while deleting database file [{}]", database, t)
         ).recover(Result::failure).get();
-    }
-
-    /**
-     * Executes the SQL script residing in the given {@code resourcePath}.
-     *
-     * @param resourcePath the path to the SQL script resource.
-     *
-     * @return The SQL's {@link PreparedStatement#execute(String)}'s response, wrapped inside a {@link Result#success(Object)}.
-     *         {@link Result#failure(Throwable)} if an error occurred during the operation.
-     */
-    protected Result<Throwable, Boolean> executeSqlResource(String resourcePath) {
-        try (
-            var c = getConnection();
-            var in = H2Database.getResourceAsStream(resourcePath);
-            var isr = new InputStreamReader(in);
-            var br = new BufferedReader(isr)
-        ) {
-            LOGGER.debug("Executing SQL resource [{}]...", resourcePath);
-
-            var sql = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                sql.append(line);
-                sql.append("\n");
-            }
-
-            LOGGER.trace("SQL resource [{}] to be executed: \n ********** \n {} \n **********", resourcePath, sql);
-
-            boolean result = c.prepareStatement(sql.toString()).execute();
-
-            LOGGER.debug("Executed SQL resource [{}]", resourcePath);
-
-            return Result.success(result);
-        } catch (SQLException | IOException e) {
-            LOGGER.error("There was an error while executing SQL resource [{}]", resourcePath, e);
-            return Result.failure(e);
-        }
-    }
-
-    /**
-     * Returns all {@code .sql} migrations files that are dated after the provided {@code from} {@link Date}.
-     */
-    protected static List<File> getDatabaseMigrationFilesDatedAfter(Date from) {
-        LOGGER.debug("Retrieving all database migration files dated after [{}]...", from);
-
-        return Optional
-            .of(getDatabaseMigrationFiles())
-            .map(result -> result.toEither().get().getResult().orElse(Collections.emptyList()))
-            .get().stream()
-            .filter(filename -> FilenameUtils.getExtension(filename).equalsIgnoreCase("sql")) // retrieve only .sql script files
-            .filter(filename -> {
-                Optional<Date> migrationDateStamp = getDateFromFilename(filename);
-                if (migrationDateStamp.isEmpty()) {
-                    // without a valid migration Date stamp, we don't know whether we have to apply the migration or not. Better to skip it entirely....
-                    LOGGER.debug("Skipping file [{}] for not having a valid migration Date stamp...", filename);
-                    return false;
-                }
-
-                return migrationDateStamp.get().after(from);
-            }) // retrieve only those that were created after the supplied date
-            .sorted((fn1, fn2) -> {
-                Date d1 = getDateFromFilename(fn1).orElseThrow();
-                Date d2 = getDateFromFilename(fn2).orElseThrow();
-
-                return d1.compareTo(d2);
-            }) // sort the migrations according to its natural order (aka by their timestamps)
-            .map(filename -> new File(DATABASE_MIGRATIONS_RESOURCE_PATH + filename))
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * List all filenames living inside the classpath's {@link H2Database#DATABASE_MIGRATIONS_RESOURCE_PATH}'s {@code resources} folder.
-     */
-    protected static Result<Throwable, List<String>> getDatabaseMigrationFiles() {
-        List<String> filenames = new ArrayList<>();
-
-        try (InputStream in = H2Database.getResourceAsStream(DATABASE_MIGRATIONS_RESOURCE_PATH); BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-            String resource;
-
-            while ((resource = br.readLine()) != null) {
-                filenames.add(resource);
-            }
-        } catch (IOException e) {
-            LOGGER.error("There was an error while reading resource files from path [{}]", DATABASE_MIGRATIONS_RESOURCE_PATH);
-            return Result.failure(e);
-        }
-
-        return Result.success(filenames);
-    }
-
-    /**
-     * Reads a specific {@code resource} from the classpath.
-     *
-     * @implNote It's up to this method's callers to properly close the resulting {@link InputStream}.
-     */
-    private static InputStream getResourceAsStream(String resource) {
-        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
-        return in == null ? H2Database.class.getResourceAsStream(resource) : in;
-    }
-
-    /**
-     * Parses the provided {@code date} in {@code yyyyMMdd} format.
-     */
-    private static Optional<Date> parseYyyyMmDdDate(String date) {
-        try {
-            return Optional.of(new SimpleDateFormat("yyyyMMdd").parse(date));
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Returns the {@code yyyyMMdd} {@link Date} stamp present in the given {@code filename}, if present.
-     */
-    private static Optional<Date> getDateFromFilename(String filename) {
-        Matcher matcher = Pattern.compile("(.*([-_])?)(\\d{8})(.*)").matcher(filename);
-
-        if (!matcher.matches()) {
-            // if pattern is invalid, return immediately...
-            return Optional.empty();
-        } else {
-            // yyyyMMdd stamp is always captured in RegExp's Group 3
-            return parseYyyyMmDdDate(matcher.group(3));
-        }
     }
 
     /**
