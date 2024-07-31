@@ -24,7 +24,7 @@ public class ModfileDAOTest {
 
     private static final UUID uuid = UUID.randomUUID();
 
-    private static ModDAO modDAO = new ModH2DAOImpl();
+    private static ModDAO modDAO;
     private static ModfileDAO dao;
 
     private long parentModId;
