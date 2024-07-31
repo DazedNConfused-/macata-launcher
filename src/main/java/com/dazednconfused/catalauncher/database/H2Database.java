@@ -1,5 +1,6 @@
 package com.dazednconfused.catalauncher.database;
 
+import com.dazednconfused.catalauncher.database.migration.MigrateableH2Database;
 import com.dazednconfused.catalauncher.helper.Constants;
 import com.dazednconfused.catalauncher.helper.result.Result;
 
@@ -131,6 +132,85 @@ public abstract class H2Database {
             Statement stmt = connection.createStatement();
             stmt.execute("DROP ALL OBJECTS");
             connection.close();
+        }).map(connection -> Result.success()).recover(Result::failure).get();
+    }
+
+    /**
+     * Completely cleans the given {@code database} of any and all data, but leaves the underlying schema intact.
+     *
+     * @apiNote Callers of this method are responsible for making sure any and all open {@link Connection}s are properly
+     *          disposed of before triggering the wipe.
+     *
+     * @implNote Equivalent to calling {@link #reset(String)} with {@link #getDatabaseName()} as argument.
+     * */
+    public Result<Throwable, Object> reset() {
+        return H2Database.reset(getDatabaseName());
+    }
+
+    /**
+     * Completely cleans the given {@code database} of any and all data, but leaves the underlying schema intact.
+     *
+     * @apiNote If wiping the schema is also desired, use {@link #wipe(String)} instead.
+     * */
+    protected static Result<Throwable, Object> reset(String database) {
+        if (StringUtils.isBlank(database)) {
+            return Result.failure(new Throwable(DATABASE_NAME_BLANK_ERROR));
+        }
+
+        LOGGER.trace("Resetting database [{}]...", database);
+
+        return Try.of(() -> DriverManager.getConnection(
+            String.format(JDBC_URL_TEMPLATE, Constants.LAUNCHER_FILES, database),
+            USER, PASSWORD
+        )).onFailure(
+            t -> LOGGER.error("There was an error while cleaning database file [{}]", database, t)
+        ).andThenTry(connection -> {
+            Statement stmt = connection.createStatement();
+
+            // first, disable constraint checks for the duration of the operation ---
+            stmt.execute("SET REFERENTIAL_INTEGRITY FALSE");
+
+            // truncate all tables, restarting their auto-increment IDs ---
+            String getTablesQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = SCHEMA()";
+
+            ResultSet getTablesQueryRs = stmt.executeQuery(getTablesQuery);
+            while (getTablesQueryRs.next()) {
+                String tableName = getTablesQueryRs.getString("TABLE_NAME");
+
+                if (tableName.equalsIgnoreCase(MigrateableH2Database.MIGRATION_TABLE_NAME)) {
+                    LOGGER.trace("Skipping migration table [{}] from reset process...", tableName);
+                    continue;
+                }
+
+                Statement truncateStmt = connection.createStatement();
+                truncateStmt.executeUpdate("TRUNCATE TABLE \"" + tableName + "\" RESTART IDENTITY");
+                truncateStmt.close();
+                LOGGER.trace("Truncated table with identity restart [{}]", tableName);
+            }
+
+            // restart all sequences ---
+            String sequenceRestartQuery = "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SEQUENCES";
+
+            ResultSet sequenceRestartQueryRs = stmt.executeQuery(sequenceRestartQuery);
+            while (sequenceRestartQueryRs.next()) {
+                String sequenceName = sequenceRestartQueryRs.getString(1);
+
+                Statement alterSequenceStmt = connection.createStatement();
+                alterSequenceStmt.executeUpdate("ALTER SEQUENCE " + sequenceName + " RESTART WITH 1");
+                alterSequenceStmt.close();
+                LOGGER.trace("Restarted sequence [{}]", sequenceName);
+            }
+
+            // re-enable constraint checks now that database has been properly reset ---
+            stmt.execute("SET REFERENTIAL_INTEGRITY TRUE ");
+
+            // resources cleanup ---
+            getTablesQueryRs.close();
+            sequenceRestartQueryRs.close();
+            stmt.close();
+            connection.close();
+
+            LOGGER.trace("Database [{}] has been reset.", database);
         }).map(connection -> Result.success()).recover(Result::failure).get();
     }
 

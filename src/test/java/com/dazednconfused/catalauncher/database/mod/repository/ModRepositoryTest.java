@@ -2,7 +2,6 @@ package com.dazednconfused.catalauncher.database.mod.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.dazednconfused.catalauncher.database.DAOException;
 import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
 import com.dazednconfused.catalauncher.database.mod.dao.ModH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.dao.ModfileDAO;
@@ -27,7 +26,7 @@ public class ModRepositoryTest {
     private static final UUID uuid = UUID.randomUUID();
 
     private static ModRepository repository;
-    
+
     @BeforeAll
     public static void setup() {
         ModDAO modDAO = new ModH2DAOImpl() {
@@ -54,12 +53,11 @@ public class ModRepositoryTest {
 
     @BeforeEach
     public void before() {
-        repository.initializeTable();
     }
 
     @AfterEach
     public void teardown() {
-        ((ModH2RepositoryImpl) repository).wipe();
+        ((ModH2RepositoryImpl) repository).reset();
     }
 
     @AfterAll
@@ -551,7 +549,7 @@ public class ModRepositoryTest {
         // execute test ---
         repository.delete(entity);
         Optional<ModEntity> result = repository.findById(entity.getId());
-        
+
         // verify assertions ---
         assertThat(result).isEmpty();
     }

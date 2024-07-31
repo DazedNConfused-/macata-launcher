@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.dazednconfused.catalauncher.helper.result.Result;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,7 +16,10 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import sun.misc.Unsafe;
 
 class MigrateableH2DatabaseTest {
 
@@ -29,25 +34,33 @@ class MigrateableH2DatabaseTest {
         DB_BASE_MIGRATION_FILENAME_DAY
     );
 
-    private static TestDatabase db;
+    private TestDatabase db;
 
     @BeforeAll
     public static void setup() {
-        db = new TestDatabase();
+    }
+
+    @BeforeEach
+    public void before() {
     }
 
     @AfterEach
     public void teardown() {
-        db.wipe();
+        if (db != null) {
+            db.destroy();
+        }
+        db = null; // guarantee fresh TestDatabase is created on each individual test
     }
 
     @AfterAll
     public static void cleanup() {
-        db.destroy();
     }
 
     @Test
     void get_database_migration_files_success() {
+
+        // prepare mock data ---
+        db = new TestDatabase();
 
         // execute test ---
         Result<Throwable, List<String>> result = db.getDatabaseMigrationFiles();
@@ -68,6 +81,13 @@ class MigrateableH2DatabaseTest {
     void get_database_migration_files_dated_after_success() throws ParseException {
 
         // prepare mock data ---
+        db = new TestDatabase() {
+            @Override
+            public String getDatabaseMigrationsResourcePath() {
+                return  MigrateableH2Database.DATABASE_MIGRATIONS_DEFAULT_RESOURCE_ROOT_PATH;
+            }
+        };
+
         Date MOCKED_DATE = new SimpleDateFormat("yyyyMMdd").parse(
             DB_BASE_MIGRATION_FILENAME_YEAR + DB_BASE_MIGRATION_FILENAME_MONTH + DB_BASE_MIGRATION_FILENAME_DAY
         );
@@ -99,6 +119,10 @@ class MigrateableH2DatabaseTest {
     @Test
     void execute_sql_resource_success() {
 
+        // prepare mock data ---
+        db = TestDatabase.getInstanceBypassingConstructor();
+        assertThat(db).isNotNull();
+
         // pre-test assertions ---
         assertThat(db.doesTableExist("sample")).isFalse();
 
@@ -117,30 +141,27 @@ class MigrateableH2DatabaseTest {
     }
 
     @Test
-    void apply_base_and_migrations_success() {
+    void apply_base_and_migrations_success() throws NoSuchFieldException, IllegalAccessException, InstantiationException {
 
         // prepare mock data ---
-        TestDatabase mDb = new TestDatabase(){
-            @Override
-            public String getDatabaseMigrationsResourcePath() {
-                return TestDatabase.DATABASE_MIGRATIONS_RESOURCE_PATH + "test/";
-            }
-        };
+        db = TestDatabase.getInstanceBypassingConstructor();
+        assertThat(db).isNotNull();
+        db.initMigrationTableManually();
 
         // pre-test assertions ---
-        assertThat(mDb.doesTableExist("sample")).isFalse();
-        assertThat(mDb.doesTableExist("sample2")).isFalse();
-        assertThat(mDb.doesTableExist("sample3")).isFalse();
+        assertThat(db.doesTableExist("sample")).isFalse();
+        assertThat(db.doesTableExist("sample2")).isFalse();
+        assertThat(db.doesTableExist("sample3")).isFalse();
 
         // execute test ---
-        mDb.applyAllPendingMigrations();
+        db.applyAllPendingMigrations();
 
         // verify assertions ---
         assertThat(db.doesTableExist("sample")).isTrue();
         assertThat(db.doesTableExist("sample2")).isTrue();
         assertThat(db.doesTableExist("sample3")).isTrue();
 
-        String latestAppliedMigration = mDb.getLatestAppliedMigration().orElse(null);
+        String latestAppliedMigration = db.getLatestAppliedMigration().orElse(null);
         assertThat(latestAppliedMigration).isNotNull();
         assertThat(latestAppliedMigration).isEqualTo("20240801_second_migration.sql");
     }
@@ -149,28 +170,28 @@ class MigrateableH2DatabaseTest {
     void apply_only_migrations_success() {
 
         // prepare mock data ---
-        TestDatabase mDb = new TestDatabase(){
-            @Override
-            public String getDatabaseMigrationsResourcePath() {
-                return TestDatabase.DATABASE_MIGRATIONS_RESOURCE_PATH + "test/";
-            }
-        };
+        db = TestDatabase.getInstanceBypassingConstructor();
+        assertThat(db).isNotNull();
+        db.initMigrationTableManually();
 
-        mDb.applyMigration("20240730_base.sql");
+        db.applyMigration("20240730_base.sql");
 
         // pre-test assertions ---
-        assertThat(mDb.doesTableExist("sample")).isTrue();
-        assertThat(mDb.doesTableExist("sample2")).isFalse();
-        assertThat(mDb.doesTableExist("sample3")).isFalse();
+        assertThat(db.doesTableExist("sample")).isTrue();
+        assertThat(db.doesTableExist("sample2")).isFalse();
+        assertThat(db.doesTableExist("sample3")).isFalse();
+
+        // prepare mock data ---
+        TestDatabase db = new TestDatabase();
 
         // execute test ---
-        mDb.applyAllPendingMigrations();
+        db.applyAllPendingMigrations();
 
         // verify assertions ---
         assertThat(db.doesTableExist("sample2")).isTrue();
         assertThat(db.doesTableExist("sample3")).isTrue();
 
-        String latestAppliedMigration = mDb.getLatestAppliedMigration().orElse(null);
+        String latestAppliedMigration = db.getLatestAppliedMigration().orElse(null);
         assertThat(latestAppliedMigration).isNotNull();
         assertThat(latestAppliedMigration).isEqualTo("20240801_second_migration.sql");
     }
@@ -179,28 +200,25 @@ class MigrateableH2DatabaseTest {
     void apply_partial_migrations_success() {
 
         // prepare mock data ---
-        TestDatabase mDb = new TestDatabase(){
-            @Override
-            public String getDatabaseMigrationsResourcePath() {
-                return TestDatabase.DATABASE_MIGRATIONS_RESOURCE_PATH + "test/";
-            }
-        };
+        db = TestDatabase.getInstanceBypassingConstructor();
+        assertThat(db).isNotNull();
+        db.initMigrationTableManually();
 
-        mDb.applyMigration("20240730_base.sql");
-        mDb.applyMigration("20240731_first_migration.sql");
+        db.applyMigration("20240730_base.sql");
+        db.applyMigration("20240731_first_migration.sql");
 
         // pre-test assertions ---
-        assertThat(mDb.doesTableExist("sample")).isTrue();
-        assertThat(mDb.doesTableExist("sample2")).isTrue();
-        assertThat(mDb.doesTableExist("sample3")).isFalse();
+        assertThat(db.doesTableExist("sample")).isTrue();
+        assertThat(db.doesTableExist("sample2")).isTrue();
+        assertThat(db.doesTableExist("sample3")).isFalse();
 
         // execute test ---
-        mDb.applyAllPendingMigrations();
+        db.applyAllPendingMigrations();
 
         // verify assertions ---
         assertThat(db.doesTableExist("sample3")).isTrue();
 
-        String latestAppliedMigration = mDb.getLatestAppliedMigration().orElse(null);
+        String latestAppliedMigration = db.getLatestAppliedMigration().orElse(null);
         assertThat(latestAppliedMigration).isNotNull();
         assertThat(latestAppliedMigration).isEqualTo("20240801_second_migration.sql");
     }
@@ -209,27 +227,24 @@ class MigrateableH2DatabaseTest {
     void apply_no_migrations_success() {
 
         // prepare mock data ---
-        TestDatabase mDb = new TestDatabase(){
-            @Override
-            public String getDatabaseMigrationsResourcePath() {
-                return TestDatabase.DATABASE_MIGRATIONS_RESOURCE_PATH + "test/";
-            }
-        };
+        db = TestDatabase.getInstanceBypassingConstructor();
+        assertThat(db).isNotNull();
+        db.initMigrationTableManually();
 
-        mDb.applyMigration("20240730_base.sql");
-        mDb.applyMigration("20240731_first_migration.sql");
-        mDb.applyMigration("20240801_second_migration.sql");
+        db.applyMigration("20240730_base.sql");
+        db.applyMigration("20240731_first_migration.sql");
+        db.applyMigration("20240801_second_migration.sql");
 
         // pre-test assertions ---
-        assertThat(mDb.doesTableExist("sample")).isTrue();
-        assertThat(mDb.doesTableExist("sample2")).isTrue();
-        assertThat(mDb.doesTableExist("sample3")).isTrue();
+        assertThat(db.doesTableExist("sample")).isTrue();
+        assertThat(db.doesTableExist("sample2")).isTrue();
+        assertThat(db.doesTableExist("sample3")).isTrue();
 
         // execute test ---
-        mDb.applyAllPendingMigrations();
+        db.applyAllPendingMigrations();
 
         // verify assertions ---
-        String latestAppliedMigration = mDb.getLatestAppliedMigration().orElse(null);
+        String latestAppliedMigration = db.getLatestAppliedMigration().orElse(null);
         assertThat(latestAppliedMigration).isNotNull();
         assertThat(latestAppliedMigration).isEqualTo("20240801_second_migration.sql");
     }
@@ -240,8 +255,6 @@ class MigrateableH2DatabaseTest {
     private static class TestDatabase extends MigrateableH2Database {
 
         public static String MOCK_DATABASE_NAME = "migrateableH2TestDatabase";
-
-        public static String DATABASE_MIGRATIONS_RESOURCE_PATH = "db/migrations/";
 
         public TestDatabase() {
             super();
@@ -254,7 +267,45 @@ class MigrateableH2DatabaseTest {
 
         @Override
         public String getDatabaseMigrationsResourcePath() {
-            return DATABASE_MIGRATIONS_RESOURCE_PATH;
+            return MigrateableH2Database.DATABASE_MIGRATIONS_DEFAULT_RESOURCE_ROOT_PATH + "test/";
+        }
+
+        /**
+         * Manually initiates the migration engine (normally accessible only by the Supeclass' constructor)
+         * */
+        public void initMigrationTableManually() {
+            try {
+                // Step 1: Get the Class object of the superclass
+                Class<?> superClass = this.getClass().getSuperclass();
+
+                // Step 2: Retrieve the Method object representing the private method
+                Method method = superClass.getDeclaredMethod("initMigrationTable");
+
+                // Step 3: Set the method accessible
+                method.setAccessible(true);
+
+                // Step 4: Invoke the method on an instance of the subclass
+                method.invoke(this);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        /**
+         * Gets a testing instance of this DB, bypassing the constructor.
+         * */
+        public static TestDatabase getInstanceBypassingConstructor() {
+            try {
+                Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+                unsafeField.setAccessible(true);
+                Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+                // create an instance of the class without calling the constructor
+                return (TestDatabase) unsafe.allocateInstance(TestDatabase.class);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
         }
     }
 }

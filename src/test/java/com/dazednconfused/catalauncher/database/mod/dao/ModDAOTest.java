@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,12 +35,11 @@ public class ModDAOTest {
 
     @BeforeEach
     public void before() {
-        dao.initializeTable();
     }
 
     @AfterEach
     public void teardown() {
-        ((ModH2DAOImpl) dao).wipe();
+        ((ModH2DAOImpl) dao).reset();
     }
 
     @AfterAll

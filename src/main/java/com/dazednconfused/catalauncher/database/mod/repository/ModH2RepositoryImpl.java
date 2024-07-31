@@ -1,7 +1,7 @@
 package com.dazednconfused.catalauncher.database.mod.repository;
 
 import com.dazednconfused.catalauncher.database.DAOException;
-import com.dazednconfused.catalauncher.database.H2Database;
+import com.dazednconfused.catalauncher.database.migration.MigrateableH2Database;
 import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
 import com.dazednconfused.catalauncher.database.mod.dao.ModfileDAO;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ModH2RepositoryImpl extends H2Database implements ModRepository {
+public class ModH2RepositoryImpl extends MigrateableH2Database implements ModRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModH2RepositoryImpl.class);
 
@@ -25,7 +25,12 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
     private final ModDAO modDAO;
     private final ModfileDAO modfileDAO;
 
+    /**
+     * Constructor.
+     * */
     public ModH2RepositoryImpl(ModDAO modDAO, ModfileDAO modfileDAO) {
+        super();
+
         this.modDAO = modDAO;
         this.modfileDAO = modfileDAO;
     }
@@ -33,12 +38,6 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
     @Override
     public String getDatabaseName() {
         return DATABASE_FILE;
-    }
-
-    @Override
-    public void initializeTable() throws DAOException {
-        this.modDAO.initializeTable();
-        this.modfileDAO.initializeTable();
     }
 
     @Override
@@ -134,5 +133,10 @@ public class ModH2RepositoryImpl extends H2Database implements ModRepository {
         int deletedChildEntities = this.modfileDAO.deleteAllByModId(modId);
 
         LOGGER.debug("Deleted [{}] ModfileEntity(s) associated to modId [{}]", deletedChildEntities, modId);
+    }
+
+    @Override
+    public String getDatabaseMigrationsResourcePath() {
+        return DATABASE_MIGRATIONS_DEFAULT_RESOURCE_ROOT_PATH + "mod/";
     }
 }

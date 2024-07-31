@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,25 +21,6 @@ import org.slf4j.LoggerFactory;
 public interface BaseDAO<T extends BaseEntity> {
 
     Logger LOGGER = LoggerFactory.getLogger(BaseDAO.class);
-
-    /**
-     * Initializes this DAO's table, if it didn't exist already.
-     * */
-    default void initializeTable() throws DAOException {
-        LOGGER.info("Initializing table [{}]...", getTableName());
-
-        Map.Entry<Connection, PreparedStatement> initializationTuple = this.getTableCreationStatement();
-
-        try (Connection conn = initializationTuple.getKey(); PreparedStatement pstmt = initializationTuple.getValue()) {
-            pstmt.execute();
-            LOGGER.debug("[{}] table initialized successfully", getTableName());
-        } catch (SQLException e) {
-            LOGGER.error("An error occurred while creating table [{}]", getTableName(), e);
-            throw new DAOException(e);
-        }
-
-        LOGGER.info("Table initialization completed");
-    }
 
     /**
      * Inserts the given {@link BaseEntity} into the table.
@@ -186,12 +166,6 @@ public interface BaseDAO<T extends BaseEntity> {
      * The DAO's table under management's name.
      * */
     String getTableName();
-
-    /**
-     * The DAO's table creation {@link PreparedStatement}, alongside its {@link Connection}, to be used during the initialization
-     * process.
-     * */
-    Map.Entry<Connection, PreparedStatement> getTableCreationStatement() throws DAOException;
 
     /**
      * Opens a connection to this DAO's database.

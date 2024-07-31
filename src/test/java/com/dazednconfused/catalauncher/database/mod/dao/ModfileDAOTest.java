@@ -47,9 +47,6 @@ public class ModfileDAOTest {
 
     @BeforeEach
     public void before() {
-        modDAO.initializeTable();
-        dao.initializeTable();
-
         parentModId = modDAO.insert(ModEntity.builder()
             .name("parentTestName")
             .modinfo("parentModinfo")
@@ -59,7 +56,7 @@ public class ModfileDAOTest {
 
     @AfterEach
     public void teardown() {
-        ((H2Database) dao).wipe();
+        ((H2Database) dao).reset();
     }
 
     @AfterAll
