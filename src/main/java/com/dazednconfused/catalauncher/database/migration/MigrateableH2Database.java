@@ -58,11 +58,7 @@ public abstract class MigrateableH2Database extends H2Database {
         List<String> pendingMigrations;
         if (latestAppliedMigration == null) {
             LOGGER.debug("No migrations have been applied yet for database [{}]. Initializing...", this.getDatabaseName());
-            pendingMigrations = this.getDatabaseMigrationFiles()
-                .toEither()
-                .get()
-                .getResult()
-                .orElse(Collections.emptyList());
+            pendingMigrations = this.getDatabaseMigrationFilesDatedAfter(new Date(0));
         } else {
             LOGGER.debug("Latest applied migration: [{}]...", latestAppliedMigration);
             pendingMigrations = this.getDatabaseMigrationFilesDatedAfter(parseYyyyMmDdDate(latestAppliedMigration).orElseThrow());
@@ -228,6 +224,9 @@ public abstract class MigrateableH2Database extends H2Database {
 
     /**
      * Returns all {@code .sql} migrations files that are dated after the provided {@code from} {@link Date}.
+     *
+     * @implNote All migration files returned by this method are guaranteed to have a correctly-formatted name and be in order
+     *           from oldest to newest.
      */
     protected List<String> getDatabaseMigrationFilesDatedAfter(Date from) {
         LOGGER.trace("Retrieving all database migration files dated after [{}]...", from);
@@ -258,6 +257,10 @@ public abstract class MigrateableH2Database extends H2Database {
 
     /**
      * List all filenames living inside the classpath's {@link #getDatabaseMigrationsResourcePath()}'s {@code resources} folder.
+     *
+     * @implNote Migration files returned by this method are <b>not</b> guaranteed to neither have a correctly-formatted name
+     *           nor be in order. If you need such assurances, use {@link #getDatabaseMigrationFilesDatedAfter(Date)} passing
+     *           {@code new Date(0)} as argument instead.
      */
     protected Result<Throwable, List<String>> getDatabaseMigrationFiles() {
         List<String> filenames = new ArrayList<>();

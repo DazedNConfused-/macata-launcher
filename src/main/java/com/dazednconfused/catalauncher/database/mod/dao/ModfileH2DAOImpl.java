@@ -22,7 +22,6 @@ public class ModfileH2DAOImpl extends MigrateableH2Database implements ModfileDA
      * Constructor.
      * */
     public ModfileH2DAOImpl() {
-        super();
     }
 
     @Override

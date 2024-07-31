@@ -257,7 +257,6 @@ class MigrateableH2DatabaseTest {
         public static String MOCK_DATABASE_NAME = "migrateableH2TestDatabase";
 
         public TestDatabase() {
-            super();
         }
 
         @Override
