@@ -43,7 +43,7 @@ public abstract class MigrateableH2Database extends H2Database implements Migrat
     /**
      * Constructor.
      * */
-    public MigrateableH2Database() {
+    protected MigrateableH2Database() {
         this.initMigrationTable();
         this.applyAllPendingMigrations();
     }
