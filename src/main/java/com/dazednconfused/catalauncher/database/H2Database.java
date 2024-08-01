@@ -18,7 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class H2Database {
+public abstract class H2Database implements DisposableDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(H2Database.class);
 
@@ -33,6 +33,7 @@ public abstract class H2Database {
      *
      * @apiNote Callers of this method are in charge of properly handling and disposing of this connection upon use.
      * */
+    @Override
     public Connection getConnection() {
         return H2Database.openConnection(getDatabaseName()).toEither()
             .getOrElseThrow(() -> new RuntimeException("Could not establish database connection to [" + getDatabaseName() + "]"))
@@ -109,6 +110,7 @@ public abstract class H2Database {
      *
      * @implNote Equivalent to calling {@link #wipe(String)} with {@link #getDatabaseName()} as argument.
      * */
+    @Override
     public Result<Throwable, Object> wipe() {
         return H2Database.wipe(getDatabaseName());
     }
@@ -143,6 +145,7 @@ public abstract class H2Database {
      *
      * @implNote Equivalent to calling {@link #reset(String)} with {@link #getDatabaseName()} as argument.
      * */
+    @Override
     public Result<Throwable, Object> reset() {
         return H2Database.reset(getDatabaseName());
     }
@@ -222,6 +225,7 @@ public abstract class H2Database {
      *
      * @implNote Equivalent to calling {@link #shutdown(String)} with {@link #getDatabaseName()} as argument.
      * */
+    @Override
     public Result<Throwable, Object> shutdown() {
         return H2Database.shutdown(getDatabaseName());
     }
@@ -256,6 +260,7 @@ public abstract class H2Database {
      *
      * @implNote Equivalent to calling {@link #destroy(String)} with {@link #getDatabaseName()} as argument.
      * */
+    @Override
     public Result<Throwable, Object> destroy() {
         this.shutdown().toEither().getOrElseThrow(() ->
             new DAOException("Could not shutdown database. It's unsafe to destroy the database. Aborting operation")

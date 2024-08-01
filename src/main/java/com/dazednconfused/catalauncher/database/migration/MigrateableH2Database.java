@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract {@link H2Database} implementation for DAOs that allow migrations to be applied on them.
  * */
-public abstract class MigrateableH2Database extends H2Database {
+public abstract class MigrateableH2Database extends H2Database implements Migrateable {
 
     public static final String DATABASE_MIGRATIONS_DEFAULT_RESOURCE_ROOT_PATH = "db/migrations/";
 
@@ -47,9 +47,7 @@ public abstract class MigrateableH2Database extends H2Database {
         this.applyAllPendingMigrations();
     }
 
-    /**
-     * Searches for and applies all pending migrations to this DAO's database.
-     * */
+    @Override
     public void applyAllPendingMigrations() throws DAOException {
         LOGGER.debug("Applying all pending migrations...");
 
@@ -71,9 +69,7 @@ public abstract class MigrateableH2Database extends H2Database {
         LOGGER.debug("Finished applying all pending migrations.");
     }
 
-    /**
-     * Applies an individual {@code migration} to this DAO's database.
-     * */
+    @Override
     public void applyMigration(String migration) throws DAOException {
         LOGGER.debug("Applying migration [{}]...", migration);
 
