@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.dazednconfused.catalauncher.database.H2Database;
+import com.dazednconfused.catalauncher.database.h2.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 

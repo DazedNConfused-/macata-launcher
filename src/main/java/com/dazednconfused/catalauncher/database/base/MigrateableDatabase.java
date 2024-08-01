@@ -1,11 +1,9 @@
-package com.dazednconfused.catalauncher.database.migration;
-
-import com.dazednconfused.catalauncher.database.DAOException;
+package com.dazednconfused.catalauncher.database.base;
 
 /**
  * Generic interface for DAOs that allow migrations to be applied on them.
  * */
-public interface Migrateable {
+public interface MigrateableDatabase extends BaseDatabase {
 
     /**
      * Searches for and applies all pending migrations to this DAO's database.

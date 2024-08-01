@@ -1,6 +1,8 @@
-package com.dazednconfused.catalauncher.database;
+package com.dazednconfused.catalauncher.database.h2;
 
-import com.dazednconfused.catalauncher.database.migration.MigrateableH2Database;
+import com.dazednconfused.catalauncher.database.base.DAOException;
+import com.dazednconfused.catalauncher.database.base.DisposableDatabase;
+import com.dazednconfused.catalauncher.database.h2.migration.MigrateableH2Database;
 import com.dazednconfused.catalauncher.helper.Constants;
 import com.dazednconfused.catalauncher.helper.result.Result;
 

@@ -1,7 +1,8 @@
-package com.dazednconfused.catalauncher.database.migration;
+package com.dazednconfused.catalauncher.database.h2.migration;
 
-import com.dazednconfused.catalauncher.database.DAOException;
-import com.dazednconfused.catalauncher.database.H2Database;
+import com.dazednconfused.catalauncher.database.base.DAOException;
+import com.dazednconfused.catalauncher.database.base.MigrateableDatabase;
+import com.dazednconfused.catalauncher.database.h2.H2Database;
 import com.dazednconfused.catalauncher.helper.result.Result;
 
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract {@link H2Database} implementation for DAOs that allow migrations to be applied on them.
  * */
-public abstract class MigrateableH2Database extends H2Database implements Migrateable {
+public abstract class MigrateableH2Database extends H2Database implements MigrateableDatabase {
 
     public static final String DATABASE_MIGRATIONS_DEFAULT_RESOURCE_ROOT_PATH = "db/migrations/";
 

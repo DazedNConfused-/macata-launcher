@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.database;
+package com.dazednconfused.catalauncher.database.base;
 
 import com.dazednconfused.catalauncher.helper.result.Result;
 

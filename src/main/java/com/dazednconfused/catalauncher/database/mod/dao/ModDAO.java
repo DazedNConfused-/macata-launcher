@@ -1,6 +1,6 @@
 package com.dazednconfused.catalauncher.database.mod.dao;
 
-import com.dazednconfused.catalauncher.database.BaseDAO;
+import com.dazednconfused.catalauncher.database.base.BaseDAO;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 
 public interface ModDAO extends BaseDAO<ModEntity> {

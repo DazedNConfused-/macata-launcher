@@ -1,6 +1,6 @@
 package com.dazednconfused.catalauncher.database.mod.entity;
 
-import com.dazednconfused.catalauncher.database.BaseEntity;
+import com.dazednconfused.catalauncher.database.base.BaseEntity;
 
 import java.util.List;
 

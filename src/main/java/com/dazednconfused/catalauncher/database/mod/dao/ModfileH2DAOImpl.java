@@ -1,7 +1,7 @@
 package com.dazednconfused.catalauncher.database.mod.dao;
 
-import com.dazednconfused.catalauncher.database.DAOException;
-import com.dazednconfused.catalauncher.database.migration.MigrateableH2Database;
+import com.dazednconfused.catalauncher.database.base.DAOException;
+import com.dazednconfused.catalauncher.database.h2.migration.MigrateableH2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import java.sql.Connection;

@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.database;
+package com.dazednconfused.catalauncher.database.base;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

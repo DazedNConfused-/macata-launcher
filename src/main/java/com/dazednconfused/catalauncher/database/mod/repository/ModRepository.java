@@ -1,7 +1,7 @@
 package com.dazednconfused.catalauncher.database.mod.repository;
 
-import com.dazednconfused.catalauncher.database.DAOException;
-import com.dazednconfused.catalauncher.database.NotImplementedException;
+import com.dazednconfused.catalauncher.database.base.DAOException;
+import com.dazednconfused.catalauncher.database.base.NotImplementedException;
 import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 

@@ -1,8 +1,8 @@
 package com.dazednconfused.catalauncher.database.mod.dao;
 
-import com.dazednconfused.catalauncher.database.BaseDAO;
-import com.dazednconfused.catalauncher.database.BaseEntity;
-import com.dazednconfused.catalauncher.database.DAOException;
+import com.dazednconfused.catalauncher.database.base.BaseDAO;
+import com.dazednconfused.catalauncher.database.base.BaseEntity;
+import com.dazednconfused.catalauncher.database.base.DAOException;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import java.sql.Connection;

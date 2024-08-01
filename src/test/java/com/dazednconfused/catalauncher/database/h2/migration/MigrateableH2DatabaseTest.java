@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.database.migration;
+package com.dazednconfused.catalauncher.database.h2.migration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
