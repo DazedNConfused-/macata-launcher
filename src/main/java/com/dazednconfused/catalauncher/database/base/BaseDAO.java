@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Interface for basic DAO operations.
+ * Database-agnostic interface for basic DAO operations.
  * */
 public interface BaseDAO<T extends BaseEntity> {
 

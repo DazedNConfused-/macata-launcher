@@ -1,7 +1,7 @@
 package com.dazednconfused.catalauncher.database.base;
 
 /**
- * Custom {@link Exception} wrapper for {@link Throwable}s at the {@link BaseDAO} layer.
+ * Custom {@link Exception} wrapper for {@link Throwable}s at DAO layer.
  * */
 public class DAOException extends RuntimeException {
 
