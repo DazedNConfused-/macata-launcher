@@ -18,7 +18,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ModRepositoryTest {
@@ -49,10 +48,6 @@ public class ModRepositoryTest {
                 return super.getDatabaseName() + "_" + uuid;
             }
         };
-    }
-
-    @BeforeEach
-    public void before() {
     }
 
     @AfterEach

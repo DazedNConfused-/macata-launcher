@@ -13,10 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import sun.misc.Unsafe;
@@ -36,24 +33,12 @@ class MigrateableH2DatabaseTest {
 
     private TestDatabase db;
 
-    @BeforeAll
-    public static void setup() {
-    }
-
-    @BeforeEach
-    public void before() {
-    }
-
     @AfterEach
     public void teardown() {
         if (db != null) {
             db.destroy();
         }
         db = null; // guarantee fresh TestDatabase is created on each individual test
-    }
-
-    @AfterAll
-    public static void cleanup() {
     }
 
     @Test
@@ -181,9 +166,6 @@ class MigrateableH2DatabaseTest {
         assertThat(db.doesTableExist("sample2")).isFalse();
         assertThat(db.doesTableExist("sample3")).isFalse();
 
-        // prepare mock data ---
-        TestDatabase db = new TestDatabase();
-
         // execute test ---
         db.applyAllPendingMigrations();
 
@@ -257,6 +239,7 @@ class MigrateableH2DatabaseTest {
         public static String MOCK_DATABASE_NAME = "migrateableH2TestDatabase";
 
         public TestDatabase() {
+            // empty constructor
         }
 
         @Override
