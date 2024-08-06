@@ -59,10 +59,12 @@ public class ModManager {
         return this.modRepository.findAll().stream()
             .map(ModMapper.INSTANCE::toDTO)
             .collect(Collectors.toList());
-//
-//        return Arrays.stream(Objects.requireNonNull(getModsFolder().listFiles()))
-//                .filter(file -> !file.getName().equals(".DS_Store"))
-//                .collect(Collectors.toList());
+
+        /*
+        return Arrays.stream(Objects.requireNonNull(getModsFolder().listFiles()))
+                .filter(file -> !file.getName().equals(".DS_Store"))
+                .collect(Collectors.toList());
+        */
     }
 
     /**
@@ -83,12 +85,14 @@ public class ModManager {
 
         throw new RuntimeException("Not implemented yet");
 
-//        File installInto = new File(getModsFolder().getPath() + "/" + toBeInstalled.getName());
-//
-//        Try.run(() -> {
-//            LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
-//            FileUtils.copyDirectory(toBeInstalled, installInto);
-//        }).onFailure(t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled, t)).andThen(() -> onDoneCallback.accept(installInto.toPath()));
+        /*
+        File installInto = new File(getModsFolder().getPath() + "/" + toBeInstalled.getName());
+
+        Try.run(() -> {
+            LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
+            FileUtils.copyDirectory(toBeInstalled, installInto);
+        }).onFailure(t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled, t)).andThen(() -> onDoneCallback.accept(installInto.toPath()));
+        */
     }
 
     /**

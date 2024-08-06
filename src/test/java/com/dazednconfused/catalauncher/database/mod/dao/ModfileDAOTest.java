@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.dazednconfused.catalauncher.database.base.DisposableDatabase;
 import com.dazednconfused.catalauncher.database.h2.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
@@ -56,12 +57,12 @@ public class ModfileDAOTest {
 
     @AfterEach
     public void teardown() {
-        ((H2Database) dao).reset();
+        ((DisposableDatabase) dao).reset();
     }
 
     @AfterAll
     public static void cleanup() {
-        ((H2Database) dao).destroy();
+        ((DisposableDatabase) dao).destroy();
     }
 
     @Test

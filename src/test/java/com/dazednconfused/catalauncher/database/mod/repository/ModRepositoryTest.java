@@ -2,6 +2,7 @@ package com.dazednconfused.catalauncher.database.mod.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.dazednconfused.catalauncher.database.base.DisposableDatabase;
 import com.dazednconfused.catalauncher.database.mod.dao.ModDAO;
 import com.dazednconfused.catalauncher.database.mod.dao.ModH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.dao.ModfileDAO;
@@ -52,12 +53,12 @@ public class ModRepositoryTest {
 
     @AfterEach
     public void teardown() {
-        ((ModH2RepositoryImpl) repository).reset();
+        ((DisposableDatabase) repository).reset();
     }
 
     @AfterAll
     public static void cleanup() {
-        ((ModH2RepositoryImpl) repository).destroy();
+        ((DisposableDatabase) repository).destroy();
     }
 
     @Test
