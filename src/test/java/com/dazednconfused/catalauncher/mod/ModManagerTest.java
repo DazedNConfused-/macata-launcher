@@ -1,10 +1,12 @@
 package com.dazednconfused.catalauncher.mod;
 
+import com.dazednconfused.catalauncher.assertions.CustomFileAssertions;
 import com.dazednconfused.catalauncher.database.base.DisposableDatabase;
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.mod.dto.ModfileDTO;
+import com.dazednconfused.catalauncher.utils.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,12 +15,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
@@ -345,7 +344,7 @@ class ModManagerTest {
     void validate_mod_for_zip_success() {
 
         // prepare mock data ---
-        File MOCKED_MOD_ZIP = getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
+        File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
 
         // execute test ---
         Result<Throwable, File> result = instance.validateMod(MOCKED_MOD_ZIP);
@@ -360,30 +359,18 @@ class ModManagerTest {
 
         File ACTUAL_RESULT = result.toEither().get().getResult().orElseThrow();
 
-        List<String> EXPECTED_RELATIVE_PATHS = Arrays.asList(
+        CustomFileAssertions.assertThat(ACTUAL_RESULT).hasExactlyFilesWithRelativePaths(Arrays.asList(
                 "modinfo.json",
                 "README.md",
                 "items/armor/integrated.json"
-        );
-
-        // collect all file paths recursively
-        List<File> ACTUAL_FILES = new ArrayList<>();
-        collectAllFilesFromInto(ACTUAL_RESULT, ACTUAL_FILES);
-
-        // convert actual files to relative paths
-        List<String> ACTUAL_RELATIVE_PATHS = ACTUAL_FILES.stream()
-                .map(file -> ACTUAL_RESULT.toPath().relativize(file.toPath()).toString())
-                .collect(Collectors.toList());
-
-        // assert unzipped mod contents
-        assertThat(ACTUAL_RELATIVE_PATHS).containsAll(EXPECTED_RELATIVE_PATHS);
+        ));
     }
 
     @Test
     void validate_mod_for_directory_success() {
 
         // prepare mock data ---
-        File MOCKED_MOD_ZIP = getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+        File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
         // execute test ---
         Result<Throwable, File> result = instance.validateMod(MOCKED_MOD_ZIP);
@@ -398,52 +385,10 @@ class ModManagerTest {
 
         File ACTUAL_RESULT = result.toEither().get().getResult().orElseThrow();
 
-        List<String> EXPECTED_RELATIVE_PATHS = Arrays.asList(
-                "modinfo.json",
-                "README.md",
-                "items/armor/integrated.json"
-        );
-
-        // collect all file paths recursively
-        List<File> ACTUAL_FILES = new ArrayList<>();
-        collectAllFilesFromInto(ACTUAL_RESULT, ACTUAL_FILES);
-
-        // convert actual files to relative paths
-        List<String> ACTUAL_RELATIVE_PATHS = ACTUAL_FILES.stream()
-                .map(file -> ACTUAL_RESULT.toPath().relativize(file.toPath()).toString())
-                .collect(Collectors.toList());
-
-        // assert unzipped mod contents
-        assertThat(ACTUAL_RELATIVE_PATHS).containsAll(EXPECTED_RELATIVE_PATHS);
-    }
-
-    /**
-     * Collects all {@link File}s from {@code sourceDirectory} into the given {@code result} array.
-     * */
-    private void collectAllFilesFromInto(File sourceDirectory, List<File> result) {
-        File[] files = sourceDirectory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    collectAllFilesFromInto(file, result);
-                } else {
-                    result.add(file);
-                }
-            }
-        }
-    }
-
-    /**
-     * Retrieves the given {@code fileName} from the Java Resources' folder.
-     * */
-    private static File getFromResource(String fileName) {
-        URL resourceUrl = ModManagerTest.class.getClassLoader().getResource(fileName);
-
-        // check that the resource exists
-        if (resourceUrl != null) {
-            return new File(resourceUrl.getFile()); // convert the URL to a File object
-        }
-
-        throw new IllegalArgumentException("Could not find resource: " + fileName);
+        CustomFileAssertions.assertThat(ACTUAL_RESULT).hasExactlyFilesWithRelativePaths(Arrays.asList(
+            "modinfo.json",
+            "README.md",
+            "items/armor/integrated.json"
+        ));
     }
 }

@@ -1,10 +1,11 @@
 package com.dazednconfused.catalauncher.helper;
 
+import com.dazednconfused.catalauncher.utils.TestUtils;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ class ZipperTest {
 
         // execute test ---
         Zipper.compressAndCallback(
-            getFromResource("zipper/test/compress"),
+            TestUtils.getFromResource("zipper/test/compress"),
             MOCKED_DESTINATION_PATH,
             MOCKED_CALLBACK,
             1
@@ -61,7 +62,7 @@ class ZipperTest {
 
         // execute test ---
         Zipper.decompressAndCallback(
-            getFromResource("zipper/test/decompress/sample.zip"),
+            TestUtils.getFromResource("zipper/test/decompress/sample.zip"),
             tempDir.getAbsoluteFile().toPath(),
             MOCKED_CALLBACK,
             1
@@ -80,20 +81,6 @@ class ZipperTest {
             EXPECTED_FILES, EXPECTED_FOLDERS,
             0
         );
-    }
-
-    /**
-     * Retrieves the given {@code fileName} from the Java Resources' folder.
-     * */
-    private static File getFromResource(String fileName) {
-        URL resourceUrl = ZipperTest.class.getClassLoader().getResource(fileName);
-
-        // check that the resource exists
-        if (resourceUrl != null) {
-            return new File(resourceUrl.getFile()); // convert the URL to a File object
-        }
-
-        throw new IllegalArgumentException("Could not find resource: " + fileName);
     }
 
     /**
