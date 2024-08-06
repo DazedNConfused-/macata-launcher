@@ -12,10 +12,18 @@ import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
 import io.vavr.control.Try;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,16 +74,6 @@ public class ModManager {
     }
 
     /**
-     * Unregisters and deletes the given {@code toBeUninstalled} mod.
-     * */
-    public Result<Throwable, Void> uninstallMod(ModDTO toBeUninstalled) {
-        LOGGER.info("Uninstalling mod [{}]...", toBeUninstalled);
-
-        throw new RuntimeException("Not implemented yet");
-        //Try.run(() -> FileUtils.deleteDirectory(toBeUninstalled)).onFailure(t -> LOGGER.error("There was an error deleting mod [{}]", toBeUninstalled, t));
-    }
-
-    /**
      * Installs given {@code toBeInstalled} mod inside {@link Paths#getCustomModsDir()}.
      * */
     public void installMod(File toBeInstalled, Consumer<Path> onDoneCallback) {
@@ -91,6 +89,16 @@ public class ModManager {
             FileUtils.copyDirectory(toBeInstalled, installInto);
         }).onFailure(t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled, t)).andThen(() -> onDoneCallback.accept(installInto.toPath()));
         */
+    }
+
+    /**
+     * Unregisters and deletes the given {@code toBeUninstalled} mod.
+     * */
+    public Result<Throwable, Void> uninstallMod(ModDTO toBeUninstalled) {
+        LOGGER.info("Uninstalling mod [{}]...", toBeUninstalled);
+
+        throw new RuntimeException("Not implemented yet");
+        //Try.run(() -> FileUtils.deleteDirectory(toBeUninstalled)).onFailure(t -> LOGGER.error("There was an error deleting mod [{}]", toBeUninstalled, t));
     }
 
     /**
@@ -120,7 +128,7 @@ public class ModManager {
     /**
      * Retrieves the {@link Paths#getCustomModsDir()} as a {@link File}.
      * */
-    private static File getModsFolder() {
+    protected File getModsFolder() {
         File modsPath = new File(Paths.getCustomModsDir());
         if (!modsPath.exists()) {
             LOGGER.debug("Mods folder [{}] not found. Creating...", modsPath);
@@ -129,4 +137,56 @@ public class ModManager {
 
         return modsPath;
     }
+
+//    /**
+//     * Returns whether the given {@code toBeInstalled} mod is a valid installation candidate. If it is, it will return a parsed
+//     * {@link File} folder structure ready to be copied to the destination folder, wrapped inside a {@link Result#success()}.
+//     * Otherwise, it will return the validation error, wrapped inside a {@link Result#failure(Throwable)}.
+//     * */
+//    protected Result<Throwable, File> validateMod(File toBeInstalled) {
+//        return Try.of(() -> {
+//            if (!toBeInstalled.exists()) {
+//                throw new ModValidationException("Mod file [" + toBeInstalled + "] does not exist");
+//            }
+//
+//            if (!toBeInstalled.canRead()) {
+//                throw new ModValidationException("Mod file [" + toBeInstalled + "] cannot be read");
+//            }
+//
+//            File modRoot;
+//            if (toBeInstalled.isDirectory()) {
+//                modRoot = toBeInstalled;
+//            } else if (toBeInstalled.getName().endsWith(".zip")) {
+//                modRoot = unzipToTempFolder(toBeInstalled);
+//            } else {
+//                throw new ModValidationException("Mod file [" + toBeInstalled + "] is neither a directory nor a zip file");
+//            }
+//
+//            File modInfoFile = new File(modRoot, "modinfo.json");
+//            if (!modInfoFile.exists() || !modInfoFile.isFile()) {
+//                throw new ModValidationException("modinfo.json not found in mod file [" + toBeInstalled + "]");
+//            }
+//
+//            return modRoot;
+//        }).map(Result::success).recover(Result::failure).get();
+//    }
+//
+//    private File unzipToTempFolder(File zipFile) throws IOException, ModValidationException {
+//        Path tempDir = Files.createTempDirectory("macata_mod_unzip");
+//        try (ZipFile zip = new ZipFile(zipFile)) {
+//            Enumeration<? extends ZipEntry> entries = zip.entries();
+//            while (entries.hasMoreElements()) {
+//                ZipEntry entry = entries.nextElement();
+//                File entryDestination = new File(tempDir.toFile(), entry.getName());
+//                if (entry.isDirectory()) {
+//                    Files.createDirectories(entryDestination.toPath());
+//                } else {
+//                    Files.createDirectories(entryDestination.toPath().getParent());
+//                    Files.copy(zip.getInputStream(entry), entryDestination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//                }
+//            }
+//        }
+//        return tempDir.toFile();
+//    }
+
 }

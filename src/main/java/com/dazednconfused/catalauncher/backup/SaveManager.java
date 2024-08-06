@@ -1,6 +1,7 @@
 package com.dazednconfused.catalauncher.backup;
 
 import com.dazednconfused.catalauncher.helper.Paths;
+import com.dazednconfused.catalauncher.helper.Zipper;
 import com.dazednconfused.catalauncher.helper.result.Result;
 
 import io.vavr.control.Try;

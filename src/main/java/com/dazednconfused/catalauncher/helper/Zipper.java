@@ -1,4 +1,4 @@
-package com.dazednconfused.catalauncher.backup;
+package com.dazednconfused.catalauncher.helper;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,6 +1,8 @@
 package com.dazednconfused.catalauncher.mod;
 
+import com.dazednconfused.catalauncher.Application;
 import com.dazednconfused.catalauncher.database.base.DisposableDatabase;
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.mod.dto.ModfileDTO;
@@ -8,11 +10,17 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
 
 class ModManagerTest {
 
@@ -315,5 +323,22 @@ class ModManagerTest {
                 EXPECTED_TO_REMAIN_1,
                 EXPECTED_TO_REMAIN_2
         );
+    }
+
+    @Test
+    void get_mods_folder_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+
+            // pre-test assertions ---
+
+            // execute test ---
+            File result = instance.getModsFolder();
+
+            // verify assertions ---
+            assertThat(result).isEqualTo(new File(mockedDirectory.toString()));
+        }
     }
 }
