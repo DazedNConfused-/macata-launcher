@@ -8,4 +8,10 @@ public class Application {
         MainWindow.main(args);
     }
 
+    /**
+     * Returns the folder where the current instance of the {@link Application} is running.
+     * */
+    public static String getRootFolder() {
+        return System.getProperty("user.dir");
+    }
 }

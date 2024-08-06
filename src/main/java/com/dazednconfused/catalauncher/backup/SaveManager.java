@@ -1,10 +1,6 @@
 package com.dazednconfused.catalauncher.backup;
 
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_SAVE_PATH;
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_TRASHED_SAVE_PATH;
-import static com.dazednconfused.catalauncher.helper.Constants.LAUNCHER_ROOT_FOLDER;
-import static com.dazednconfused.catalauncher.helper.Constants.SAVE_BACKUP_PATH;
-
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
 
 import io.vavr.control.Try;
@@ -29,8 +25,8 @@ public class SaveManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveManager.class);
 
     /**
-     * Returns the current {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH} compression job, wrapped
-     * inside a {@link Thread} and ready to be executed.
+     * Returns the current {@link Paths#getCustomSavePath()} compression job, wrapped inside a {@link Thread} and ready to
+     * be executed.
      * */
     public static Optional<Thread> backupCurrentSaves(Consumer<Integer> onPercentDoneCallback) {
         LOGGER.info("Backup-ing all saves...");
@@ -40,7 +36,7 @@ public class SaveManager {
             return Optional.empty();
         }
 
-        File savesFolder = new File(CUSTOM_SAVE_PATH);
+        File savesFolder = new File(Paths.getCustomSavePath());
         return Optional.of(compressFolderAsJob(
                 savesFolder,
                 getSaveBackupFolder().getAbsolutePath() + "/" + generateNameBasedOnCurrentTimestamp() + ".zip",
@@ -54,19 +50,19 @@ public class SaveManager {
     public static Optional<Thread> restoreBackup(File backup2beRestored, Consumer<Integer> onPercentDoneCallback) {
         LOGGER.info("Restoring backup [{}]...", backup2beRestored);
 
-        File trashedSaves = new File(CUSTOM_TRASHED_SAVE_PATH);
+        File trashedSaves = new File(Paths.getCustomTrashedSavePath());
 
         if (!trashedSaves.exists()) {
             LOGGER.debug("Trashed saves' folder [{}] doesn't exist. Generating...", trashedSaves);
             Try.of(trashedSaves::mkdirs).onFailure(t -> LOGGER.error("There was an error while creating trashed saves' folder [{}]", trashedSaves, t));
         }
 
-        File trashedSavePath = new File(CUSTOM_TRASHED_SAVE_PATH + generateNameBasedOnCurrentTimestamp());
+        File trashedSavePath = new File(Paths.getCustomTrashedSavePath() + generateNameBasedOnCurrentTimestamp());
 
         if (!saveFilesExist()) {
             LOGGER.info("No current saves found. Nothing to move to trash folder.");
         } else {
-            File currentSave = new File(CUSTOM_SAVE_PATH);
+            File currentSave = new File(Paths.getCustomSavePath());
 
             Try.of(() -> Files.move(
                     currentSave.toPath(),
@@ -76,7 +72,7 @@ public class SaveManager {
 
         return Optional.of(decompressFolderAsJob(
                 backup2beRestored,
-                LAUNCHER_ROOT_FOLDER, // we don't decompress into CUSTOM_SAVE_PATH because we end up with ./saves/saves/<actual world saves>
+                Paths.getLauncherRootFolder(), // we don't decompress into CUSTOM_SAVE_PATH because we end up with ./saves/saves/<actual world saves>
                 onPercentDoneCallback
         ));
     }
@@ -105,7 +101,7 @@ public class SaveManager {
     }
 
     /**
-     * Returns all save backups currently found in {@link com.dazednconfused.catalauncher.helper.Constants#SAVE_BACKUP_PATH}.
+     * Returns all save backups currently found in {@link Paths#getSaveBackupPath()}.
      * */
     public static List<File> listAllBackups() {
         LOGGER.debug("Listing all backups...");
@@ -115,11 +111,11 @@ public class SaveManager {
     }
 
     /**
-     * If save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}, returns the last
-     * modified valid save file. Save file is valid if it has a .sav file in it.
+     * If save files exist in {@link Paths#getCustomSavePath()}, returns the last modified valid save file. Save file is valid
+     * if it has a .sav file in it.
      * */
     public static Optional<File> getLastModifiedValidSave() {
-        File savesFolder = new File(CUSTOM_SAVE_PATH);
+        File savesFolder = new File(Paths.getCustomSavePath());
         if (!saveFilesExist()) {
             return Optional.empty();
         }
@@ -137,18 +133,17 @@ public class SaveManager {
 
     }
     /**
-     * Determines whether save files exist in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}.
+     * Determines whether save files exist in {@link Paths#getCustomSavePath()}.
      * */
 
     public static boolean saveFilesExist() {
-        File savesFolder = new File(CUSTOM_SAVE_PATH);
+        File savesFolder = new File(Paths.getCustomSavePath());
         return savesFolder.exists() && Arrays.stream(Objects.requireNonNull(savesFolder.listFiles())).anyMatch(file -> !file.getName().equals(".DS_Store"));
     }
 
     /**
-     * Gets the latest save {@link File} from {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SAVE_PATH}, wrapped
-     * inside an {@link Optional}. {@link Optional#empty()} if given path doesn't exist or doesn't have any folders that could
-     * be assumed to be individual save files.
+     * Gets the latest save {@link File} from {@link Paths#getCustomSavePath()}, wrapped inside an {@link Optional}. {@link Optional#empty()}
+     * if given path doesn't exist or doesn't have any folders that could be assumed to be individual save files.
      * */
     public static Optional<File> getLatestSave() {
 
@@ -160,10 +155,10 @@ public class SaveManager {
     }
 
     /**
-     * Retrieves the {@link com.dazednconfused.catalauncher.helper.Constants#SAVE_BACKUP_PATH} as a {@link File}.
+     * Retrieves the {@link Paths#getSaveBackupPath()} as a {@link File}.
      * */
     private static File getSaveBackupFolder() {
-        File backupPath = new File(SAVE_BACKUP_PATH);
+        File backupPath = new File(Paths.getSaveBackupPath());
         if (!backupPath.exists()) {
             LOGGER.debug("Save backup destination folder [{}] not found. Creating...", backupPath);
             Try.of(backupPath::mkdirs).onFailure(t -> LOGGER.error("Could not create backup destination folder [{}]", backupPath, t));

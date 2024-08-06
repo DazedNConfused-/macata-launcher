@@ -1,12 +1,10 @@
 package com.dazednconfused.catalauncher.mod;
 
-
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_MODS_DIR;
-
 import com.dazednconfused.catalauncher.database.mod.dao.ModH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.dao.ModfileH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.repository.ModH2RepositoryImpl;
 import com.dazednconfused.catalauncher.database.mod.repository.ModRepository;
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
@@ -78,7 +76,7 @@ public class ModManager {
     }
 
     /**
-     * Installs given {@code toBeInstalled} mod inside {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_MODS_DIR}.
+     * Installs given {@code toBeInstalled} mod inside {@link Paths#getCustomModsDir()}.
      * */
     public void installMod(File toBeInstalled, Consumer<Path> onDoneCallback) {
         LOGGER.info("Installing mod [{}]...", toBeInstalled);
@@ -120,10 +118,10 @@ public class ModManager {
     }
 
     /**
-     * Retrieves the {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_MODS_DIR} as a {@link File}.
+     * Retrieves the {@link Paths#getCustomModsDir()} as a {@link File}.
      * */
     private static File getModsFolder() {
-        File modsPath = new File(CUSTOM_MODS_DIR);
+        File modsPath = new File(Paths.getCustomModsDir());
         if (!modsPath.exists()) {
             LOGGER.debug("Mods folder [{}] not found. Creating...", modsPath);
             Try.of(modsPath::mkdirs).onFailure(t -> LOGGER.error("Could not create mods destination folder [{}]", modsPath, t));

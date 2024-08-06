@@ -1,7 +1,6 @@
 package com.dazednconfused.catalauncher.configuration;
 
-import static com.dazednconfused.catalauncher.helper.Constants.LAUNCHER_FILES;
-
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.vavr.control.Try;
@@ -20,7 +19,7 @@ public class ConfigurationManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationManager.class);
 
-    private static final String CONFIG_FILEPATH = LAUNCHER_FILES + "/configuration.json";
+    private static final String CONFIG_FILEPATH = Paths.getLauncherFiles() + "/configuration.json";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 

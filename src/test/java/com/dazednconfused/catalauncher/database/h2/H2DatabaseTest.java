@@ -2,7 +2,7 @@ package com.dazednconfused.catalauncher.database.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.dazednconfused.catalauncher.helper.Constants;
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
 
 import java.io.File;
@@ -154,7 +154,7 @@ class H2DatabaseTest {
 
         assertThat(result.toEither().isRight()).isTrue();
 
-        String dbFilePath = Constants.LAUNCHER_FILES + "/db/" + db.getDatabaseName() + ".mv.db";
+        String dbFilePath = Paths.getLauncherFiles() + "/db/" + db.getDatabaseName() + ".mv.db";
         File dbFile = new File(dbFilePath);
 
         assertThat(dbFile).doesNotExist();
@@ -182,7 +182,7 @@ class H2DatabaseTest {
 
         assertThat(result.toEither().isRight()).isTrue();
 
-        String dbFilePath = Constants.LAUNCHER_FILES + "/db/" + db.getDatabaseName() + ".mv.db";
+        String dbFilePath = Paths.getLauncherFiles() + "/db/" + db.getDatabaseName() + ".mv.db";
         File dbFile = new File(dbFilePath);
 
         assertThat(dbFile).doesNotExist();

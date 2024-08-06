@@ -1,15 +1,13 @@
 package com.dazednconfused.catalauncher.gui;
 
 import static com.dazednconfused.catalauncher.helper.Constants.APP_NAME;
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_SAVE_PATH;
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_TRASHED_SAVE_PATH;
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_USER_DIR;
 
 import com.dazednconfused.catalauncher.backup.SaveManager;
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.FileExplorerManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.sysinfo.SystemInfoManager;
 import com.dazednconfused.catalauncher.launcher.CDDALauncherManager;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
@@ -63,8 +61,8 @@ public class MainWindow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainWindow.class);
 
-    private static final String[] CUSTOM_SAVE_DIR_ARGS = { "--savedir", CUSTOM_SAVE_PATH };
-    private static final String[] CUSTOM_USER_DIR_ARGS = { "--userdir", CUSTOM_USER_DIR };
+    private static final String[] CUSTOM_SAVE_DIR_ARGS = { "--savedir", Paths.getCustomSavePath() };
+    private static final String[] CUSTOM_USER_DIR_ARGS = { "--userdir", Paths.getCustomUserDir() };
 
     /**
      * The array of all {@link Runnable}s to be executed on invocation of {@link #refreshGuiElements()}.
@@ -280,7 +278,7 @@ public class MainWindow {
             LOGGER.trace("Save backup currently on selection: [{}]", selectedBackup);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), CUSTOM_TRASHED_SAVE_PATH),
+                String.format("Are you sure you want to restore the backup [%s]? Current save will be moved to trash folder [%s]", selectedBackup.getName(), Paths.getCustomTrashedSavePath()),
                 ConfirmDialog.ConfirmDialogType.INFO,
                 confirmed -> {
                     LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
