@@ -105,7 +105,7 @@ public abstract class H2Database implements DisposableDatabase {
 
 
     /**
-     * Completely wipes this database of any and all data.
+     * Completely wipes this database of any and all data, <b>including</b> the underlying schema.
      *
      * @apiNote Callers of this method are responsible for making sure any and all open {@link Connection}s are properly
      *          disposed of before triggering the wipe.
@@ -118,7 +118,7 @@ public abstract class H2Database implements DisposableDatabase {
     }
 
     /**
-     * Completely wipes the given {@code database} of any and all data.
+     * Completely wipes the given {@code database} of any and all data, <b>including</b> the underlying schema.
      * */
     protected static Result<Throwable, Object> wipe(String database) {
         if (StringUtils.isBlank(database)) {
