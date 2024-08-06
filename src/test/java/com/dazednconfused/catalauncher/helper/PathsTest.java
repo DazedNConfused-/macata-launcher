@@ -1,141 +1,148 @@
 package com.dazednconfused.catalauncher.helper;
 
+import com.dazednconfused.catalauncher.Application;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
+
 class PathsTest {
 
-    /*
-    @BeforeAll
-    public static void setup() {
-    }
-    
-    @BeforeEach
-    public void before() {
-    }
-    
-    @AfterEach
-    public void teardown() {
-    }
-    
-    @AfterAll
-    public static void cleanup() {
-    }
+    private static final String MOCKED_APPLICATION_ROOT = "/binary/root/folder";
 
-    try(MockedStatic<Application> mockedSystem = mockStatic(Application.class)){
+    @Test
+    void get_launcher_root_folder_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-            mockedSystem.when(Application::getRootFolder).thenReturn("/a/mocked/folder");
-            String asd = Paths.getLauncherRootFolder();
-            String asd2 = Paths.getCustomModsDir();
-            System.out.println();
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
+            // execute test ---
+            String result = Paths.getLauncherRootFolder();
 
-//            mockedSystem.when(() -> SaleLineParserStatic.parse("P1;10")).thenReturn(sale1);
-//            mockSaleLineParser.when(() -> SaleLineParserStatic.parse("P2;20")).thenReturn(sale2);
-//            //when
-//            SalesProcessorStatic salesProcessor = new SalesProcessorStatic();
-//            int salesTotal = salesProcessor.compute(sales);
-//            //then
-//            Assertions.assertEquals(expectedTotal,salesTotal);
+            // verify assertions ---
+            assertThat(result).isEqualTo(MOCKED_APPLICATION_ROOT);
         }
-     */
-
-    @Test
-    void getLauncherRootFolder() {
-        // prepare mock data ---
-
-        // pre-test assertions ---
-
-        // execute test ---
-
-        // verify assertions ---
     }
 
     @Test
-    void getLauncherFiles() {
-        // prepare mock data ---
+    void get_launcher_files_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getLauncherFiles();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/.macatalauncher");
+        }
     }
 
     @Test
-    void getLogFilePath() {
-        // prepare mock data ---
+    void get_log_file_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getLogFilePath();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/.macatalauncher/logs/main.log");
+        }
     }
 
     @Test
-    void getCustomSavePath() {
-        // prepare mock data ---
+    void get_custom_save_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getCustomSavePath();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/saves/");
+        }
     }
 
     @Test
-    void getCustomTrashedSavePath() {
-        // prepare mock data ---
+    void get_custom_trashed_save_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getCustomTrashedSavePath();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/trashed/saves/");
+        }
     }
 
     @Test
-    void getSaveBackupPath() {
-        // prepare mock data ---
+    void get_save_backup_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getSaveBackupPath();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/backups");
+        }
     }
 
     @Test
-    void getCustomUserDir() {
-        // prepare mock data ---
+    void get_custom_user_dir_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getCustomUserDir();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/userdir/");
+        }
     }
 
     @Test
-    void getCustomSoundpacksDir() {
-        // prepare mock data ---
+    void get_custom_soundpacks_dir_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getCustomSoundpacksDir();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/userdir/sound/");
+        }
     }
 
     @Test
-    void getCustomModsDir() {
-        // prepare mock data ---
+    void get_custom_mods_dir_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
-        // pre-test assertions ---
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
 
-        // execute test ---
+            // execute test ---
+            String result = Paths.getCustomModsDir();
 
-        // verify assertions ---
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/userdir/mods/");
+        }
     }
 }

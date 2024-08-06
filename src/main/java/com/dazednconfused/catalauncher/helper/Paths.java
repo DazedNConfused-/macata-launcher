@@ -85,7 +85,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom {@code userdir/sound} directory.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/userdir/sound"
+     *  getLauncherRootFolder() + "/userdir/sound/"
      * }</pre>
      * */
     public static String getCustomSoundpacksDir() {
@@ -96,7 +96,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom {@code userdir/mods} directory.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/userdir/mods"
+     *  getLauncherRootFolder() + "/userdir/mods/"
      * }</pre>
      * */
     public static String getCustomModsDir() {
