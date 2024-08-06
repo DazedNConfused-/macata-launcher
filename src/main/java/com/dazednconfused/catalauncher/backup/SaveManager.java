@@ -172,14 +172,14 @@ public class SaveManager {
      * Returns the requested compression job wrapped inside a {@link Thread} and ready to be executed.
      * */
     private static Thread compressFolderAsJob(File sourceDir, String outputFile, Consumer<Integer> onPercentDoneCallback) {
-        return new Thread(() -> Zipper.compressAndCallback(sourceDir, outputFile, onPercentDoneCallback, 100));
+        return new Thread(() -> Zipper.compressAndCallback(sourceDir, Path.of(outputFile), onPercentDoneCallback, 100));
     }
 
     /**
      * Returns the requested decompression job wrapped inside a {@link Thread} and ready to be executed.
      * */
     private static Thread decompressFolderAsJob(File sourceFile, String destinationPath, Consumer<Integer> onPercentDoneCallback) {
-        return new Thread(() -> Zipper.decompressAndCallback(sourceFile, destinationPath, onPercentDoneCallback, 100));
+        return new Thread(() -> Zipper.decompressAndCallback(sourceFile, Path.of(destinationPath), onPercentDoneCallback, 100));
     }
 
     /**

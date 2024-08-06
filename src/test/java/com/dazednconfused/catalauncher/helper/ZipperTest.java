@@ -32,7 +32,7 @@ class ZipperTest {
         // execute test ---
         Zipper.compressAndCallback(
             getFromResource("zipper/test/compress"),
-            MOCKED_DESTINATION_PATH.toString(),
+            MOCKED_DESTINATION_PATH,
             MOCKED_CALLBACK,
             1
         );
@@ -62,7 +62,7 @@ class ZipperTest {
         // execute test ---
         Zipper.decompressAndCallback(
             getFromResource("zipper/test/decompress/sample.zip"),
-            tempDir.getPath(),
+            tempDir.getAbsoluteFile().toPath(),
             MOCKED_CALLBACK,
             1
         );

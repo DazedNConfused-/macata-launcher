@@ -2,6 +2,7 @@ package com.dazednconfused.catalauncher.helper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import net.lingala.zip4j.ZipFile;
@@ -19,17 +20,17 @@ public class Zipper {
     private static final Logger LOGGER = LoggerFactory.getLogger(Zipper.class);
 
     /**
-     * Compresses the given {@code sourceDir} {@link File} into the given {@code outputFile.zip}, calling the provided {@link Consumer}
+     * Compresses the given {@code sourceDir} {@link File} into the given {@code outputFileZip.zip}, calling the provided {@link Consumer}
      * callback every {@code callbackCheckMs} milliseconds.
      * */
-    public static void compressAndCallback(File sourceDir, String outputFile, @Nullable Consumer<Integer> onPercentDoneCallback, int callbackCheckMs) {
-        LOGGER.debug("Compressing folder [{}] into [{}]...", sourceDir, outputFile);
+    public static void compressAndCallback(File sourceDir, Path outputFileZip, @Nullable Consumer<Integer> onPercentDoneCallback, int callbackCheckMs) {
+        LOGGER.debug("Compressing folder [{}] into [{}]...", sourceDir, outputFileZip);
 
         ZipParameters zipParameters = new ZipParameters();
         zipParameters.setCompressionMethod(CompressionMethod.DEFLATE);
         zipParameters.setCompressionLevel(CompressionLevel.ULTRA);
 
-        try (ZipFile zipFile = new ZipFile(outputFile)) {
+        try (ZipFile zipFile = new ZipFile(outputFileZip.toString())) {
             ProgressMonitor progressMonitor = zipFile.getProgressMonitor();
 
             zipFile.setRunInThread(true);
@@ -51,14 +52,14 @@ public class Zipper {
             }
 
             if (progressMonitor.getResult().equals(ProgressMonitor.Result.SUCCESS)) {
-                LOGGER.debug("Successfully added folder [{}] to zip [{}]", sourceDir, outputFile);
+                LOGGER.debug("Successfully added folder [{}] to zip [{}]", sourceDir, outputFileZip);
             } else if (progressMonitor.getResult().equals(ProgressMonitor.Result.ERROR)) {
                 LOGGER.error(
                         "There was an error while compressing folder [{}] into [{}]. Error message: [{}]",
-                        sourceDir, outputFile, progressMonitor.getException().getMessage()
+                        sourceDir, outputFileZip, progressMonitor.getException().getMessage()
                 );
             } else if (progressMonitor.getResult().equals(ProgressMonitor.Result.CANCELLED)) {
-                LOGGER.error("Compression task [{}] to zip [{}] cancelled", sourceDir, outputFile);
+                LOGGER.error("Compression task [{}] to zip [{}] cancelled", sourceDir, outputFileZip);
             }
 
             if (onPercentDoneCallback != null) {
@@ -66,7 +67,7 @@ public class Zipper {
             }
 
         } catch (InterruptedException | IOException e) {
-            LOGGER.error("There was an error while compressing folder [{}] into [{}]", sourceDir, outputFile, e);
+            LOGGER.error("There was an error while compressing folder [{}] into [{}]", sourceDir, outputFileZip, e);
             throw new RuntimeException(e);
         }
     }
@@ -75,14 +76,14 @@ public class Zipper {
      * Decompresses the given {@code sourceDir} {@link File} into the given {@code outputFile.zip}, calling the provided {@link Consumer}
      * callback every {@code callbackCheckMs} milliseconds.
      * */
-    public static void decompressAndCallback(File sourceFile, String destinationPath, @Nullable Consumer<Integer> onPercentDoneCallback, int callbackCheckMs) {
-        LOGGER.debug("Decompressing file [{}] into [{}]...", sourceFile, destinationPath);
+    public static void decompressAndCallback(File sourceFileZip, Path destinationPath, @Nullable Consumer<Integer> onPercentDoneCallback, int callbackCheckMs) {
+        LOGGER.debug("Decompressing file [{}] into [{}]...", sourceFileZip, destinationPath);
 
-        try (ZipFile zipFile = new ZipFile(sourceFile)) {
+        try (ZipFile zipFile = new ZipFile(sourceFileZip)) {
             ProgressMonitor progressMonitor = zipFile.getProgressMonitor();
 
             zipFile.setRunInThread(true);
-            zipFile.extractAll(destinationPath);
+            zipFile.extractAll(destinationPath.toString());
 
             while (!progressMonitor.getState().equals(ProgressMonitor.State.READY)) {
                 LOGGER.trace(
@@ -100,14 +101,14 @@ public class Zipper {
             }
 
             if (progressMonitor.getResult().equals(ProgressMonitor.Result.SUCCESS)) {
-                LOGGER.debug("Successfully extracted zip [{}] into [{}]", sourceFile, destinationPath);
+                LOGGER.debug("Successfully extracted zip [{}] into [{}]", sourceFileZip, destinationPath);
             } else if (progressMonitor.getResult().equals(ProgressMonitor.Result.ERROR)) {
                 LOGGER.error(
                         "There was an error while extracting zip [{}] into [{}]. Error message: [{}]",
-                        sourceFile, destinationPath, progressMonitor.getException().getMessage()
+                        sourceFileZip, destinationPath, progressMonitor.getException().getMessage()
                 );
             } else if (progressMonitor.getResult().equals(ProgressMonitor.Result.CANCELLED)) {
-                LOGGER.error("Decompression task [{}] to [{}] cancelled", sourceFile, destinationPath);
+                LOGGER.error("Decompression task [{}] to [{}] cancelled", sourceFileZip, destinationPath);
             }
 
             if (onPercentDoneCallback != null) {
@@ -115,7 +116,7 @@ public class Zipper {
             }
 
         } catch (InterruptedException | IOException e) {
-            LOGGER.error("There was an error while decompressing zip [{}] into [{}]", sourceFile, destinationPath, e);
+            LOGGER.error("There was an error while decompressing zip [{}] into [{}]", sourceFileZip, destinationPath, e);
             throw new RuntimeException(e);
         }
     }
