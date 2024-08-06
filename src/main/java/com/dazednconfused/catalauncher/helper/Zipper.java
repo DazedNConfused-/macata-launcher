@@ -20,8 +20,8 @@ public class Zipper {
     private static final Logger LOGGER = LoggerFactory.getLogger(Zipper.class);
 
     /**
-     * Compresses the given {@code sourceDir} {@link File} into the given {@code outputFileZip.zip}, calling the provided {@link Consumer}
-     * callback every {@code callbackCheckMs} milliseconds.
+     * Compresses the given {@code sourceDir} {@link File} into the given {@code outputFileZip.zip}, calling the provided
+     * {@link Consumer} callback every {@code callbackCheckMs} milliseconds.
      * */
     public static void compressAndCallback(File sourceDir, Path outputFileZip, @Nullable Consumer<Integer> onPercentDoneCallback, int callbackCheckMs) {
         LOGGER.debug("Compressing folder [{}] into [{}]...", sourceDir, outputFileZip);
@@ -73,8 +73,8 @@ public class Zipper {
     }
 
     /**
-     * Decompresses the given {@code sourceDir} {@link File} into the given {@code outputFile.zip}, calling the provided {@link Consumer}
-     * callback every {@code callbackCheckMs} milliseconds.
+     * Decompresses the given {@code sourceFileZip} {@link File} into the given {@code destinationPath}, calling the provided
+     * {@link Consumer} callback every {@code callbackCheckMs} milliseconds.
      * */
     public static void decompressAndCallback(File sourceFileZip, Path destinationPath, @Nullable Consumer<Integer> onPercentDoneCallback, int callbackCheckMs) {
         LOGGER.debug("Decompressing file [{}] into [{}]...", sourceFileZip, destinationPath);

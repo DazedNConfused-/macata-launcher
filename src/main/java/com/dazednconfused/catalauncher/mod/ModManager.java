@@ -5,6 +5,7 @@ import com.dazednconfused.catalauncher.database.mod.dao.ModfileH2DAOImpl;
 import com.dazednconfused.catalauncher.database.mod.repository.ModH2RepositoryImpl;
 import com.dazednconfused.catalauncher.database.mod.repository.ModRepository;
 import com.dazednconfused.catalauncher.helper.Paths;
+import com.dazednconfused.catalauncher.helper.Zipper;
 import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
@@ -138,55 +139,69 @@ public class ModManager {
         return modsPath;
     }
 
-//    /**
-//     * Returns whether the given {@code toBeInstalled} mod is a valid installation candidate. If it is, it will return a parsed
-//     * {@link File} folder structure ready to be copied to the destination folder, wrapped inside a {@link Result#success()}.
-//     * Otherwise, it will return the validation error, wrapped inside a {@link Result#failure(Throwable)}.
-//     * */
-//    protected Result<Throwable, File> validateMod(File toBeInstalled) {
-//        return Try.of(() -> {
-//            if (!toBeInstalled.exists()) {
-//                throw new ModValidationException("Mod file [" + toBeInstalled + "] does not exist");
-//            }
-//
-//            if (!toBeInstalled.canRead()) {
-//                throw new ModValidationException("Mod file [" + toBeInstalled + "] cannot be read");
-//            }
-//
-//            File modRoot;
-//            if (toBeInstalled.isDirectory()) {
-//                modRoot = toBeInstalled;
-//            } else if (toBeInstalled.getName().endsWith(".zip")) {
-//                modRoot = unzipToTempFolder(toBeInstalled);
-//            } else {
-//                throw new ModValidationException("Mod file [" + toBeInstalled + "] is neither a directory nor a zip file");
-//            }
-//
-//            File modInfoFile = new File(modRoot, "modinfo.json");
-//            if (!modInfoFile.exists() || !modInfoFile.isFile()) {
-//                throw new ModValidationException("modinfo.json not found in mod file [" + toBeInstalled + "]");
-//            }
-//
-//            return modRoot;
-//        }).map(Result::success).recover(Result::failure).get();
-//    }
-//
-//    private File unzipToTempFolder(File zipFile) throws IOException, ModValidationException {
-//        Path tempDir = Files.createTempDirectory("macata_mod_unzip");
-//        try (ZipFile zip = new ZipFile(zipFile)) {
-//            Enumeration<? extends ZipEntry> entries = zip.entries();
-//            while (entries.hasMoreElements()) {
-//                ZipEntry entry = entries.nextElement();
-//                File entryDestination = new File(tempDir.toFile(), entry.getName());
-//                if (entry.isDirectory()) {
-//                    Files.createDirectories(entryDestination.toPath());
-//                } else {
-//                    Files.createDirectories(entryDestination.toPath().getParent());
-//                    Files.copy(zip.getInputStream(entry), entryDestination.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                }
-//            }
-//        }
-//        return tempDir.toFile();
-//    }
+    /**
+     * Returns whether the given {@code toBeInstalled} mod is a valid installation candidate. If it is, it will return a parsed
+     * {@link File} folder structure ready to be copied to the destination folder, wrapped inside a {@link Result#success()}.
+     * Otherwise, it will return the validation error, wrapped inside a {@link Result#failure(Throwable)}.
+     * */
+    protected Result<Throwable, File> validateMod(File toBeInstalled) {
+        LOGGER.debug("Validating mod [{}]...", toBeInstalled);
+
+        return Try.of(() -> {
+            if (!toBeInstalled.exists()) {
+                throw new ModValidationException("Mod file [" + toBeInstalled + "] does not exist");
+            }
+
+            if (!toBeInstalled.canRead()) {
+                throw new ModValidationException("Mod file [" + toBeInstalled + "] cannot be read");
+            }
+
+            File result;
+            if (toBeInstalled.isDirectory()) {
+                LOGGER.trace("Mod file [{}] is a directory...", toBeInstalled);
+                result = toBeInstalled;
+            } else if (toBeInstalled.getName().endsWith(".zip")) {
+                LOGGER.trace("Mod file [{}] is a .zip file...", toBeInstalled);
+                result = unzipToTempFolder(toBeInstalled);
+            } else {
+                throw new ModValidationException("Mod file [" + toBeInstalled + "] is neither a directory nor a zip file");
+            }
+
+            File modInfoFile = new File(result, "modinfo.json");
+            if (!modInfoFile.exists() || !modInfoFile.isFile()) {
+                LOGGER.trace("Mod doesn't contain modinfo.json and thus is considered invalid...");
+                throw new ModValidationException("modinfo.json not found in mod file [" + toBeInstalled + "]");
+            }
+
+            return result;
+        }).map(Result::success).recover(Result::failure).get();
+    }
+
+    /**
+     * Unzips the given {@code zipFile} into a temporary folder.
+     * */
+    private File unzipToTempFolder(File zipFile) throws IOException {
+        Path tempDir = Files.createTempDirectory("macata_mod_unzip");
+
+        Zipper.decompressAndCallback(
+            zipFile, tempDir,
+            unused -> {},
+            1000
+        );
+
+        // derive the folder name from the zip file name (without extension)
+        String zipFileName = zipFile.getName();
+        String folderName = zipFileName.substring(0, zipFileName.lastIndexOf('.'));
+
+        // locate the folder inside the temp directory
+        Path specificFolderPath = tempDir.resolve(folderName);
+
+        // Check if the specific folder exists
+        if (Files.exists(specificFolderPath) && Files.isDirectory(specificFolderPath)) {
+            return specificFolderPath.toFile();
+        } else {
+            throw new IOException("Expected folder not found: " + specificFolderPath);
+        }
+    }
 
 }

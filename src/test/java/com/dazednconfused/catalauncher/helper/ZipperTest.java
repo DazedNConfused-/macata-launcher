@@ -93,7 +93,7 @@ class ZipperTest {
             return new File(resourceUrl.getFile()); // convert the URL to a File object
         }
 
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Could not find resource: " + fileName);
     }
 
     /**
