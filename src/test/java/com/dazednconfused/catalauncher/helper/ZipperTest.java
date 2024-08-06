@@ -1,5 +1,6 @@
 package com.dazednconfused.catalauncher.helper;
 
+import com.dazednconfused.catalauncher.assertions.CustomFileAssertions;
 import com.dazednconfused.catalauncher.utils.TestUtils;
 
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -72,42 +74,19 @@ class ZipperTest {
         assertThat(calledTimes).hasPositiveValue();
         assertThat(callbackedValues).size().isPositive();
 
-
-        String[] EXPECTED_FILES = {"1.file", "2.file", "3.file"};
-        String[] EXPECTED_FOLDERS = {"childFolder1", "childFolder2", "childFolder3"};
-
-        assertDirectory(
-            tempDir.toPath(),
-            EXPECTED_FILES, EXPECTED_FOLDERS,
-            0
-        );
-    }
-
-    /**
-     * Custom {@link org.assertj.core.api.Assertions} for the {@link #decompress_and_callback_success(File)} test.
-     * */
-    private static void assertDirectory(Path directory, String[] expectedFiles, String[] expectedFolders, int level) {
-        File dir = directory.toFile();
-        assertThat(dir).isDirectory();
-
-        // check for expected files
-        for (String fileName : expectedFiles) {
-            File file = new File(directory.toFile(), fileName);
-            assertThat(file).isFile();
-            assertThat(file.length()).isGreaterThan(0);
-        }
-
-        // if we've reached the last level, there should be no more folders
-        if (level >= expectedFolders.length) {
-            assertThat(directory.toFile().listFiles(File::isDirectory)).isEmpty();
-            return;
-        }
-
-        // check for the expected folder
-        File nextFolder = new File(directory.toFile(), expectedFolders[level]);
-        assertThat(nextFolder).isDirectory();
-
-        // recur into the next folder level
-        assertDirectory(nextFolder.toPath(), expectedFiles, expectedFolders, level + 1);
+        CustomFileAssertions.assertThat(tempDir).containsExactlyFilesWithRelativePaths(Arrays.asList(
+            "1.file",
+            "2.file",
+            "3.file",
+            "childFolder1/1.file",
+            "childFolder1/2.file",
+            "childFolder1/3.file",
+            "childFolder1/childFolder2/1.file",
+            "childFolder1/childFolder2/2.file",
+            "childFolder1/childFolder2/3.file",
+            "childFolder1/childFolder2/childFolder3/1.file",
+            "childFolder1/childFolder2/childFolder3/2.file",
+            "childFolder1/childFolder2/childFolder3/3.file"
+        ));
     }
 }

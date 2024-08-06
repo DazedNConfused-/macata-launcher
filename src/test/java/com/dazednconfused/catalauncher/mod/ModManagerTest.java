@@ -359,7 +359,7 @@ class ModManagerTest {
 
         File ACTUAL_RESULT = result.toEither().get().getResult().orElseThrow();
 
-        CustomFileAssertions.assertThat(ACTUAL_RESULT).hasExactlyFilesWithRelativePaths(Arrays.asList(
+        CustomFileAssertions.assertThat(ACTUAL_RESULT).containsExactlyFilesWithRelativePaths(Arrays.asList(
                 "modinfo.json",
                 "README.md",
                 "items/armor/integrated.json"
@@ -385,7 +385,7 @@ class ModManagerTest {
 
         File ACTUAL_RESULT = result.toEither().get().getResult().orElseThrow();
 
-        CustomFileAssertions.assertThat(ACTUAL_RESULT).hasExactlyFilesWithRelativePaths(Arrays.asList(
+        CustomFileAssertions.assertThat(ACTUAL_RESULT).containsExactlyFilesWithRelativePaths(Arrays.asList(
             "modinfo.json",
             "README.md",
             "items/armor/integrated.json"

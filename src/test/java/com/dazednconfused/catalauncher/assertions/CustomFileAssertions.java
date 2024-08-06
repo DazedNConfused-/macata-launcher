@@ -20,7 +20,7 @@ public class CustomFileAssertions extends AbstractAssert<CustomFileAssertions, F
         return new CustomFileAssertions(actual);
     }
 
-    public CustomFileAssertions hasExactlyFilesWithRelativePaths(List<String> expectedRelativePaths) {
+    public CustomFileAssertions containsExactlyFilesWithRelativePaths(List<String> expectedRelativePaths) {
 
         // collect all files from the directory
         List<File> actualFiles = new ArrayList<>();
@@ -34,7 +34,7 @@ public class CustomFileAssertions extends AbstractAssert<CustomFileAssertions, F
         // perform the assertion
         Assertions.assertThat(actualRelativePaths)
             .as("Expected paths to be present in the directory")
-            .containsAll(expectedRelativePaths);
+            .containsExactlyInAnyOrderElementsOf(expectedRelativePaths);
 
         return this;
     }
