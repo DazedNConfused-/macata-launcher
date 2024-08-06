@@ -24,7 +24,8 @@ public abstract class H2Database implements DisposableDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(H2Database.class);
 
-    private static final String JDBC_URL_TEMPLATE = "jdbc:h2:%s/db/%s;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=TRUE";
+    private static final String DATABASE_DIRECTORY = Paths.getDatabaseDirectory();
+    private static final String JDBC_URL_TEMPLATE = "jdbc:h2:" + DATABASE_DIRECTORY + "/%s;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=TRUE";
 
     private static final String USER = null;
     private static final String PASSWORD = null;
@@ -96,7 +97,7 @@ public abstract class H2Database implements DisposableDatabase {
         LOGGER.trace("Opening connection for database [{}]...", database);
 
         return Try.of(() -> DriverManager.getConnection(
-            String.format(JDBC_URL_TEMPLATE, Paths.getLauncherFiles(), database),
+            String.format(JDBC_URL_TEMPLATE, database),
             USER, PASSWORD
         )).onFailure(
             t -> LOGGER.error("There was an error while opening database file [{}]", database, t)
@@ -128,7 +129,7 @@ public abstract class H2Database implements DisposableDatabase {
         LOGGER.trace("Wiping database [{}]...", database);
 
         return Try.of(() -> DriverManager.getConnection(
-            String.format(JDBC_URL_TEMPLATE, Paths.getLauncherFiles(), database),
+            String.format(JDBC_URL_TEMPLATE, database),
             USER, PASSWORD
         )).onFailure(
             t -> LOGGER.error("There was an error while wiping database file [{}]", database, t)
@@ -165,7 +166,7 @@ public abstract class H2Database implements DisposableDatabase {
         LOGGER.trace("Resetting database [{}]...", database);
 
         return Try.of(() -> DriverManager.getConnection(
-            String.format(JDBC_URL_TEMPLATE, Paths.getLauncherFiles(), database),
+            String.format(JDBC_URL_TEMPLATE, database),
             USER, PASSWORD
         )).onFailure(
             t -> LOGGER.error("There was an error while cleaning database file [{}]", database, t)
@@ -243,7 +244,7 @@ public abstract class H2Database implements DisposableDatabase {
         LOGGER.trace("Shutting down database [{}]...", database);
 
         return Try.of(() -> DriverManager.getConnection(
-            String.format(JDBC_URL_TEMPLATE, Paths.getLauncherFiles(), database),
+            String.format(JDBC_URL_TEMPLATE, database),
             USER, PASSWORD
         )).onFailure(
             t -> LOGGER.error("There was an error while shutting down database [{}]", database, t)
@@ -281,7 +282,7 @@ public abstract class H2Database implements DisposableDatabase {
         LOGGER.trace("Destroying database [{}]...", database);
 
         return Try.of(() -> {
-            String dbLockFilePath = Paths.getLauncherFiles() + "/db/" + database + ".lock.db";
+            String dbLockFilePath = DATABASE_DIRECTORY + "/" + database + ".lock.db";
             File dbLockFile = new File(dbLockFilePath);
 
             if (dbLockFile.exists()) {
@@ -294,7 +295,7 @@ public abstract class H2Database implements DisposableDatabase {
                 }
             }
 
-            String dbFilePath = Paths.getLauncherFiles() + "/db/" + database + ".mv.db";
+            String dbFilePath = DATABASE_DIRECTORY + "/" + database + ".mv.db";
 
             File dbFile = new File(dbFilePath);
 

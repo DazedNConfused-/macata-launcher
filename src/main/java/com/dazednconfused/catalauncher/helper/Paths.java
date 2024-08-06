@@ -103,6 +103,17 @@ public class Paths {
         return getCustomUserDir() + "mods/";
     }
 
+    /**
+     * Retrieves the {@link Application}'s database(s) directory.
+     *
+     * <pre> {@code
+     *  getLauncherRootFolder() + "/.macatalauncher/db"
+     * }</pre>
+     * */
+    public static String getDatabaseDirectory() {
+        return getLauncherFiles() + "/db";
+    }
+
     // java resources
     public static final String RESOURCE_ICONS_PATH = "icon/svg";
 }
