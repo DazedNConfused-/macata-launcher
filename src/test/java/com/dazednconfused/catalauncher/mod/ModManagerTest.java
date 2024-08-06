@@ -418,16 +418,16 @@ class ModManagerTest {
     }
 
     /**
-     * Collects all {@link File}s from {@code sourceDirectory} into the given {@code allFiles} array.
+     * Collects all {@link File}s from {@code sourceDirectory} into the given {@code result} array.
      * */
-    private void collectAllFilesFromInto(File sourceDirectory, List<File> allFiles) {
+    private void collectAllFilesFromInto(File sourceDirectory, List<File> result) {
         File[] files = sourceDirectory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    collectAllFilesFromInto(file, allFiles);
+                    collectAllFilesFromInto(file, result);
                 } else {
-                    allFiles.add(file);
+                    result.add(file);
                 }
             }
         }
