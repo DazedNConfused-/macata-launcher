@@ -54,7 +54,7 @@ public class ModManager {
      *
      * @implNote A mod is <i>registered</i> only when it is retrievable from the mods' database.
      * */
-    public List<ModDTO> listAllMods() {
+    public List<ModDTO> listAllRegisteredMods() {
         LOGGER.debug("Listing all mods...");
         return this.modRepository.findAll().stream()
             .map(ModMapper.INSTANCE::toDTO)

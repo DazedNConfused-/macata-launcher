@@ -114,7 +114,7 @@ class ModManagerTest {
     }
 
     @Test
-    void list_all_mods_success() {
+    void list_all_registered_mods_success() {
 
         // prepare mock data ---
         ModfileDTO MOCKED_MODFILE_1_1 = ModfileDTO.builder()
@@ -199,7 +199,7 @@ class ModManagerTest {
         ModDTO EXPECTED_RESULT_3 = instance.registerMod(MOCKED_MOD_3).toEither().get().getResult().orElseThrow();
 
         // execute test ---
-        List<ModDTO> result = instance.listAllMods();
+        List<ModDTO> result = instance.listAllRegisteredMods();
 
         // verify assertions ---
         assertThat(result).containsExactlyInAnyOrder(
@@ -295,7 +295,7 @@ class ModManagerTest {
         ModDTO EXPECTED_TO_REMAIN_2 = instance.registerMod(MOCKED_MOD_3).toEither().get().getResult().orElseThrow();
 
         // pre-test assertions ---
-        assertThat(instance.listAllMods()).containsExactlyInAnyOrder(
+        assertThat(instance.listAllRegisteredMods()).containsExactlyInAnyOrder(
                 EXPECTED_TO_BE_UNREGISTERED,
                 EXPECTED_TO_REMAIN_1,
                 EXPECTED_TO_REMAIN_2
@@ -311,7 +311,7 @@ class ModManagerTest {
 
         assertThat(result.toEither().get().getResult().isEmpty()).isTrue(); // assert that Result's Success is empty
 
-        assertThat(instance.listAllMods()).containsExactlyInAnyOrder(
+        assertThat(instance.listAllRegisteredMods()).containsExactlyInAnyOrder(
                 EXPECTED_TO_REMAIN_1,
                 EXPECTED_TO_REMAIN_2
         );
