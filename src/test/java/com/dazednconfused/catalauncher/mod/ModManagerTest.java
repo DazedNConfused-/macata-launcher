@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.*;
 
 class ModManagerTest {
 
@@ -390,5 +390,73 @@ class ModManagerTest {
             "README.md",
             "items/armor/integrated.json"
         ));
+    }
+
+    @Test
+    void validate_mod_failure_when_path_does_not_exist() {
+
+        // prepare mock data ---
+        File MOCKED_MOD_ZIP = mock(File.class);
+        when(MOCKED_MOD_ZIP.exists()).thenReturn(false);
+
+        // execute test ---
+        Result<Throwable, File> result = instance.validateMod(MOCKED_MOD_ZIP);
+
+        // verify assertions ---
+        assertThat(result).isNotNull(); // assert non-null result
+
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+    }
+
+    @Test
+    void validate_mod_failure_when_path_cannot_be_read() {
+
+        // prepare mock data ---
+        File MOCKED_MOD_ZIP = mock(File.class);
+        when(MOCKED_MOD_ZIP.exists()).thenReturn(true);
+        when(MOCKED_MOD_ZIP.canRead()).thenReturn(false);
+
+        // execute test ---
+        Result<Throwable, File> result = instance.validateMod(MOCKED_MOD_ZIP);
+
+        // verify assertions ---
+        assertThat(result).isNotNull(); // assert non-null result
+
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+    }
+
+    @Test
+    void validate_mod_failure_when_path_is_not_a_directory_nor_a_zip_file() {
+
+        // prepare mock data ---
+        File MOCKED_MOD_ZIP = mock(File.class);
+        when(MOCKED_MOD_ZIP.exists()).thenReturn(true);
+        when(MOCKED_MOD_ZIP.canRead()).thenReturn(true);
+
+        when(MOCKED_MOD_ZIP.isDirectory()).thenReturn(false);
+        when(MOCKED_MOD_ZIP.getName()).thenReturn("mock");
+
+        // execute test ---
+        Result<Throwable, File> result = instance.validateMod(MOCKED_MOD_ZIP);
+
+        // verify assertions ---
+        assertThat(result).isNotNull(); // assert non-null result
+
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+    }
+
+    @Test
+    void validate_mod_failure_when_modinfo_json_does_not_exist() {
+
+        // prepare mock data ---
+        File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/invalid");
+
+        // execute test ---
+        Result<Throwable, File> result = instance.validateMod(MOCKED_MOD_ZIP);
+
+        // verify assertions ---
+        assertThat(result).isNotNull(); // assert non-null result
+
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
     }
 }

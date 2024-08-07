@@ -143,10 +143,12 @@ public class ModManager {
 
         return Try.of(() -> {
             if (!toBeInstalled.exists()) {
+                LOGGER.trace("Mod file [{}] does not exist and thus is considered invalid...", toBeInstalled);
                 throw new ModValidationException("Mod file [" + toBeInstalled + "] does not exist");
             }
 
             if (!toBeInstalled.canRead()) {
+                LOGGER.trace("Mod file [{}] cannot be read and thus is considered invalid...", toBeInstalled);
                 throw new ModValidationException("Mod file [" + toBeInstalled + "] cannot be read");
             }
 
@@ -158,6 +160,7 @@ public class ModManager {
                 LOGGER.trace("Mod file [{}] is a .zip file...", toBeInstalled);
                 result = unzipToTempFolder(toBeInstalled);
             } else {
+                LOGGER.trace("Mod file [{}] is neither a directory nor a .zip file...", toBeInstalled);
                 throw new ModValidationException("Mod file [" + toBeInstalled + "] is neither a directory nor a zip file");
             }
 
