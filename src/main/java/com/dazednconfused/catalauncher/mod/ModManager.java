@@ -67,7 +67,7 @@ public class ModManager {
     }
 
     /**
-     * Installs given {@code toBeInstalled} mod inside {@link Paths#getCustomModsDir()}.
+     * Installs the given {@code toBeInstalled} mod inside {@link Paths#getCustomModsDir()}.
      * */
     public Result<Throwable, ModDTO> installMod(File toBeInstalled, Consumer<ModDTO> onDoneCallback) {
         LOGGER.info("Installing mod [{}]...", toBeInstalled);
@@ -97,7 +97,7 @@ public class ModManager {
     }
 
     /**
-     * Unregisters and deletes the given {@code toBeUninstalled} mod.
+     * Uninstalls the given {@code toBeUninstalled} mod from {@link Paths#getCustomModsDir()}.
      * */
     public Result<Throwable, ModDTO> uninstallMod(ModDTO toBeUninstalled, Consumer<ModDTO> onDoneCallback) {
         LOGGER.info("Uninstalling mod [{}]...", toBeUninstalled);
@@ -126,7 +126,7 @@ public class ModManager {
     }
 
     /**
-     * Registers the given {@code toBeRegistered} mod.
+     * Registers the given {@code toBeRegistered} mod into the database.
      * */
     protected Result<Throwable, ModDTO> registerMod(ModDTO toBeRegistered) {
         LOGGER.debug("Registering mod [{}]...", toBeRegistered);
@@ -138,7 +138,7 @@ public class ModManager {
     }
 
     /**
-     * Unregisters the given {@code toBeUnregistered} mod.
+     * Unregisters the given {@code toBeUnregistered} mod from the database.
      * */
     protected Result<Throwable, Void> unregisterMod(ModDTO toBeUnregistered) {
         LOGGER.debug("Unregistering mod [{}]...", toBeUnregistered);
