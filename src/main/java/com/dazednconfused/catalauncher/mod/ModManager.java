@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,15 +76,7 @@ public class ModManager {
         LOGGER.info("Installing mod [{}]...", toBeInstalled);
 
         throw new RuntimeException("Not implemented yet");
-
-        /*
-        File installInto = new File(getModsFolder().getPath() + "/" + toBeInstalled.getName());
-
-        Try.run(() -> {
-            LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
-            FileUtils.copyDirectory(toBeInstalled, installInto);
-        }).onFailure(t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled, t)).andThen(() -> onDoneCallback.accept(installInto.toPath()));
-        */
+        // andThen(() -> onDoneCallback.accept(installInto.toPath());
     }
 
     /**
@@ -93,7 +86,6 @@ public class ModManager {
         LOGGER.info("Uninstalling mod [{}]...", toBeUninstalled);
 
         throw new RuntimeException("Not implemented yet");
-        //Try.run(() -> FileUtils.deleteDirectory(toBeUninstalled)).onFailure(t -> LOGGER.error("There was an error deleting mod [{}]", toBeUninstalled, t));
     }
 
     /**
@@ -117,6 +109,32 @@ public class ModManager {
             this.modRepository.delete(ModMapper.INSTANCE.toEntity(toBeUnregistered))
         ).onFailure(
             t -> LOGGER.error("There was an error unregistering mod [{}]", toBeUnregistered, t)
+        ).map(Result::success).recover(Result::failure).get();
+    }
+
+    /**
+     * Copies the given {@code toBeInstalled} mod into the {@link Paths#getCustomModsDir()} folder.
+     * */
+    protected Result<Throwable, Void> copyModToModsFolder(File toBeInstalled) {
+        File installInto = new File(getModsFolder().getPath() + "/" + toBeInstalled.getName());
+
+        return Try.run(() -> {
+            LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
+            FileUtils.copyDirectory(toBeInstalled, installInto);
+        }).onFailure(
+            t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled, t)
+        ).map(Result::success).recover(Result::failure).get();
+    }
+
+    /**
+     * Deletes the given {@code toBeUninstalled} mod from the {@link Paths#getCustomModsDir()} folder.
+     * */
+    protected Result<Throwable, Void> deleteModFromModsFolder(File toBeUninstalled) {
+        return Try.run(() -> {
+            LOGGER.debug("Deleting [{}]...", toBeUninstalled);
+            FileUtils.deleteDirectory(toBeUninstalled);
+        }).onFailure(
+            t -> LOGGER.error("There was an error deleting mod [{}]", toBeUninstalled, t)
         ).map(Result::success).recover(Result::failure).get();
     }
 

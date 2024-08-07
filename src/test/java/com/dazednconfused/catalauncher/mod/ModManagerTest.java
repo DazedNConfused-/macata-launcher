@@ -405,7 +405,7 @@ class ModManagerTest {
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
 
-        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is not a Success
     }
 
     @Test
@@ -422,7 +422,7 @@ class ModManagerTest {
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
 
-        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is not a Success
     }
 
     @Test
@@ -442,7 +442,7 @@ class ModManagerTest {
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
 
-        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is not a Success
     }
 
     @Test
@@ -457,6 +457,69 @@ class ModManagerTest {
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
 
-        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is Success
+        assertThat(result.toEither().isRight()).isFalse(); // assert that Result is not a Success
     }
+
+    @Test
+    void copy_mod_to_mods_folder_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+
+            // execute test ---
+            Result<Throwable, Void> result = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            CustomFileAssertions.assertThat(
+                    new File(Path.of(mockedDirectory.toString(), "cdda_mutation_rebalance_mod").toString())
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json"
+            ));
+        }
+    }
+
+    @Test
+    void delete_mod_from_mods_folder_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+
+            Result<Throwable, Void> copyResult = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
+
+            // pre-test assertions ---
+            assertThat(copyResult).isNotNull();
+            assertThat(copyResult.toEither().isRight()).isTrue();
+
+            File MOCKED_INSTALLED_MOD = new File(Path.of(mockedDirectory.toString(), "cdda_mutation_rebalance_mod").toString());
+
+            CustomFileAssertions.assertThat(
+                    MOCKED_INSTALLED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json"
+            ));
+
+            // execute test ---
+            Result<Throwable, Void> result = instance.deleteModFromModsFolder(MOCKED_INSTALLED_MOD);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            assertThat(MOCKED_INSTALLED_MOD).doesNotExist();
+        }
+    }
+
 }
