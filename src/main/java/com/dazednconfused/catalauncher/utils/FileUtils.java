@@ -5,8 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
-public class FileHashUtils {
+public class FileUtils {
 
     /**
      * Computes the MD5 checksum of the given {@link File}.
@@ -45,5 +46,21 @@ public class FileHashUtils {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Collects all {@link File}s from {@code sourceDirectory} into the given {@code result} array.
+     * */
+    public static void collectAllFilesFromInto(File sourceDirectory, List<File> result) {
+        File[] files = sourceDirectory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    collectAllFilesFromInto(file, result);
+                } else {
+                    result.add(file);
+                }
+            }
+        }
     }
 }

@@ -14,16 +14,7 @@ public class TestUtils {
      * content assertions with relative paths.
      * */
     public static void collectAllFilesFromInto(File sourceDirectory, List<File> result) {
-        File[] files = sourceDirectory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    collectAllFilesFromInto(file, result);
-                } else {
-                    result.add(file);
-                }
-            }
-        }
+       FileUtils.collectAllFilesFromInto(sourceDirectory, result);
     }
 
     /**
