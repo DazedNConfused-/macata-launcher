@@ -29,4 +29,9 @@ public class Failure<L extends Throwable,R> implements Result<L,R> {
     public R getOrElseThrow() throws L {
         throw error;
     }
+
+    @Override
+    public R getOrElseThrowUnchecked() throws RuntimeException {
+        throw new RuntimeException(error);
+    }
 }

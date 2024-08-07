@@ -206,9 +206,9 @@ class ModManagerTest {
                 ))
                 .build();
 
-        ModDTO EXPECTED_RESULT_1 = instance.registerMod(MOCKED_MOD_1).toEither().get().getResult().orElseThrow();
-        ModDTO EXPECTED_RESULT_2 = instance.registerMod(MOCKED_MOD_2).toEither().get().getResult().orElseThrow();
-        ModDTO EXPECTED_RESULT_3 = instance.registerMod(MOCKED_MOD_3).toEither().get().getResult().orElseThrow();
+        ModDTO EXPECTED_RESULT_1 = instance.registerMod(MOCKED_MOD_1).getOrElseThrowUnchecked();
+        ModDTO EXPECTED_RESULT_2 = instance.registerMod(MOCKED_MOD_2).getOrElseThrowUnchecked();
+        ModDTO EXPECTED_RESULT_3 = instance.registerMod(MOCKED_MOD_3).getOrElseThrowUnchecked();
 
         // execute test ---
         List<ModDTO> result = instance.listAllRegisteredMods();
@@ -302,9 +302,9 @@ class ModManagerTest {
                 ))
                 .build();
 
-        ModDTO EXPECTED_TO_BE_UNREGISTERED = instance.registerMod(MOCKED_MOD_1).toEither().get().getResult().orElseThrow();
-        ModDTO EXPECTED_TO_REMAIN_1 = instance.registerMod(MOCKED_MOD_2).toEither().get().getResult().orElseThrow();
-        ModDTO EXPECTED_TO_REMAIN_2 = instance.registerMod(MOCKED_MOD_3).toEither().get().getResult().orElseThrow();
+        ModDTO EXPECTED_TO_BE_UNREGISTERED = instance.registerMod(MOCKED_MOD_1).getOrElseThrowUnchecked();
+        ModDTO EXPECTED_TO_REMAIN_1 = instance.registerMod(MOCKED_MOD_2).getOrElseThrowUnchecked();
+        ModDTO EXPECTED_TO_REMAIN_2 = instance.registerMod(MOCKED_MOD_3).getOrElseThrowUnchecked();
 
         // pre-test assertions ---
         assertThat(instance.listAllRegisteredMods()).containsExactlyInAnyOrder(
@@ -361,7 +361,7 @@ class ModManagerTest {
         assertThat(result.toEither().get().getResult().isEmpty()).isFalse(); // assert that Result's Success is not empty
 
 
-        File ACTUAL_RESULT = result.toEither().get().getResult().orElseThrow();
+        File ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
         CustomFileAssertions.assertThat(ACTUAL_RESULT).containsExactlyFilesWithRelativePaths(Arrays.asList(
                 "modinfo.json",
@@ -387,7 +387,7 @@ class ModManagerTest {
         assertThat(result.toEither().get().getResult().isEmpty()).isFalse(); // assert that Result's Success is not empty
 
 
-        File ACTUAL_RESULT = result.toEither().get().getResult().orElseThrow();
+        File ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
         CustomFileAssertions.assertThat(ACTUAL_RESULT).containsExactlyFilesWithRelativePaths(Arrays.asList(
             "modinfo.json",
@@ -570,7 +570,7 @@ class ModManagerTest {
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
             // assert on DTO result -
-            ModDTO ACTUAL_RESULT = result.getOrElseThrow();
+            ModDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
             assertThat(called.get()).isTrue();
             assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
@@ -610,8 +610,6 @@ class ModManagerTest {
             // assert on database changes -
             assertThat(instance.listAllRegisteredMods()).containsExactly(ACTUAL_RESULT);
 
-        } catch (Throwable e) {
-            fail("Test has failed with exception", e);
         }
     }
 

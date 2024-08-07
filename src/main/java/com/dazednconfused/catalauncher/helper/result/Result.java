@@ -35,4 +35,10 @@ public interface Result<L extends Throwable, R> {
      * was a {@link Failure}.
      * */
     R getOrElseThrow() throws L;
+
+    /**
+     * Returns the underlying value if this {@link Result} is a {@link Success}, or throws the captured exception - wrapped
+     * inside an unchecked {@link RuntimeException} - if this was a {@link Failure}.
+     * */
+    R getOrElseThrowUnchecked() throws RuntimeException;
 }

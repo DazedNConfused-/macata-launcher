@@ -80,16 +80,16 @@ public class ModManager {
 
         return Try.of(() -> {
             // validate -
-            File validatedMod = validateMod(toBeInstalled).getOrElseThrow();
+            File validatedMod = validateMod(toBeInstalled).getOrElseThrowUnchecked();
 
             // parse into DTO -
             ModDTO validatedModDto = parse(validatedMod);
 
             // copy to mods folder -
-            copyModToModsFolder(validatedMod).getOrElseThrow();
+            copyModToModsFolder(validatedMod).getOrElseThrowUnchecked();
 
             // register -
-            return registerMod(validatedModDto).getOrElseThrow();
+            return registerMod(validatedModDto).getOrElseThrowUnchecked();
         }).map(dto -> {
             onDoneCallback.accept(dto);
             return dto;
@@ -237,7 +237,7 @@ public class ModManager {
     private static String getModInfoFor(File mod) {
         File modInfoFile = new File(mod, "modinfo.json");
 
-        try(BufferedReader reader = Files.newBufferedReader(modInfoFile.toPath())) {
+        try (BufferedReader reader = Files.newBufferedReader(modInfoFile.toPath())) {
             return reader.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             throw new RuntimeException(e);

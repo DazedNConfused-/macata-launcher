@@ -38,4 +38,9 @@ public class Success<L extends Throwable,R> implements Result<L,R> {
     public R getOrElseThrow() throws L {
         return result;
     }
+
+    @Override
+    public R getOrElseThrowUnchecked() throws RuntimeException {
+        return result;
+    }
 }

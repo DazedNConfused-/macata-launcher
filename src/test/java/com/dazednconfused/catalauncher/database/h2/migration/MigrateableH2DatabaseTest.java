@@ -55,7 +55,7 @@ class MigrateableH2DatabaseTest {
 
         assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-        List<String> migrations = result.toEither().get().getResult().orElseThrow();
+        List<String> migrations = result.getOrElseThrowUnchecked();
 
         assertThat(migrations).isNotEmpty(); // assert that Result's Success is not empty
 
