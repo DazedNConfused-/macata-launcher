@@ -91,7 +91,7 @@ public class ModManager {
         }).onFailure(
             t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled.getPath(), t)
         ).map(dto -> {
-            LOGGER.info("Mod [{}] has been succesfully installed!", dto.getName());
+            LOGGER.info("Mod [{}] has been successfully installed!", dto.getName());
             return Result.success(dto);
         }).recover(Result::failure).get();
     }
@@ -99,10 +99,30 @@ public class ModManager {
     /**
      * Unregisters and deletes the given {@code toBeUninstalled} mod.
      * */
-    public Result<Throwable, Void> uninstallMod(ModDTO toBeUninstalled) {
+    public Result<Throwable, ModDTO> uninstallMod(ModDTO toBeUninstalled, Consumer<ModDTO> onDoneCallback) {
         LOGGER.info("Uninstalling mod [{}]...", toBeUninstalled);
 
-        throw new RuntimeException("Not implemented yet");
+        return Try.of(() -> {
+            // parse from DTO -
+            File targetMod = this.parse(toBeUninstalled);
+
+            // remove mod from mods folder -
+            this.deleteModFromModsFolder(targetMod).getOrElseThrowUnchecked();
+
+            // unregister DTO -
+            this.unregisterMod(toBeUninstalled).getOrElseThrowUnchecked();
+
+            return toBeUninstalled;
+        }).map(dto -> {
+            // perform callback on successful uninstallation -
+            onDoneCallback.accept(dto);
+            return dto;
+        }).onFailure(
+            t -> LOGGER.error("There was an error uninstalling mod [{}]", toBeUninstalled.getName(), t)
+        ).map(dto -> {
+            LOGGER.info("Mod [{}] has been successfully uninstalled!", dto.getName());
+            return Result.success(dto);
+        }).recover(Result::failure).get();
     }
 
     /**
@@ -230,6 +250,13 @@ public class ModManager {
                 ).collect(Collectors.toList())
             )
             .build();
+    }
+
+    /**
+     * Parses the given {@code mod} {@link ModDTO} into its {@link File} representation.
+     * */
+    protected File parse(ModDTO toBeUninstalled) {
+        return new File(Paths.getCustomModsDir(), toBeUninstalled.getName());
     }
 
     /**

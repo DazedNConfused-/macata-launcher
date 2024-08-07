@@ -522,7 +522,7 @@ class ModManagerTest {
     }
 
     @Test
-    void parse_success() {
+    void parse_file_to_dto_success() {
 
         // prepare mock data ---
         File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
@@ -538,6 +538,26 @@ class ModManagerTest {
         );
 
         assertThat(result).isEqualTo(EXPECTED_RESULT);
+    }
+
+    @Test
+    void parse_dto_to_file_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            ModDTO MOCKED_DTO = ModDTO.builder()
+                    .name("cdda_mutation_rebalance_mod")
+                    .build();
+
+            // execute test ---
+            File result = instance.parse(MOCKED_DTO);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.getPath()).isEqualTo(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+        }
     }
 
     @Test
@@ -681,6 +701,59 @@ class ModManagerTest {
             // assert on database changes -
             assertThat(instance.listAllRegisteredMods()).containsExactly(ACTUAL_RESULT);
 
+        }
+    }
+
+    @Test
+    void uninstall_mod_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
+
+            ModDTO MOCKED_DTO = instance.installMod(MOCKED_MOD_ZIP, unused -> { }).getOrElseThrowUnchecked();
+
+            AtomicBoolean called = new AtomicBoolean(false);
+            AtomicReference<ModDTO> calledWith = new AtomicReference<>();
+            Consumer<ModDTO> MOCKED_CALLBACK = modDTO -> {
+                called.set(true);
+                calledWith.set(modDTO);
+            };
+
+            // pre-test assertions ---
+            assertThat(MOCKED_DTO).isNotNull();
+
+            assertThat(instance.listAllRegisteredMods()).containsExactly(MOCKED_DTO);
+
+            CustomFileAssertions.assertThat(
+                    new File(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json"
+            ));
+
+            // execute test ---
+            Result<Throwable, ModDTO> result = instance.uninstallMod(MOCKED_DTO, MOCKED_CALLBACK);
+
+            // verify assertions ---
+
+            // assert on DTO result -
+            assertThat(result).isNotNull(); // assert non-null result
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            ModDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
+            assertThat(ACTUAL_RESULT).isEqualTo(MOCKED_DTO);
+
+            assertThat(called.get()).isTrue();
+            assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
+
+            // assert on filesystem changes -
+            assertThat(new File(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")).doesNotExist();
+
+            // assert on database changes -
+            assertThat(instance.listAllRegisteredMods()).isEmpty();
         }
     }
 
