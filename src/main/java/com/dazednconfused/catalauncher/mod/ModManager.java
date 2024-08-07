@@ -13,18 +13,12 @@ import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
 import io.vavr.control.Try;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,7 +179,7 @@ public class ModManager {
 
         Zipper.decompressAndCallback(
             zipFile, tempDir,
-            unused -> {},
+            unused -> { },
             1000
         );
 
