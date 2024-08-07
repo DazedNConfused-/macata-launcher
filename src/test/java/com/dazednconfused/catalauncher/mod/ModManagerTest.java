@@ -522,4 +522,49 @@ class ModManagerTest {
         }
     }
 
+    @Test
+    void parse_success() {
+
+        // prepare mock data ---
+        File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+
+        // execute test ---
+        ModDTO result = instance.parse(MOCKED_MOD_ZIP);
+
+        // verify assertions ---
+        assertThat(result).isNotNull(); // assert non-null result
+
+        ModDTO EXPECTED_RESULT = ModDTO.builder()
+                .name("cdda_mutation_rebalance_mod")
+                .modinfo("[\n" +
+                        "  {\n" +
+                        "    \"type\": \"MOD_INFO\",\n" +
+                        "    \"id\": \"mutation_rebalance_mod\",\n" +
+                        "    \"name\": \"Mutation Rebalance Mod\",\n" +
+                        "    \"authors\": [ \"DazedNConfused-\" ],\n" +
+                        "    \"maintainers\": [ \"DazedNConfused-\" ],\n" +
+                        "    \"description\": \"Rebalances certain mutations with crippling nerfs.\",\n" +
+                        "    \"category\": \"rebalance\",\n" +
+                        "    \"dependencies\": [ \"dda\" ]\n" +
+                        "  }\n" +
+                        "]")
+                .modfiles(Arrays.asList(
+                        ModfileDTO.builder()
+                                .path(TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod/modinfo.json").getPath())
+                                .hash("e4d6ee5815bf4d4d6a0454f97e1eba89")
+                                .build(),
+                        ModfileDTO.builder()
+                                .path(TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod/README.md").getPath())
+                                .hash("cbd11359de789778523e307a7bdf419f")
+                                .build(),
+                        ModfileDTO.builder()
+                                .path(TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod/items/armor/integrated.json").getPath())
+                                .hash("caeeb7c03d3aaf942221328f288e3924")
+                                .build()
+                ))
+                .build();
+
+        assertThat(result).isEqualTo(EXPECTED_RESULT);
+    }
+
 }

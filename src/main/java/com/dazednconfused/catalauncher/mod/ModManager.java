@@ -8,14 +8,17 @@ import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.Zipper;
 import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.mod.dto.ModDTO;
+import com.dazednconfused.catalauncher.mod.dto.ModfileDTO;
 import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
 
 import io.vavr.control.Try;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -72,11 +75,27 @@ public class ModManager {
     /**
      * Installs given {@code toBeInstalled} mod inside {@link Paths#getCustomModsDir()}.
      * */
-    public void installMod(File toBeInstalled, Consumer<Path> onDoneCallback) {
+    public Result<Throwable, ModDTO> installMod(File toBeInstalled, Consumer<ModDTO> onDoneCallback) {
         LOGGER.info("Installing mod [{}]...", toBeInstalled);
-
         throw new RuntimeException("Not implemented yet");
-        // andThen(() -> onDoneCallback.accept(installInto.toPath());
+        /*
+        return Try.of(() -> {
+            // validate -
+
+            // parse into DTO -
+
+            // copy to mods folder -
+
+            // register -
+
+        }).map(dto -> {
+            onDoneCallback.accept(dto);
+            return Result.success(dto);
+        }).onFailure(
+            t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled.getPath(), t)
+        ).recover(Result::failure).get();
+
+        */
     }
 
     /**
@@ -190,6 +209,39 @@ public class ModManager {
 
             return result;
         }).map(Result::success).recover(Result::failure).get();
+    }
+
+    /**
+     * Parses the given {@code mod} {@link File} into its {@link ModDTO} representation.
+     * */
+    protected ModDTO parse(File mod) {
+        List<File> modfiles = new ArrayList<>();
+        com.dazednconfused.catalauncher.utils.FileUtils.collectAllFilesFromInto(mod, modfiles);
+
+        return ModDTO.builder()
+            .name(mod.getName())
+            .modinfo(getModInfoFor(mod))
+            .modfiles(
+                modfiles.stream().map(file -> ModfileDTO.builder()
+                    .path(file.getPath())
+                    .hash(com.dazednconfused.catalauncher.utils.FileUtils.getFileChecksum(file))
+                    .build()
+                ).collect(Collectors.toList())
+            )
+            .build();
+    }
+
+    /**
+     * Retrieves the {@code modinfo.json} from the given {@code mod} {@link File}.
+     * */
+    private static String getModInfoFor(File mod) {
+        File modInfoFile = new File(mod, "modinfo.json");
+
+        try(BufferedReader reader = Files.newBufferedReader(modInfoFile.toPath())) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
