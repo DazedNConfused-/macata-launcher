@@ -64,12 +64,6 @@ public class ModManager {
         return this.modRepository.findAll().stream()
             .map(ModMapper.INSTANCE::toDTO)
             .collect(Collectors.toList());
-
-        /*
-        return Arrays.stream(Objects.requireNonNull(getModsFolder().listFiles()))
-                .filter(file -> !file.getName().equals(".DS_Store"))
-                .collect(Collectors.toList());
-        */
     }
 
     /**
@@ -80,22 +74,26 @@ public class ModManager {
 
         return Try.of(() -> {
             // validate -
-            File validatedMod = validateMod(toBeInstalled).getOrElseThrowUnchecked();
-
-            // parse into DTO -
-            ModDTO validatedModDto = parse(validatedMod);
+            File validatedMod = this.validateMod(toBeInstalled).getOrElseThrowUnchecked();
 
             // copy to mods folder -
-            copyModToModsFolder(validatedMod).getOrElseThrowUnchecked();
+            File copiedMod = this.copyModToModsFolder(validatedMod).getOrElseThrowUnchecked();
 
-            // register -
-            return registerMod(validatedModDto).getOrElseThrowUnchecked();
+            // parse into DTO -
+            ModDTO validatedModDto = this.parse(copiedMod);
+
+            // register DTO -
+            return this.registerMod(validatedModDto).getOrElseThrowUnchecked();
         }).map(dto -> {
+            // perform callback on successful installation -
             onDoneCallback.accept(dto);
             return dto;
         }).onFailure(
             t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled.getPath(), t)
-        ).map(Result::success).recover(Result::failure).get();
+        ).map(dto -> {
+            LOGGER.info("Mod [{}] has been succesfully installed!", dto.getName());
+            return Result.success(dto);
+        }).recover(Result::failure).get();
     }
 
     /**
@@ -133,13 +131,16 @@ public class ModManager {
 
     /**
      * Copies the given {@code toBeInstalled} mod into the {@link Paths#getCustomModsDir()} folder.
+     *
+     * @return The final {@link File} after it has finished copying.
      * */
-    protected Result<Throwable, Void> copyModToModsFolder(File toBeInstalled) {
+    protected Result<Throwable, File> copyModToModsFolder(File toBeInstalled) {
         File installInto = new File(getModsFolder().getPath() + "/" + toBeInstalled.getName());
 
-        return Try.run(() -> {
+        return Try.of(() -> {
             LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
             FileUtils.copyDirectory(toBeInstalled, installInto);
+            return installInto;
         }).onFailure(
             t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled, t)
         ).map(Result::success).recover(Result::failure).get();
@@ -248,7 +249,7 @@ public class ModManager {
      * Unzips the given {@code zipFile} into a temporary folder.
      * */
     private File unzipToTempFolder(File zipFile) throws IOException {
-        Path tempDir = Files.createTempDirectory("macata_mod_unzip");
+        Path tempDir = Files.createTempDirectory("macata_mod_unzip_");
 
         Zipper.decompressAndCallback(
             zipFile, tempDir,

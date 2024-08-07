@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 class ModManagerTest {
@@ -337,7 +336,7 @@ class ModManagerTest {
             File result = instance.getModsFolder();
 
             // verify assertions ---
-            assertThat(result).isEqualTo(new File(mockedDirectory.toString()));
+            assertThat(result).isEqualTo(new File(Paths.getCustomModsDir()));
         }
     }
 
@@ -464,15 +463,20 @@ class ModManagerTest {
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
             // execute test ---
-            Result<Throwable, Void> result = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
+            Result<Throwable, File> result = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
 
             // verify assertions ---
             assertThat(result).isNotNull(); // assert non-null result
-
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
+            File ACTUAL_RESULT = result.getOrElseThrowUnchecked();
+            assertThat(ACTUAL_RESULT).isNotNull();
+
+            Path EXPECTED_PATH = Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod");
+            assertThat(ACTUAL_RESULT.getPath()).isEqualTo(EXPECTED_PATH.toString());
+
             CustomFileAssertions.assertThat(
-                    new File(Path.of(mockedDirectory.toString(), "cdda_mutation_rebalance_mod").toString())
+                    new File(EXPECTED_PATH.toString())
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                     "modinfo.json",
                     "README.md",
@@ -489,13 +493,13 @@ class ModManagerTest {
             mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
-            Result<Throwable, Void> copyResult = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
+            Result<Throwable, File> copyResult = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
 
             // pre-test assertions ---
             assertThat(copyResult).isNotNull();
             assertThat(copyResult.toEither().isRight()).isTrue();
 
-            File MOCKED_INSTALLED_MOD = new File(Path.of(mockedDirectory.toString(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
 
             CustomFileAssertions.assertThat(
                     MOCKED_INSTALLED_MOD
@@ -529,7 +533,9 @@ class ModManagerTest {
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
 
-        ModDTO EXPECTED_RESULT = getExpectedModDtoForTests();
+        ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(
+                TestUtils.getFromResource("mod/sample/unzipped").toPath()
+        );
 
         assertThat(result).isEqualTo(EXPECTED_RESULT);
     }
@@ -566,7 +572,9 @@ class ModManagerTest {
             assertThat(called.get()).isTrue();
             assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
 
-            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests();
+            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(
+                    Path.of(Paths.getCustomModsDir())
+            );
 
             assertThat(ACTUAL_RESULT.getId()).isNotNull();
             assertThat(ACTUAL_RESULT.getCreatedDate()).isNotNull();
@@ -588,7 +596,79 @@ class ModManagerTest {
             ).isEqualTo(EXPECTED_RESULT.getModfiles());
 
             // assert on filesystem changes -
-            File MOCKED_INSTALLED_MOD = new File(Path.of(mockedDirectory.toString(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+
+            CustomFileAssertions.assertThat(
+                    MOCKED_INSTALLED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json"
+            ));
+
+            // assert on database changes -
+            assertThat(instance.listAllRegisteredMods()).containsExactly(ACTUAL_RESULT);
+
+        }
+    }
+
+    @Test
+    void install_mod_success_with_zip(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
+
+            AtomicBoolean called = new AtomicBoolean(false);
+            AtomicReference<ModDTO> calledWith = new AtomicReference<>();
+            Consumer<ModDTO> MOCKED_CALLBACK = modDTO -> {
+                called.set(true);
+                calledWith.set(modDTO);
+            };
+
+            // pre-test assertions ---
+            assertThat(MOCKED_MOD_ZIP).isNotNull();
+            assertThat(MOCKED_MOD_ZIP).isFile();
+
+            // execute test ---
+            Result<Throwable, ModDTO> result = instance.installMod(MOCKED_MOD_ZIP, MOCKED_CALLBACK);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            // assert on DTO result -
+            ModDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
+
+            assertThat(called.get()).isTrue();
+            assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
+
+            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(
+                    Path.of(Paths.getCustomModsDir())
+            );
+
+            assertThat(ACTUAL_RESULT.getId()).isNotNull();
+            assertThat(ACTUAL_RESULT.getCreatedDate()).isNotNull();
+            assertThat(ACTUAL_RESULT.getUpdatedDate()).isNotNull();
+            assertThat(ACTUAL_RESULT.getCreatedDate()).isEqualTo(ACTUAL_RESULT.getUpdatedDate());
+            assertThat(ACTUAL_RESULT.getModfiles()).isNotNull();
+            assertThat(ACTUAL_RESULT).usingRecursiveComparison().ignoringFields(
+                    "id", "createdDate", "updatedDate",
+                    "modfiles" // this one will be asserted on individually next
+            ).isEqualTo(EXPECTED_RESULT);
+
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getId).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getModId).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getCreatedDate).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getUpdatedDate).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).allSatisfy(dto -> assertThat(dto.getCreatedDate()).isEqualTo(dto.getUpdatedDate()));
+            assertThat(ACTUAL_RESULT.getModfiles()).usingRecursiveComparison().ignoringFields(
+                    "id", "modId", "createdDate", "updatedDate"
+            ).isEqualTo(EXPECTED_RESULT.getModfiles());
+
+            // assert on filesystem changes -
+            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
 
             CustomFileAssertions.assertThat(
                     MOCKED_INSTALLED_MOD
@@ -607,7 +687,7 @@ class ModManagerTest {
     /**
      * Expected DTO for some tests in {@link ModManagerTest}'s suite.
      * */
-    private static ModDTO getExpectedModDtoForTests() {
+    private static ModDTO getExpectedModDtoForTests(Path rootPath) {
         return ModDTO.builder()
                 .name("cdda_mutation_rebalance_mod")
                 .modinfo("[\n" +
@@ -624,15 +704,15 @@ class ModManagerTest {
                         "]")
                 .modfiles(Arrays.asList(
                         ModfileDTO.builder()
-                                .path(TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod/modinfo.json").getPath())
+                                .path(new File(rootPath.toString(), "cdda_mutation_rebalance_mod/modinfo.json").getPath())
                                 .hash("e4d6ee5815bf4d4d6a0454f97e1eba89")
                                 .build(),
                         ModfileDTO.builder()
-                                .path(TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod/README.md").getPath())
+                                .path(new File(rootPath.toString(), "cdda_mutation_rebalance_mod/README.md").getPath())
                                 .hash("cbd11359de789778523e307a7bdf419f")
                                 .build(),
                         ModfileDTO.builder()
-                                .path(TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod/items/armor/integrated.json").getPath())
+                                .path(new File(rootPath.toString(), "cdda_mutation_rebalance_mod/items/armor/integrated.json").getPath())
                                 .hash("caeeb7c03d3aaf942221328f288e3924")
                                 .build()
                 ))
