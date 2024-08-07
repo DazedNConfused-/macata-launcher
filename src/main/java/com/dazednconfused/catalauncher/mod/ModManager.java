@@ -77,25 +77,25 @@ public class ModManager {
      * */
     public Result<Throwable, ModDTO> installMod(File toBeInstalled, Consumer<ModDTO> onDoneCallback) {
         LOGGER.info("Installing mod [{}]...", toBeInstalled);
-        throw new RuntimeException("Not implemented yet");
-        /*
+
         return Try.of(() -> {
             // validate -
+            File validatedMod = validateMod(toBeInstalled).getOrElseThrow();
 
             // parse into DTO -
+            ModDTO validatedModDto = parse(validatedMod);
 
             // copy to mods folder -
+            copyModToModsFolder(validatedMod).getOrElseThrow();
 
             // register -
-
+            return registerMod(validatedModDto).getOrElseThrow();
         }).map(dto -> {
             onDoneCallback.accept(dto);
-            return Result.success(dto);
+            return dto;
         }).onFailure(
             t -> LOGGER.error("There was an error installing mod [{}]", toBeInstalled.getPath(), t)
-        ).recover(Result::failure).get();
-
-        */
+        ).map(Result::success).recover(Result::failure).get();
     }
 
     /**

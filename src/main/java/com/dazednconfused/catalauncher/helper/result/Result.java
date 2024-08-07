@@ -29,4 +29,10 @@ public interface Result<L extends Throwable, R> {
     }
 
     Either<Failure<L,R>, Success<L,R>> toEither();
+
+    /**
+     * Returns the underlying value if this {@link Result} is a {@link Success}, or throws the captured exception if this
+     * was a {@link Failure}.
+     * */
+    R getOrElseThrow() throws L;
 }

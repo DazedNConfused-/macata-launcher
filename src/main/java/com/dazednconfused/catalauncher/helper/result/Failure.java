@@ -24,4 +24,9 @@ public class Failure<L extends Throwable,R> implements Result<L,R> {
     public Either<Failure<L,R>, Success<L,R>> toEither() {
         return Either.left(this);
     }
+
+    @Override
+    public R getOrElseThrow() throws L {
+        throw error;
+    }
 }

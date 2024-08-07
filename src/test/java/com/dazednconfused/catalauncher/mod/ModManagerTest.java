@@ -18,8 +18,12 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 class ModManagerTest {
@@ -534,7 +538,88 @@ class ModManagerTest {
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
 
-        ModDTO EXPECTED_RESULT = ModDTO.builder()
+        ModDTO EXPECTED_RESULT = getExpectedModDtoForTests();
+
+        assertThat(result).isEqualTo(EXPECTED_RESULT);
+    }
+
+    @Test
+    void install_mod_success_with_directory(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+
+            AtomicBoolean called = new AtomicBoolean(false);
+            AtomicReference<ModDTO> calledWith = new AtomicReference<>();
+            Consumer<ModDTO> MOCKED_CALLBACK = modDTO -> {
+                called.set(true);
+                calledWith.set(modDTO);
+            };
+
+            // pre-test assertions ---
+            assertThat(MOCKED_MOD_ZIP).isNotNull();
+            assertThat(MOCKED_MOD_ZIP).isDirectory();
+
+            // execute test ---
+            Result<Throwable, ModDTO> result = instance.installMod(MOCKED_MOD_ZIP, MOCKED_CALLBACK);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            // assert on DTO result -
+            ModDTO ACTUAL_RESULT = result.getOrElseThrow();
+
+            assertThat(called.get()).isTrue();
+            assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
+
+            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests();
+
+            assertThat(ACTUAL_RESULT.getId()).isNotNull();
+            assertThat(ACTUAL_RESULT.getCreatedDate()).isNotNull();
+            assertThat(ACTUAL_RESULT.getUpdatedDate()).isNotNull();
+            assertThat(ACTUAL_RESULT.getCreatedDate()).isEqualTo(ACTUAL_RESULT.getUpdatedDate());
+            assertThat(ACTUAL_RESULT.getModfiles()).isNotNull();
+            assertThat(ACTUAL_RESULT).usingRecursiveComparison().ignoringFields(
+                    "id", "createdDate", "updatedDate",
+                    "modfiles" // this one will be asserted on individually next
+            ).isEqualTo(EXPECTED_RESULT);
+
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getId).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getModId).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getCreatedDate).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getUpdatedDate).isNotNull();
+            assertThat(ACTUAL_RESULT.getModfiles()).allSatisfy(dto -> assertThat(dto.getCreatedDate()).isEqualTo(dto.getUpdatedDate()));
+            assertThat(ACTUAL_RESULT.getModfiles()).usingRecursiveComparison().ignoringFields(
+                    "id", "modId", "createdDate", "updatedDate"
+            ).isEqualTo(EXPECTED_RESULT.getModfiles());
+
+            // assert on filesystem changes -
+            File MOCKED_INSTALLED_MOD = new File(Path.of(mockedDirectory.toString(), "cdda_mutation_rebalance_mod").toString());
+
+            CustomFileAssertions.assertThat(
+                    MOCKED_INSTALLED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json"
+            ));
+
+            // assert on database changes -
+            assertThat(instance.listAllRegisteredMods()).containsExactly(ACTUAL_RESULT);
+
+        } catch (Throwable e) {
+            fail("Test has failed with exception", e);
+        }
+    }
+
+    /**
+     * Expected DTO for some tests in {@link ModManagerTest}'s suite.
+     * */
+    private static ModDTO getExpectedModDtoForTests() {
+        return ModDTO.builder()
                 .name("cdda_mutation_rebalance_mod")
                 .modinfo("[\n" +
                         "  {\n" +
@@ -563,8 +648,5 @@ class ModManagerTest {
                                 .build()
                 ))
                 .build();
-
-        assertThat(result).isEqualTo(EXPECTED_RESULT);
     }
-
 }
