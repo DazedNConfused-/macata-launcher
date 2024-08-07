@@ -119,8 +119,7 @@ class MigrateableH2DatabaseTest {
 
         assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-        assertThat(result.toEither().get().getResult().isEmpty()).isFalse(); // assert that Result's Success is not empty
-        assertThat(result.toEither().get().getResult().get()).isFalse();
+        assertThat(result.getOrElseThrowUnchecked()).isFalse();
 
         assertThat(db.doesTableExist("sample")).isTrue();
     }

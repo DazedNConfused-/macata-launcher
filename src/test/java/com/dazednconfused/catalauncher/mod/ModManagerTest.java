@@ -79,13 +79,10 @@ class ModManagerTest {
 
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
-
         assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-        assertThat(result.toEither().get().getResult().isEmpty()).isFalse(); // assert that Result's Success is not empty
-
-
-        ModDTO ACTUAL_RESULT = result.toEither().get().getResult().get();
+        assertThat(result.getOrElseThrowUnchecked()).isNotNull();
+        ModDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
         assertThat(ACTUAL_RESULT).isNotNull();
         assertThat(ACTUAL_RESULT.getName()).isEqualTo("mockedMod");
@@ -355,12 +352,9 @@ class ModManagerTest {
 
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
-
         assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-        assertThat(result.toEither().get().getResult().isEmpty()).isFalse(); // assert that Result's Success is not empty
-
-
+        assertThat(result.getOrElseThrowUnchecked()).isNotNull();
         File ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
         CustomFileAssertions.assertThat(ACTUAL_RESULT).containsExactlyFilesWithRelativePaths(Arrays.asList(
@@ -381,12 +375,9 @@ class ModManagerTest {
 
         // verify assertions ---
         assertThat(result).isNotNull(); // assert non-null result
-
         assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-        assertThat(result.toEither().get().getResult().isEmpty()).isFalse(); // assert that Result's Success is not empty
-
-
+        assertThat(result.getOrElseThrowUnchecked()).isNotNull();
         File ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
         CustomFileAssertions.assertThat(ACTUAL_RESULT).containsExactlyFilesWithRelativePaths(Arrays.asList(
