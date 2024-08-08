@@ -49,6 +49,17 @@ public class Paths {
     }
 
     /**
+     * Retrieves the {@link Application}'s custom path for trashed files.
+     *
+     * <pre> {@code
+     *  getLauncherRootFolder() + "/trashed"
+     * }</pre>
+     * */
+    public static String getCustomTrashedPath() {
+        return getLauncherRootFolder() + "/trashed";
+    }
+
+    /**
      * Retrieves the {@link Application}'s custom path for trashed savefiles.
      *
      * <pre> {@code
@@ -56,7 +67,7 @@ public class Paths {
      * }</pre>
      * */
     public static String getCustomTrashedSavePath() {
-        return getLauncherRootFolder() + "/trashed/saves/";
+        return getCustomTrashedPath() + "/saves/";
     }
 
     /**
@@ -102,6 +113,18 @@ public class Paths {
     public static String getCustomModsDir() {
         return getCustomUserDir() + "mods/";
     }
+
+    /**
+     * Retrieves the {@link Application}'s custom path for trashed mods.
+     *
+     * <pre> {@code
+     *  getLauncherRootFolder() + "/trashed/saves/"
+     * }</pre>
+     * */
+    public static String getCustomTrashedModsPath() {
+        return getCustomTrashedPath() + "/mods/";
+    }
+
 
     /**
      * Retrieves the {@link Application}'s database(s) directory.

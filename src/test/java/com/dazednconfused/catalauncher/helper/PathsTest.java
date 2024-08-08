@@ -72,6 +72,21 @@ class PathsTest {
     }
 
     @Test
+    void get_custom_trashed_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
+
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
+
+            // execute test ---
+            String result = Paths.getCustomTrashedPath();
+
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/trashed");
+        }
+    }
+
+    @Test
     void get_custom_trashed_save_path_success() {
         try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 
@@ -143,6 +158,21 @@ class PathsTest {
 
             // verify assertions ---
             assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/userdir/mods/");
+        }
+    }
+
+    @Test
+    void get_custom_trashed_mods_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
+
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
+
+            // execute test ---
+            String result = Paths.getCustomTrashedModsPath();
+
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getLauncherRootFolder() + "/trashed/mods/");
         }
     }
 }
