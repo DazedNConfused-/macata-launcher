@@ -650,7 +650,11 @@ public class MainWindow {
             LOGGER.trace("Mod currently on selection: [{}]", selectedMod);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to uninstall the mod [%s]?", selectedMod.getName()),
+                String.format(
+                    "Are you sure you want to uninstall the mod [%s]? It will be moved to trash folder [%s]",
+                    selectedMod.getName(),
+                    Paths.getCustomTrashedModsPath()
+                ),
                 ConfirmDialog.ConfirmDialogType.WARNING,
                 confirmed -> {
                     LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
@@ -660,9 +664,9 @@ public class MainWindow {
                             ModManager.getInstance().getModFor(selectedMod).orElseThrow(),
                             ModManager.DO_NOTHING_ACTION
                         );
-                    }
 
-                    this.refreshGuiElements();
+                        this.refreshGuiElements();
+                    }
                 }
             );
 
