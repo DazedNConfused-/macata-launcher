@@ -934,6 +934,24 @@ class ModManagerTest {
         }
     }
 
+    @Test
+    void get_path_for_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            ModDTO MOCKED_DTO = ModDTO.builder().name("cdda_mutation_rebalance_mod").build();
+
+            // execute test ---
+            instance.getPathFor(MOCKED_DTO);
+
+            // verify assertions ---
+            assertThat(instance.getPathFor(MOCKED_DTO)).isEqualTo(
+                    Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")
+            );
+        }
+    }
+
     /**
      * Expected DTO for some tests in {@link ModManagerTest}'s suite.
      * */

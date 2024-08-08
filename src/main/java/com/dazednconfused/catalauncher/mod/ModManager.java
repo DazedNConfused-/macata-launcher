@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +125,17 @@ public class ModManager {
             LOGGER.info("Mod [{}] has been successfully uninstalled!", dto.getName());
             return Result.success(dto);
         }).recover(Result::failure).get();
+    }
+
+    /**
+     * Returns the {@link Path} under which the given {@code toBeQueried} mod is installed.
+     * */
+    public Path getPathFor(ModDTO toBeQueried) {
+        if (toBeQueried == null || StringUtils.isBlank(toBeQueried.getName())) {
+            throw new IllegalArgumentException("Invalid Mod supplied for query");
+        }
+
+        return Path.of(Paths.getCustomModsDir(), toBeQueried.getName());
     }
 
     /**

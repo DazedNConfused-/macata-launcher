@@ -10,6 +10,8 @@ import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.sysinfo.SystemInfoManager;
 import com.dazednconfused.catalauncher.launcher.CDDALauncherManager;
+import com.dazednconfused.catalauncher.mod.ModManager;
+import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
@@ -23,6 +25,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -90,6 +93,11 @@ public class MainWindow {
     private JTable soundpacksTable;
     private JButton installSoundpackButton;
     private JButton uninstallSoundpackButton;
+
+    // MODS TAB ---
+    private JTable modsTable;
+    private JButton installModButton;
+    private JButton uninstallModButton;
 
     /**
      * {@link MainWindow}'s main entrypoint.
@@ -563,6 +571,136 @@ public class MainWindow {
     }
 
     /**
+     * Setups all GUI elements related to mod management.
+     *
+     * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
+     * */
+    /*
+    private Runnable setupModsGui() {
+
+        // MOD INSTALL BUTTON LISTENER ---
+        this.installModButton.addActionListener(e -> {
+            LOGGER.trace("Install mod button clicked");
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Select mod folder to install");
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int result = fileChooser.showSaveDialog(mainPanel);
+
+            if (result == JFileChooser.APPROVE_OPTION && fileChooser.getSelectedFile() != null) {
+                // setup dummy timer to give user visual feedback that his operation is in progress...
+                Timer dummyTimer = new Timer(10, e1 -> {
+                    if (this.globalProgressBar.getValue() <= 100) {
+                        this.globalProgressBar.setValue(this.globalProgressBar.getValue() + 1);
+                    }
+                });
+
+                // start timer before triggering installation
+                dummyTimer.start();
+
+                // start installation and give it a callback to stop the dummy timer
+                ModManager.installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop());
+            } else {
+                LOGGER.trace("Exiting mod finder dialog with no selection...");
+            }
+
+            this.refreshGuiElements();
+        });
+
+        // MOD DELETE BUTTON LISTENER ---
+        this.uninstallModButton.addActionListener(e -> {
+            LOGGER.trace("Uninstall mod button clicked");
+
+            File selectedMod = (File) this.modsTable.getValueAt(this.modsTable.getSelectedRow(), 1);
+            LOGGER.trace("Mod currently on selection: [{}]", selectedMod);
+
+            ConfirmDialog confirmDialog = new ConfirmDialog(
+                String.format("Are you sure you want to delete the mod [%s]? This action is irreversible!", selectedMod.getName()),
+                ConfirmDialog.ConfirmDialogType.WARNING,
+                confirmed -> {
+                    LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
+
+                    if (confirmed) {
+                        ModManager.deleteMod(selectedMod);
+                    }
+
+                    this.refreshGuiElements();
+                }
+            );
+
+            confirmDialog.packCenterAndShow(this.mainPanel);
+        });
+
+        // SOUNDPACKS TABLE LISTENER(S) ---
+        this.modsTable.getSelectionModel().addListSelectionListener(event -> {
+            LOGGER.trace("Mods table row selected");
+
+            if (modsTable.getSelectedRow() > -1) {
+                this.uninstallModButton.setEnabled(true);
+            }
+        });
+
+        BiConsumer<MouseEvent, JTable> onModsTableRightClickEvent = (e, table) -> {
+            LOGGER.trace("Mods table clicked");
+
+            int r = table.rowAtPoint(e.getPoint());
+            if (r >= 0 && r < table.getRowCount()) {
+                table.setRowSelectionInterval(r, r);
+            } else {
+                table.clearSelection();
+            }
+
+            int rowindex = table.getSelectedRow();
+            if (rowindex < 0) {
+                return;
+            }
+
+            if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
+                LOGGER.trace("Opening right-click popup for [{}]", table.getName());
+                File targetFile = ((File) table.getValueAt(table.getSelectedRow(), 1));
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem openInFinder = new JMenuItem("Open folder in file explorer");
+                openInFinder.addActionListener(e1 -> {
+                    FileExplorerManager.openFileInFileExplorer(targetFile, false);
+                });
+                popup.add(openInFinder);
+
+                JMenuItem uninstall = new JMenuItem("Uninstall...");
+                uninstall.addActionListener(e1 -> uninstallModButton.doClick());
+                popup.add(uninstall);
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        };
+
+        this.modsTable.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) { // mousedPressed event needed for macOS - https://stackoverflow.com/a/3558324
+                onModsTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
+
+            public void mouseReleased(MouseEvent e) { // mouseReleased event needed for other OSes
+                onModsTableRightClickEvent.accept(e, (JTable) e.getComponent());
+            }
+        });
+
+        return () -> {
+            LOGGER.trace("Refreshing mod-management GUI elements...");
+
+            // SET SOUNDPACKS TABLE ---
+            this.refreshModsTable();
+
+            // DETERMINE IF MOD DELETE BUTTON SHOULD BE DISABLED ---
+            // (ie: if last backup was just deleted)
+            if (ModManager.listAllMods().size() == 0 || this.modsTable.getSelectedRow() == -1) {
+                this.uninstallModButton.setEnabled(false);
+            }
+        };
+    }
+    */
+
+    /**
      * Disables all backup-section buttons.
      */
     private void disableSaveBackupButtons() {
@@ -729,6 +867,36 @@ public class MainWindow {
             }
         };
         this.soundpacksTable.setModel(tableModel);
+    }
+
+    /**
+     * Refreshes current {@link #modsTable} with latest info coming from {@link ModManager}.
+     */
+    private void refreshModsTable() {
+        LOGGER.trace("Refreshing mods table...");
+
+        String[] columns = new String[]{"Name", "Path", "Size", "Install date", "Last updated"};
+
+        List<Object[]> values = new ArrayList<>();
+        ModManager.getInstance().listAllRegisteredMods().stream().sorted(Comparator.comparing(ModDTO::getId)).forEach(mod -> {
+            Path modPath = ModManager.getInstance().getPathFor(mod);
+            File modFile = new File(modPath.toString());
+            values.add(new Object[]{
+                mod.getName(),
+                modFile,
+                FileUtils.sizeOfDirectory(modFile) / (1024 * 1024) + " MB",
+                mod.getCreatedDate(),
+                mod.getUpdatedDate()
+            });
+        });
+
+        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        this.modsTable.setModel(tableModel);
     }
 
     /**
