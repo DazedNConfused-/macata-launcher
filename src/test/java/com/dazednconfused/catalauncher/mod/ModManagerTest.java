@@ -722,7 +722,7 @@ class ModManagerTest {
                 TestUtils.getFromResource("mod/sample/unzipped").toPath()
         );
 
-        assertThat(result).isEqualTo(EXPECTED_RESULT);
+        assertThat(result).usingRecursiveComparison().isEqualTo(EXPECTED_RESULT);
     }
 
     @Test
