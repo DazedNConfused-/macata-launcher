@@ -18,6 +18,20 @@ public class ModfileH2DAOImpl extends MigrateableH2Database implements ModfileDA
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModfileH2DAOImpl.class);
 
+    /**
+     * Constructor.
+     */
+    public ModfileH2DAOImpl() {
+        super(false);
+    }
+
+    /**
+     * Constructor.
+     */
+    public ModfileH2DAOImpl(boolean applyMigrations) {
+        super(applyMigrations);
+    }
+
     @Override
     public String getDatabaseName() {
         return DATABASE_FILE;

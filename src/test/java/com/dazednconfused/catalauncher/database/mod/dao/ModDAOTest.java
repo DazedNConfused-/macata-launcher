@@ -25,7 +25,7 @@ public class ModDAOTest {
 
     @BeforeAll
     public static void setup() {
-        dao = new ModH2DAOImpl(){
+        dao = new ModH2DAOImpl(true){
             @Override
             public String getDatabaseName() {
                 return super.getDatabaseName() + "_" + uuid;

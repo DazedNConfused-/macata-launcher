@@ -20,6 +20,20 @@ public class ModH2DAOImpl extends MigrateableH2Database implements ModDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModH2DAOImpl.class);
 
+    /**
+     * Constructor.
+     */
+    public ModH2DAOImpl() {
+        super(false);
+    }
+
+    /**
+     * Constructor.
+     */
+    public ModH2DAOImpl(boolean applyMigrations) {
+        super(applyMigrations);
+    }
+
     @Override
     public String getDatabaseName() {
         return DATABASE_FILE;

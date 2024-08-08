@@ -29,6 +29,15 @@ public class ModH2RepositoryImpl extends MigrateableH2Database implements ModRep
      * Constructor.
      * */
     public ModH2RepositoryImpl(ModDAO modDAO, ModfileDAO modfileDAO) {
+        this(modDAO, modfileDAO, true);
+    }
+
+    /**
+     * Constructor.
+     * */
+    public ModH2RepositoryImpl(ModDAO modDAO, ModfileDAO modfileDAO, boolean applyMigrations) {
+        super(applyMigrations);
+
         this.modDAO = modDAO;
         this.modfileDAO = modfileDAO;
     }

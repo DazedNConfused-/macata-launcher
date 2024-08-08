@@ -38,7 +38,7 @@ public class ModfileDAOTest {
                 return super.getDatabaseName() + "_" + uuid;
             }
         };
-        dao = new ModfileH2DAOImpl() {
+        dao = new ModfileH2DAOImpl(true) {
             @Override
             public String getDatabaseName() {
                 return super.getDatabaseName() + "_" + uuid;

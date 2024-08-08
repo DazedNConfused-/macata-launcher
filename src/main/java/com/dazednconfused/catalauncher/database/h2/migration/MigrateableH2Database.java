@@ -44,6 +44,18 @@ public abstract class MigrateableH2Database extends H2Database implements Migrat
      * Constructor.
      * */
     protected MigrateableH2Database() {
+        this(true);
+    }
+
+    /**
+     * Constructor.
+     * */
+    protected MigrateableH2Database(boolean applyMigrations) {
+        if (!applyMigrations) {
+            LOGGER.trace("Skipping applying migrations because applyMigrations flag was set to false.");
+            return;
+        }
+
         this.initMigrationTable();
         this.applyAllPendingMigrations();
     }
@@ -169,7 +181,7 @@ public abstract class MigrateableH2Database extends H2Database implements Migrat
      * Erases all registered migration(s) to this DAO's database.
      * */
     private void resetMigrations() throws DAOException {
-        LOGGER.trace("Deleting migration record(s) for for database [{}]...", this.getDatabaseName());
+        LOGGER.trace("Deleting migration record(s) for database [{}]...", this.getDatabaseName());
 
         String sql = "DELETE FROM " + MIGRATION_TABLE_NAME;
 
