@@ -304,9 +304,9 @@ public class MainWindow {
                             selectedBackup,
                             percentageComplete -> this.globalProgressBar.setValue(percentageComplete)
                         ).ifPresent(Thread::start);
-                    }
 
-                    this.refreshGuiElements();
+                        this.refreshGuiElements();
+                    }
                 }
             );
 
@@ -329,9 +329,8 @@ public class MainWindow {
 
                     if (confirmed) {
                         SaveManager.deleteBackup(selectedBackup);
+                        this.refreshGuiElements();
                     }
-
-                    this.refreshGuiElements();
                 }
             );
 
@@ -495,9 +494,8 @@ public class MainWindow {
 
                     if (confirmed) {
                         SoundpackManager.deleteSoundpack(selectedSoundpack);
+                        this.refreshGuiElements();
                     }
-
-                    this.refreshGuiElements();
                 }
             );
 
