@@ -18,8 +18,10 @@ import org.mockito.MockedStatic;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -488,11 +490,13 @@ class ModManagerTest {
     }
 
     @Test
-    void delete_mod_from_mods_folder_success(@TempDir Path mockedDirectory) {
+    void trash_mod_from_mods_folder_success(@TempDir Path mockedModsDirectory, @TempDir Path mockedTrashedModsDirectory) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.toString());
+
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
             Result<Throwable, ModDTO> installResult = instance.installMod(MOCKED_MOD_ZIP, unused -> { });
@@ -506,7 +510,7 @@ class ModManagerTest {
 
             File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
 
-            CustomFileAssertions.assertThat(
+            CustomFileAssertions.assertThat( // assert that mod is installed
                     MOCKED_INSTALLED_MOD
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                     "modinfo.json",
@@ -514,24 +518,46 @@ class ModManagerTest {
                     "items/armor/integrated.json"
             ));
 
+            File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
+            assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
+
             // execute test ---
-            Result<Throwable, Void> result = instance.deleteModFromModsFolder(registeredMod);
+            Result<Throwable, Void> result = instance.trashModFromModsFolder(registeredMod);
 
             // verify assertions ---
             assertThat(result).isNotNull(); // assert non-null result
 
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-            assertThat(MOCKED_INSTALLED_MOD).doesNotExist();
+            assertThat(MOCKED_INSTALLED_MOD).doesNotExist(); // assert that mod no longer exists
+
+            // trashed mod assertions -
+            assertThat(MOCKED_TRASHED_MODS_FOLDER.listFiles()).hasSize(1);
+            File MOCKED_TRASHED_MOD = Objects.requireNonNull(MOCKED_TRASHED_MODS_FOLDER.listFiles())[0];
+            assertThat(MOCKED_TRASHED_MOD).exists();
+
+            assertThat(MOCKED_TRASHED_MOD.getName()).contains( // assert that trashed mod is timestamp-ed
+                    new SimpleDateFormat("yyyyMMdd").format(new java.util.Date())
+            );
+
+            CustomFileAssertions.assertThat( // assert that mod is available in trash folder
+                    MOCKED_TRASHED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "cdda_mutation_rebalance_mod/modinfo.json",
+                    "cdda_mutation_rebalance_mod/README.md",
+                    "cdda_mutation_rebalance_mod/items/armor/integrated.json"
+            ));
         }
     }
 
     @Test
-    void delete_mod_from_mods_folder_with_foreign_files_success(@TempDir Path mockedDirectory) {
+    void trash_mod_from_mods_folder_with_foreign_files_success(@TempDir Path mockedModsDirectory, @TempDir Path mockedTrashedModsDirectory) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.toString());
+
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
             Result<Throwable, ModDTO> installResult = instance.installMod(MOCKED_MOD_ZIP, unused -> { });
@@ -553,7 +579,7 @@ class ModManagerTest {
 
             File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
 
-            CustomFileAssertions.assertThat(
+            CustomFileAssertions.assertThat( // assert that mod is installed
                     MOCKED_INSTALLED_MOD
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                     "modinfo.json",
@@ -562,18 +588,38 @@ class ModManagerTest {
                     "foreign_folder/foreign_file.zip"
             ));
 
+            File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
+            assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
+
             // execute test ---
-            Result<Throwable, Void> result = instance.deleteModFromModsFolder(registeredMod);
+            Result<Throwable, Void> result = instance.trashModFromModsFolder(registeredMod);
 
             // verify assertions ---
             assertThat(result).isNotNull(); // assert non-null result
 
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-            CustomFileAssertions.assertThat(
+            CustomFileAssertions.assertThat( // assert that mod folder still contains foreign/untracked file
                     MOCKED_INSTALLED_MOD
             ).containsExactlyFilesWithRelativePaths(List.of(
                     "foreign_folder/foreign_file.zip"
+            ));
+
+            // trashed mod assertions -
+            assertThat(MOCKED_TRASHED_MODS_FOLDER.listFiles()).hasSize(1);
+            File MOCKED_TRASHED_MOD = Objects.requireNonNull(MOCKED_TRASHED_MODS_FOLDER.listFiles())[0];
+            assertThat(MOCKED_TRASHED_MOD).exists();
+
+            assertThat(MOCKED_TRASHED_MOD.getName()).contains( // assert that trashed mod is timestamp-ed
+                    new SimpleDateFormat("yyyyMMdd").format(new java.util.Date())
+            );
+
+            CustomFileAssertions.assertThat( // assert that mod is available in trash folder
+                    MOCKED_TRASHED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "cdda_mutation_rebalance_mod/modinfo.json",
+                    "cdda_mutation_rebalance_mod/README.md",
+                    "cdda_mutation_rebalance_mod/items/armor/integrated.json"
             ));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -744,11 +790,13 @@ class ModManagerTest {
     }
 
     @Test
-    void uninstall_mod_success(@TempDir Path mockedDirectory) {
+    void uninstall_mod_success(@TempDir Path mockedModsDirectory, @TempDir Path mockedTrashedModsDirectory) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.toString());
+
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
 
             ModDTO MOCKED_DTO = instance.installMod(MOCKED_MOD_ZIP, unused -> { }).getOrElseThrowUnchecked();
@@ -773,6 +821,8 @@ class ModManagerTest {
                     "items/armor/integrated.json"
             ));
 
+            assertThat(new File(Paths.getCustomTrashedModsPath())).isEmptyDirectory();
+
             // execute test ---
             Result<Throwable, ModDTO> result = instance.uninstallMod(MOCKED_DTO, MOCKED_CALLBACK);
 
@@ -790,6 +840,15 @@ class ModManagerTest {
 
             // assert on filesystem changes -
             assertThat(new File(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")).doesNotExist();
+
+            assertThat(new File(Paths.getCustomTrashedModsPath())).isNotEmptyDirectory();
+            CustomFileAssertions.assertThat(
+                    Objects.requireNonNull(new File(Paths.getCustomTrashedModsPath()).listFiles())[0]
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "cdda_mutation_rebalance_mod/modinfo.json",
+                    "cdda_mutation_rebalance_mod/README.md",
+                    "cdda_mutation_rebalance_mod/items/armor/integrated.json"
+            ));
 
             // assert on database changes -
             assertThat(instance.listAllRegisteredMods()).isEmpty();

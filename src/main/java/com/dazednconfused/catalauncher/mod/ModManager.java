@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -107,7 +108,7 @@ public class ModManager {
             ModDTO targetMod = this.modRepository.findById(toBeUninstalled.getId()).map(ModMapper.INSTANCE::toDTO).orElseThrow();
 
             // remove mod from mods folder -
-            this.deleteModFromModsFolder(targetMod).getOrElseThrowUnchecked();
+            this.trashModFromModsFolder(targetMod).getOrElseThrowUnchecked();
 
             // unregister DTO -
             this.unregisterMod(toBeUninstalled).getOrElseThrowUnchecked();
@@ -167,24 +168,41 @@ public class ModManager {
     }
 
     /**
-     * Deletes the given {@code toBeUninstalled} mod from the {@link Paths#getCustomModsDir()} folder.
+     * Moves the given {@code toBeUninstalled} mod from the {@link Paths#getCustomModsDir()} folder into the {@link Paths#getCustomTrashedModsPath()}.
      *
-     * @implNote Deletes only files registered under the {@link ModDTO#getModfiles()}. This is because a {@link ModDTO} may
+     * @implNote Moves only files registered under the {@link ModDTO#getModfiles()}. This is because a {@link ModDTO} may
      *           potentially have other stuff installed (like a tileset) in the same folder structure. This would be unmanaged,
-     *           foreign file(s). We do <b>not</b> want these to be deleted.
+     *           foreign file(s). We do <b>not</b> want these to be trashed.
      * */
-    protected Result<Throwable, Void> deleteModFromModsFolder(ModDTO toBeUninstalled) {
+    protected Result<Throwable, Void> trashModFromModsFolder(ModDTO toBeUninstalled) {
         return Try.run(() -> {
-            LOGGER.debug("Deleting mod [{}]...", toBeUninstalled.getName());
+
+            File trashDir = new File(Path.of(
+                Paths.getCustomTrashedModsPath(),
+                getYyyyMmDdHhMmSsTimestamp(),
+                toBeUninstalled.getName()
+            ).toString());
+
+            File toBeTrashed = new File(Path.of(
+                Paths.getCustomModsDir(),
+                toBeUninstalled.getName()
+            ).toString());
+
+            LOGGER.debug("Trashing mod [{}] into [{}]...", toBeTrashed, trashDir);
 
             for (ModfileDTO modfile : toBeUninstalled.getModfiles()) {
-                LOGGER.trace("Deleting file [{}]...", modfile);
-                FileUtils.delete(new File(modfile.getPath()));
+                Path sourceRelativePath = Path.of(toBeTrashed.getPath()).relativize(Path.of(modfile.getPath()));
+
+                File source = new File(modfile.getPath());
+                File dest = new File(trashDir, sourceRelativePath.toString());
+
+                LOGGER.debug("Trashing file [{}] into [{}]...", source, dest);
+                FileUtils.moveFile(source, dest);
             }
 
             File parentModFolder = new File(Paths.getCustomModsDir(), toBeUninstalled.getName());
             if (com.dazednconfused.catalauncher.utils.FileUtils.hasContents(parentModFolder)) {
-                LOGGER.debug("Keeping parent folder [{}] because it still has contents after deleting all related mod files (maybe it had a tileset installed)...", parentModFolder.getPath());
+                LOGGER.debug("Keeping parent folder [{}] because it still has contents after trashing all related mod files (maybe it had a tileset installed)...", parentModFolder.getPath());
                 if (LOGGER.isTraceEnabled()) {
                     List<File> remainingFiles = new ArrayList<>();
                     com.dazednconfused.catalauncher.utils.FileUtils.collectAllFilesFromInto(parentModFolder, remainingFiles);
@@ -199,7 +217,7 @@ public class ModManager {
                 FileUtils.deleteDirectory(parentModFolder);
             }
         }).onFailure(
-            t -> LOGGER.error("There was an error deleting mod [{}]", toBeUninstalled, t)
+            t -> LOGGER.error("There was an error trashing mod [{}]", toBeUninstalled, t)
         ).map(Result::success).recover(Result::failure).get();
     }
 
@@ -317,4 +335,10 @@ public class ModManager {
         }
     }
 
+    /**
+     * Generates a timestamp based on current's {@link java.util.Date}.
+     * */
+    private static String getYyyyMmDdHhMmSsTimestamp() {
+        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+    }
 }
