@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -949,6 +950,137 @@ class ModManagerTest {
             assertThat(instance.getPathFor(MOCKED_DTO)).isEqualTo(
                     Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")
             );
+        }
+    }
+
+    @Test
+    void get_mod_for_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+
+            ModfileDTO MOCKED_MODFILE_1_1 = ModfileDTO.builder()
+                    .path("/a/mocked/1/1.path")
+                    .hash("aMockedHash1_1")
+                    .build();
+
+            ModfileDTO MOCKED_MODFILE_1_2 = ModfileDTO.builder()
+                    .path("/a/mocked/1/2.path")
+                    .hash("aMockedHash1_2")
+                    .build();
+
+            ModfileDTO MOCKED_MODFILE_1_3 = ModfileDTO.builder()
+                    .path("/a/mocked/1/3.path")
+                    .hash("aMockedHash1_3")
+                    .build();
+
+            ModDTO MOCKED_MOD_1 = ModDTO.builder()
+                    .name("mockedMod1")
+                    .modinfo("mockedModInfo1")
+                    .modfiles(Arrays.asList(
+                            MOCKED_MODFILE_1_1,
+                            MOCKED_MODFILE_1_2,
+                            MOCKED_MODFILE_1_3
+                    ))
+                    .build();
+
+
+            ModfileDTO MOCKED_MODFILE_2_1 = ModfileDTO.builder()
+                    .path("/a/mocked/2/1.path")
+                    .hash("aMockedHash2_1")
+                    .build();
+
+            ModfileDTO MOCKED_MODFILE_2_2 = ModfileDTO.builder()
+                    .path("/a/mocked/2/2.path")
+                    .hash("aMockedHash2_2")
+                    .build();
+
+            ModfileDTO MOCKED_MODFILE_2_3 = ModfileDTO.builder()
+                    .path("/a/mocked/2/3.path")
+                    .hash("aMockedHash2_3")
+                    .build();
+
+            ModDTO MOCKED_MOD_2 = ModDTO.builder()
+                    .name("mockedMod2")
+                    .modinfo("mockedModInfo2")
+                    .modfiles(Arrays.asList(
+                            MOCKED_MODFILE_2_1,
+                            MOCKED_MODFILE_2_2,
+                            MOCKED_MODFILE_2_3
+                    ))
+                    .build();
+
+
+            ModfileDTO MOCKED_MODFILE_3_1 = ModfileDTO.builder()
+                    .path("/a/mocked/3/1.path")
+                    .hash("aMockedHash3_1")
+                    .build();
+
+            ModfileDTO MOCKED_MODFILE_3_2 = ModfileDTO.builder()
+                    .path("/a/mocked/3/2.path")
+                    .hash("aMockedHash3_2")
+                    .build();
+
+            ModfileDTO MOCKED_MODFILE_3_3 = ModfileDTO.builder()
+                    .path("/a/mocked/3/3.path")
+                    .hash("aMockedHash3_3")
+                    .build();
+
+            ModDTO MOCKED_MOD_3 = ModDTO.builder()
+                    .name("mockedMod3")
+                    .modinfo("mockedModInfo3")
+                    .modfiles(Arrays.asList(
+                            MOCKED_MODFILE_3_1,
+                            MOCKED_MODFILE_3_2,
+                            MOCKED_MODFILE_3_3
+                    ))
+                    .build();
+
+            ModDTO EXPECTED_RESULT_1 = instance.registerMod(MOCKED_MOD_1).getOrElseThrowUnchecked();
+            ModDTO EXPECTED_RESULT_2 = instance.registerMod(MOCKED_MOD_2).getOrElseThrowUnchecked();
+            ModDTO EXPECTED_RESULT_3 = instance.registerMod(MOCKED_MOD_3).getOrElseThrowUnchecked();
+
+            File MOCKED_MOD = new File(
+                    Paths.getCustomModsDir(),
+                    "mockedMod1"
+            );
+
+            // pre-test assertions ---
+            assertThat(instance.listAllRegisteredMods()).hasSize(3);
+
+            // execute test ---
+            Optional<ModDTO> result = instance.getModFor(MOCKED_MOD);
+
+            // verify assertions ---
+            assertThat(result).isNotNull();
+            assertThat(result.isPresent()).isTrue();
+
+            assertThat(result.get()).isEqualTo(EXPECTED_RESULT_1);
+        }
+    }
+
+    @Test
+    void get_mod_for_not_found_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+
+            File MOCKED_MOD = new File(
+                    Paths.getCustomModsDir(),
+                    "mockedMod1"
+            );
+
+            // pre-test assertions ---
+            assertThat(instance.listAllRegisteredMods()).hasSize(0);
+
+            // execute test ---
+            Optional<ModDTO> result = instance.getModFor(MOCKED_MOD);
+
+            // verify assertions ---
+            assertThat(result).isNotNull();
+            assertThat(result.isEmpty()).isTrue();
         }
     }
 

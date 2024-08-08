@@ -50,6 +50,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -141,7 +142,8 @@ public class MainWindow {
                 this.setupTabbedPane(),
                 this.setupMainExecutableGui(),
                 this.setupSaveBackupsGui(),
-                this.setupSoundpacksGui()
+                this.setupSoundpacksGui(),
+                this.setupModsGui()
         };
 
         this.refreshGuiElements();
@@ -575,7 +577,6 @@ public class MainWindow {
      *
      * @return The {@link Runnable} in charge or refreshing all GUI elements related to this setup on-demand.
      * */
-    /*
     private Runnable setupModsGui() {
 
         // MOD INSTALL BUTTON LISTENER ---
@@ -583,8 +584,27 @@ public class MainWindow {
             LOGGER.trace("Install mod button clicked");
 
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Select mod folder to install");
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.setDialogTitle("Select mod folder/zip to install");
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            fileChooser.setFileFilter(new FileFilter() {
+                // set a custom file filter to allow only ZIP files or directories
+                @Override
+                public boolean accept(File file) {
+                    // accept directories
+                    if (file.isDirectory()) {
+                        return true;
+                    }
+                    // accept files that end with .zip
+                    String fileName = file.getName().toLowerCase();
+                    return fileName.endsWith(".zip");
+                }
+
+                @Override
+                public String getDescription() {
+                    return "ZIP files and directories";
+                }
+            });
+
             int result = fileChooser.showSaveDialog(mainPanel);
 
             if (result == JFileChooser.APPROVE_OPTION && fileChooser.getSelectedFile() != null) {
@@ -599,7 +619,7 @@ public class MainWindow {
                 dummyTimer.start();
 
                 // start installation and give it a callback to stop the dummy timer
-                ModManager.installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop());
+                ModManager.getInstance().installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop());
             } else {
                 LOGGER.trace("Exiting mod finder dialog with no selection...");
             }
@@ -615,13 +635,16 @@ public class MainWindow {
             LOGGER.trace("Mod currently on selection: [{}]", selectedMod);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to delete the mod [%s]? This action is irreversible!", selectedMod.getName()),
+                String.format("Are you sure you want to uninstall the mod [%s]?", selectedMod.getName()),
                 ConfirmDialog.ConfirmDialogType.WARNING,
                 confirmed -> {
                     LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
                     if (confirmed) {
-                        ModManager.deleteMod(selectedMod);
+                        ModManager.getInstance().uninstallMod(
+                            ModManager.getInstance().getModFor(selectedMod).orElseThrow(),
+                            ModManager.DO_NOTHING_ACTION
+                        );
                     }
 
                     this.refreshGuiElements();
@@ -631,7 +654,7 @@ public class MainWindow {
             confirmDialog.packCenterAndShow(this.mainPanel);
         });
 
-        // SOUNDPACKS TABLE LISTENER(S) ---
+        // MODS TABLE LISTENER(S) ---
         this.modsTable.getSelectionModel().addListSelectionListener(event -> {
             LOGGER.trace("Mods table row selected");
 
@@ -692,13 +715,12 @@ public class MainWindow {
             this.refreshModsTable();
 
             // DETERMINE IF MOD DELETE BUTTON SHOULD BE DISABLED ---
-            // (ie: if last backup was just deleted)
-            if (ModManager.listAllMods().size() == 0 || this.modsTable.getSelectedRow() == -1) {
+            // (ie: if last mod was just deleted)
+            if (ModManager.getInstance().listAllRegisteredMods().isEmpty() || this.modsTable.getSelectedRow() == -1) {
                 this.uninstallModButton.setEnabled(false);
             }
         };
     }
-    */
 
     /**
      * Disables all backup-section buttons.
@@ -884,7 +906,7 @@ public class MainWindow {
             values.add(new Object[]{
                 mod.getName(),
                 modFile,
-                FileUtils.sizeOfDirectory(modFile) / (1024 * 1024) + " MB",
+                FileUtils.sizeOfDirectory(modFile) / (1024) + " KB",
                 mod.getCreatedDate(),
                 mod.getUpdatedDate()
             });

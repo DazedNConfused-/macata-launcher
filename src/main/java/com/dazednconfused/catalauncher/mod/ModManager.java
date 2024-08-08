@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ModManager {
+
+    public static final Consumer<ModDTO> DO_NOTHING_ACTION = unused -> { }; // does nothing - represents an empty action
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModManager.class);
     private static ModManager instance;
@@ -136,6 +139,19 @@ public class ModManager {
         }
 
         return Path.of(Paths.getCustomModsDir(), toBeQueried.getName());
+    }
+
+    /**
+     * Returns the {@link ModDTO} corresponding to the given {@code toBeQueried} {@link File}.
+     * */
+    public Optional<ModDTO> getModFor(File toBeQueried) {
+        if (toBeQueried == null || !toBeQueried.getPath().contains(Paths.getCustomModsDir())) {
+            throw new IllegalArgumentException("Invalid File supplied for query");
+        }
+
+        return this.listAllRegisteredMods().stream()
+            .filter(dto -> StringUtils.equalsIgnoreCase(dto.getName(), toBeQueried.getName()))
+            .findFirst();
     }
 
     /**
