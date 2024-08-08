@@ -722,7 +722,10 @@ class ModManagerTest {
                 TestUtils.getFromResource("mod/sample/unzipped").toPath()
         );
 
-        assertThat(result).usingRecursiveComparison().isEqualTo(EXPECTED_RESULT);
+        assertThat(result).usingRecursiveComparison().ignoringFields(
+                "modfiles" // this one will be asserted on individually next
+        ).isEqualTo(EXPECTED_RESULT);
+        assertThat(result.getModfiles()).containsExactlyInAnyOrderElementsOf(EXPECTED_RESULT.getModfiles());
     }
 
     @Test
