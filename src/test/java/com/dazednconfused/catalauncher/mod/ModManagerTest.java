@@ -345,6 +345,24 @@ class ModManagerTest {
     }
 
     @Test
+    void get_mods_folder_folder_not_yet_created_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.resolve("a/missing/folder").toString());
+
+            // pre-test assertions ---
+            assertThat(new File(Paths.getCustomModsDir())).doesNotExist();
+
+            // execute test ---
+            File result = instance.getModsFolder();
+
+            // verify assertions ---
+            assertThat(result).isEqualTo(new File(Paths.getCustomModsDir()));
+        }
+    }
+
+    @Test
     void validate_mod_for_zip_success() {
 
         // prepare mock data ---
@@ -520,6 +538,67 @@ class ModManagerTest {
 
             File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
             assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
+
+            // execute test ---
+            Result<Throwable, Void> result = instance.trashModFromModsFolder(registeredMod);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            assertThat(MOCKED_INSTALLED_MOD).doesNotExist(); // assert that mod no longer exists
+
+            // trashed mod assertions -
+            assertThat(MOCKED_TRASHED_MODS_FOLDER.listFiles()).hasSize(1);
+            File MOCKED_TRASHED_MOD = Objects.requireNonNull(MOCKED_TRASHED_MODS_FOLDER.listFiles())[0];
+            assertThat(MOCKED_TRASHED_MOD).exists();
+
+            assertThat(MOCKED_TRASHED_MOD.getName()).contains( // assert that trashed mod is timestamp-ed
+                    new SimpleDateFormat("yyyyMMdd").format(new java.util.Date())
+            );
+
+            CustomFileAssertions.assertThat( // assert that mod is available in trash folder
+                    MOCKED_TRASHED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "cdda_mutation_rebalance_mod/modinfo.json",
+                    "cdda_mutation_rebalance_mod/README.md",
+                    "cdda_mutation_rebalance_mod/items/armor/integrated.json"
+            ));
+        }
+    }
+
+    @Test
+    void trash_mod_from_mods_folder_generating_trash_folder_success(@TempDir Path mockedModsDirectory, @TempDir Path mockedTrashedModsDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.resolve("a/missing/folder").toString());
+
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+
+            Result<Throwable, ModDTO> installResult = instance.installMod(MOCKED_MOD_ZIP, unused -> { });
+
+            // pre-test assertions ---
+            assertThat(installResult).isNotNull();
+            assertThat(installResult.toEither().isRight()).isTrue();
+
+            ModDTO registeredMod = installResult.getOrElseThrowUnchecked();
+            assertThat(registeredMod).isNotNull();
+
+            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+
+            CustomFileAssertions.assertThat( // assert that mod is installed
+                    MOCKED_INSTALLED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json"
+            ));
+
+            File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
+            assertThat(MOCKED_TRASHED_MODS_FOLDER).doesNotExist(); // assert that trash folder does not exist yet
 
             // execute test ---
             Result<Throwable, Void> result = instance.trashModFromModsFolder(registeredMod);

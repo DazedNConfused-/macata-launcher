@@ -177,8 +177,14 @@ public class ModManager {
     protected Result<Throwable, Void> trashModFromModsFolder(ModDTO toBeUninstalled) {
         return Try.run(() -> {
 
-            File trashDir = new File(Path.of(
-                Paths.getCustomTrashedModsPath(),
+            File trashedModsDir = new File(Paths.getCustomTrashedModsPath());
+            if (!trashedModsDir.exists()) {
+                LOGGER.debug("Trashed mods' folder [{}] doesn't exist. Generating...", trashedModsDir);
+                Try.of(trashedModsDir::mkdirs).onFailure(t -> LOGGER.error("There was an error while creating trashed mods' folder [{}]", trashedModsDir, t));
+            }
+
+            File trashedModDir = new File(Path.of(
+                trashedModsDir.getPath(),
                 getYyyyMmDdHhMmSsTimestamp(),
                 toBeUninstalled.getName()
             ).toString());
@@ -188,13 +194,13 @@ public class ModManager {
                 toBeUninstalled.getName()
             ).toString());
 
-            LOGGER.debug("Trashing mod [{}] into [{}]...", toBeTrashed, trashDir);
+            LOGGER.debug("Trashing mod [{}] into [{}]...", toBeTrashed, trashedModDir);
 
             for (ModfileDTO modfile : toBeUninstalled.getModfiles()) {
                 Path sourceRelativePath = Path.of(toBeTrashed.getPath()).relativize(Path.of(modfile.getPath()));
 
                 File source = new File(modfile.getPath());
-                File dest = new File(trashDir, sourceRelativePath.toString());
+                File dest = new File(trashedModDir, sourceRelativePath.toString());
 
                 LOGGER.debug("Trashing file [{}] into [{}]...", source, dest);
                 FileUtils.moveFile(source, dest);
