@@ -619,7 +619,22 @@ public class MainWindow {
                 dummyTimer.start();
 
                 // start installation and give it a callback to stop the dummy timer
-                ModManager.getInstance().installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop());
+                ModManager.getInstance().installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop()).toEither().fold(
+                    failure -> {
+                        dummyTimer.stop(); // abort dummyTimer on error
+                        LOGGER.error("There was a problem while installing mod [{}]", fileChooser.getSelectedFile(), failure.getError());
+
+                        ErrorDialog.showErrorDialog(
+                            String.format("There was a problem while installing mod [%s]", fileChooser.getSelectedFile().getName()),
+                            failure.getError()
+                        ).packCenterAndShow(this.mainPanel);
+                        return null;
+                    },
+                    success -> {
+                        LOGGER.info("Mod [{}] has been successfully installed!", fileChooser.getSelectedFile());
+                        return null;
+                    }
+                );
             } else {
                 LOGGER.trace("Exiting mod finder dialog with no selection...");
             }

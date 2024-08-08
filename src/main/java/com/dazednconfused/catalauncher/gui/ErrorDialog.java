@@ -48,7 +48,7 @@ public class ErrorDialog extends JDialog {
 
         // set dialog message ---
         dialogMessage.setText(message);
-        errorMessage.setText(ExceptionUtils.getMessage(t));
+        errorMessage.setText(ErrorDialog.getOriginalExceptionMessage(t));
 
         // add action listeners to buttons ---
         buttonOK.addActionListener(e -> onOK(doOnWindowClose));
@@ -99,5 +99,17 @@ public class ErrorDialog extends JDialog {
         dispose();
     }
 
+    /**
+     * Returns the {@link Throwable}'s error message. Useful for notifying errors through {@link ConfirmDialog}s when the
+     * given {@code throwable} has been potentially nested multiple times.
+     * */
+    private static String getOriginalExceptionMessage(Throwable throwable) {
+        Throwable rootCause = ExceptionUtils.getRootCause(throwable);
+        if (rootCause != null) {
+            return rootCause.getMessage();
+        }
+        // if there's no root cause, return the message of the passed exception
+        return throwable.getMessage();
+    }
 }
 
