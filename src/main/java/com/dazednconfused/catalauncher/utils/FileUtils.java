@@ -63,4 +63,24 @@ public class FileUtils {
             }
         }
     }
+
+    /**
+     * Checks whether the given {@link File} has <i>meaningful</i> contents (ie: it has at least one non-directory file inside
+     * somewhere down the chain). A {@link File} composed entirely of empty directories will be considered as having no contents.
+     * */
+    public static boolean hasContents(File file) {
+        if (file.isDirectory()) {
+            File[] contents = file.listFiles();
+            if (contents != null) {
+                for (File f : contents) {
+                    if (hasContents(f)) {
+                        return true;
+                    }
+                }
+            }
+            return false; // ff all contents are empty directories or the directory itself is empty
+        } else {
+            return file.length() > 0; // return true if the file is non-empty
+        }
+    }
 }

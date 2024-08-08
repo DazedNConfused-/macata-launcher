@@ -93,4 +93,52 @@ class FileUtilsTest {
             TestUtils.getFromResource("fileutils/collect/childFolder1/childFolder2/childFolder3/3.file")
         );
     }
+
+    @Test
+    void has_contents_non_empty_success() {
+
+        // prepare mock data ---
+        File MOCKED_FILE = TestUtils.getFromResource("fileutils/contents/nonempty");
+
+        // pre-test assertions ---
+        assertThat(MOCKED_FILE).isDirectory();
+
+        // execute test ---
+        boolean result = FileUtils.hasContents(MOCKED_FILE);
+
+        // verify assertions ---
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void has_contents_empty_success() {
+
+        // prepare mock data ---
+        File MOCKED_FILE = TestUtils.getFromResource("fileutils/contents/empty");
+
+        // pre-test assertions ---
+        assertThat(MOCKED_FILE).isDirectory();
+
+        // execute test ---
+        boolean result = FileUtils.hasContents(MOCKED_FILE);
+
+        // verify assertions ---
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void has_contents_mixed_success() {
+
+        // prepare mock data ---
+        File MOCKED_FILE = TestUtils.getFromResource("fileutils/contents/mixed");
+
+        // pre-test assertions ---
+        assertThat(MOCKED_FILE).isDirectory();
+
+        // execute test ---
+        boolean result = FileUtils.hasContents(MOCKED_FILE);
+
+        // verify assertions ---
+        assertThat(result).isTrue();
+    }
 }

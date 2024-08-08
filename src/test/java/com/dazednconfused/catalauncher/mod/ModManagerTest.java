@@ -7,6 +7,7 @@ import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.mod.dto.ModfileDTO;
 import com.dazednconfused.catalauncher.utils.TestUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -493,11 +495,14 @@ class ModManagerTest {
             mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
-            Result<Throwable, File> copyResult = instance.copyModToModsFolder(MOCKED_MOD_ZIP);
+            Result<Throwable, ModDTO> installResult = instance.installMod(MOCKED_MOD_ZIP, unused -> { });
 
             // pre-test assertions ---
-            assertThat(copyResult).isNotNull();
-            assertThat(copyResult.toEither().isRight()).isTrue();
+            assertThat(installResult).isNotNull();
+            assertThat(installResult.toEither().isRight()).isTrue();
+
+            ModDTO registeredMod = installResult.getOrElseThrowUnchecked();
+            assertThat(registeredMod).isNotNull();
 
             File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
 
@@ -510,7 +515,7 @@ class ModManagerTest {
             ));
 
             // execute test ---
-            Result<Throwable, Void> result = instance.deleteModFromModsFolder(MOCKED_INSTALLED_MOD);
+            Result<Throwable, Void> result = instance.deleteModFromModsFolder(registeredMod);
 
             // verify assertions ---
             assertThat(result).isNotNull(); // assert non-null result
@@ -518,6 +523,60 @@ class ModManagerTest {
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
             assertThat(MOCKED_INSTALLED_MOD).doesNotExist();
+        }
+    }
+
+    @Test
+    void delete_mod_from_mods_folder_with_foreign_files_success(@TempDir Path mockedDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
+
+            Result<Throwable, ModDTO> installResult = instance.installMod(MOCKED_MOD_ZIP, unused -> { });
+
+            File MOCKED_FOREIGN_FILE = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
+            FileUtils.copyFile(MOCKED_FOREIGN_FILE, new File(Path.of(
+                    Paths.getCustomModsDir(),
+                    "cdda_mutation_rebalance_mod",
+                    "foreign_folder",
+                    "foreign_file.zip"
+            ).toString()));
+
+            // pre-test assertions ---
+            assertThat(installResult).isNotNull();
+            assertThat(installResult.toEither().isRight()).isTrue();
+
+            ModDTO registeredMod = installResult.getOrElseThrowUnchecked();
+            assertThat(registeredMod).isNotNull();
+
+            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+
+            CustomFileAssertions.assertThat(
+                    MOCKED_INSTALLED_MOD
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                    "modinfo.json",
+                    "README.md",
+                    "items/armor/integrated.json",
+                    "foreign_folder/foreign_file.zip"
+            ));
+
+            // execute test ---
+            Result<Throwable, Void> result = instance.deleteModFromModsFolder(registeredMod);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            CustomFileAssertions.assertThat(
+                    MOCKED_INSTALLED_MOD
+            ).containsExactlyFilesWithRelativePaths(List.of(
+                    "foreign_folder/foreign_file.zip"
+            ));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -538,26 +597,6 @@ class ModManagerTest {
         );
 
         assertThat(result).isEqualTo(EXPECTED_RESULT);
-    }
-
-    @Test
-    void parse_dto_to_file_success(@TempDir Path mockedDirectory) {
-        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
-
-            // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
-            ModDTO MOCKED_DTO = ModDTO.builder()
-                    .name("cdda_mutation_rebalance_mod")
-                    .build();
-
-            // execute test ---
-            File result = instance.parse(MOCKED_DTO);
-
-            // verify assertions ---
-            assertThat(result).isNotNull(); // assert non-null result
-
-            assertThat(result.getPath()).isEqualTo(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
-        }
     }
 
     @Test

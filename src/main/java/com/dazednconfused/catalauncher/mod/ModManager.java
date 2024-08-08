@@ -103,8 +103,8 @@ public class ModManager {
         LOGGER.info("Uninstalling mod [{}]...", toBeUninstalled);
 
         return Try.of(() -> {
-            // parse from DTO -
-            File targetMod = this.parse(toBeUninstalled);
+            // fetch fresh/complete DTO -
+            ModDTO targetMod = this.modRepository.findById(toBeUninstalled.getId()).map(ModMapper.INSTANCE::toDTO).orElseThrow();
 
             // remove mod from mods folder -
             this.deleteModFromModsFolder(targetMod).getOrElseThrowUnchecked();
@@ -158,7 +158,7 @@ public class ModManager {
         File installInto = new File(getModsFolder().getPath() + "/" + toBeInstalled.getName());
 
         return Try.of(() -> {
-            LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
+            LOGGER.debug("Copying mod [{}] into [{}]...", toBeInstalled, installInto);
             FileUtils.copyDirectory(toBeInstalled, installInto);
             return installInto;
         }).onFailure(
@@ -168,11 +168,36 @@ public class ModManager {
 
     /**
      * Deletes the given {@code toBeUninstalled} mod from the {@link Paths#getCustomModsDir()} folder.
+     *
+     * @implNote Deletes only files registered under the {@link ModDTO#getModfiles()}. This is because a {@link ModDTO} may
+     *           potentially have other stuff installed (like a tileset) in the same folder structure. This would be unmanaged,
+     *           foreign file(s). We do <b>not</b> want these to be deleted.
      * */
-    protected Result<Throwable, Void> deleteModFromModsFolder(File toBeUninstalled) {
+    protected Result<Throwable, Void> deleteModFromModsFolder(ModDTO toBeUninstalled) {
         return Try.run(() -> {
-            LOGGER.debug("Deleting [{}]...", toBeUninstalled);
-            FileUtils.deleteDirectory(toBeUninstalled);
+            LOGGER.debug("Deleting mod [{}]...", toBeUninstalled.getName());
+
+            for (ModfileDTO modfile : toBeUninstalled.getModfiles()) {
+                LOGGER.trace("Deleting file [{}]...", modfile);
+                FileUtils.delete(new File(modfile.getPath()));
+            }
+
+            File parentModFolder = new File(Paths.getCustomModsDir(), toBeUninstalled.getName());
+            if (com.dazednconfused.catalauncher.utils.FileUtils.hasContents(parentModFolder)) {
+                LOGGER.debug("Keeping parent folder [{}] because it still has contents after deleting all related mod files (maybe it had a tileset installed)...", parentModFolder.getPath());
+                if (LOGGER.isTraceEnabled()) {
+                    List<File> remainingFiles = new ArrayList<>();
+                    com.dazednconfused.catalauncher.utils.FileUtils.collectAllFilesFromInto(parentModFolder, remainingFiles);
+                    LOGGER.trace(
+                        "[{}]'s remaining contents: \n\t {}",
+                        parentModFolder.getPath(),
+                        remainingFiles.stream().map(File::getPath).collect(Collectors.joining("\n\t"))
+                    );
+                }
+            } else {
+                LOGGER.debug("Parent folder [{}] has no more contents inside. Deleting...", parentModFolder.getPath());
+                FileUtils.deleteDirectory(parentModFolder);
+            }
         }).onFailure(
             t -> LOGGER.error("There was an error deleting mod [{}]", toBeUninstalled, t)
         ).map(Result::success).recover(Result::failure).get();
@@ -250,13 +275,6 @@ public class ModManager {
                 ).collect(Collectors.toList())
             )
             .build();
-    }
-
-    /**
-     * Parses the given {@code mod} {@link ModDTO} into its {@link File} representation.
-     * */
-    protected File parse(ModDTO toBeUninstalled) {
-        return new File(Paths.getCustomModsDir(), toBeUninstalled.getName());
     }
 
     /**
