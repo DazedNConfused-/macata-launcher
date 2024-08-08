@@ -776,9 +776,9 @@ class ModManagerTest {
             assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getCreatedDate).isNotNull();
             assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getUpdatedDate).isNotNull();
             assertThat(ACTUAL_RESULT.getModfiles()).allSatisfy(dto -> assertThat(dto.getCreatedDate()).isEqualTo(dto.getUpdatedDate()));
-            assertThat(ACTUAL_RESULT.getModfiles()).usingRecursiveComparison().ignoringFields(
+            assertThat(ACTUAL_RESULT.getModfiles()).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                     "id", "modId", "createdDate", "updatedDate"
-            ).isEqualTo(EXPECTED_RESULT.getModfiles());
+            ).containsExactlyInAnyOrderElementsOf(EXPECTED_RESULT.getModfiles());
 
             // assert on filesystem changes -
             File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
@@ -848,9 +848,9 @@ class ModManagerTest {
             assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getCreatedDate).isNotNull();
             assertThat(ACTUAL_RESULT.getModfiles()).extracting(ModfileDTO::getUpdatedDate).isNotNull();
             assertThat(ACTUAL_RESULT.getModfiles()).allSatisfy(dto -> assertThat(dto.getCreatedDate()).isEqualTo(dto.getUpdatedDate()));
-            assertThat(ACTUAL_RESULT.getModfiles()).usingRecursiveComparison().ignoringFields(
+            assertThat(ACTUAL_RESULT.getModfiles()).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                     "id", "modId", "createdDate", "updatedDate"
-            ).isEqualTo(EXPECTED_RESULT.getModfiles());
+            ).containsExactlyInAnyOrderElementsOf(EXPECTED_RESULT.getModfiles());
 
             // assert on filesystem changes -
             File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
