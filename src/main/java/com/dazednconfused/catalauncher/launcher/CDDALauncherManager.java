@@ -38,10 +38,8 @@ public class CDDALauncherManager {
     }
 
     /**
-     * Used to refresh GUI after game exits.
-     * <br/><br/>
-     * Creates a new thread to monitor the CDDA application after it's been run, and waits for it to exit. When it does,
-     * it executes a Runnable object (in this case, it is passed {@code MainWindow#refreshGuiElements})
+     * Creates a new thread to monitor the {@code CDDA} application after it has been run, and waits for it to exit. When it does,
+     * it immediately executes the given {@link Runnable} object.
      * */
     public static void monitorCddaProcess(Process process, Runnable onExit) {
         new Thread(() -> {
