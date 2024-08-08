@@ -1,0 +1,12 @@
+[
+  {
+    "type": "MOD_INFO",
+    "id": "mutation_rebalance_mod",
+    "name": "Mutation Rebalance Mod",
+    "authors": [ "DazedNConfused-" ],
+    "maintainers": [ "DazedNConfused-" ],
+    "description": "Rebalances certain mutations with crippling nerfs.",
+    "category": "rebalance",
+    "dependencies": [ "dda" ]
+  }
+]

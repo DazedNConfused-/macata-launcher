@@ -1,7 +1,7 @@
 package com.dazednconfused.catalauncher.gui;
 
 import static com.dazednconfused.catalauncher.gui.helper.GuiResource.extractIconFrom;
-import static com.dazednconfused.catalauncher.helper.Constants.ICONS_PATH;
+import static com.dazednconfused.catalauncher.helper.Paths.RESOURCE_ICONS_PATH;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -22,7 +22,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class ErrorDialog extends JDialog {
 
-    private static final String ERROR_ICON = extractIconFrom(ICONS_PATH + "/" + "errorDialog.svg");
+    private static final String ERROR_ICON = extractIconFrom(RESOURCE_ICONS_PATH + "/" + "errorDialog.svg");
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -48,7 +48,7 @@ public class ErrorDialog extends JDialog {
 
         // set dialog message ---
         dialogMessage.setText(message);
-        errorMessage.setText(ExceptionUtils.getMessage(t));
+        errorMessage.setText(ErrorDialog.getOriginalExceptionMessage(t));
 
         // add action listeners to buttons ---
         buttonOK.addActionListener(e -> onOK(doOnWindowClose));
@@ -99,5 +99,17 @@ public class ErrorDialog extends JDialog {
         dispose();
     }
 
+    /**
+     * Returns the {@link Throwable}'s error message. Useful for notifying errors through {@link ConfirmDialog}s when the
+     * given {@code throwable} has been potentially nested multiple times.
+     * */
+    private static String getOriginalExceptionMessage(Throwable throwable) {
+        Throwable rootCause = ExceptionUtils.getRootCause(throwable);
+        if (rootCause != null) {
+            return rootCause.getMessage();
+        }
+        // if there's no root cause, return the message of the passed exception
+        return throwable.getMessage();
+    }
 }
 

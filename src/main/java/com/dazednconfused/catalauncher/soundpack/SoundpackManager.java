@@ -1,7 +1,6 @@
 package com.dazednconfused.catalauncher.soundpack;
 
-
-import static com.dazednconfused.catalauncher.helper.Constants.CUSTOM_SOUNDPACKS_DIR;
+import com.dazednconfused.catalauncher.helper.Paths;
 
 import io.vavr.control.Try;
 
@@ -22,7 +21,7 @@ public class SoundpackManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(SoundpackManager.class);
 
     /**
-     * Returns all soundpacks currently found in {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SOUNDPACKS_DIR}.
+     * Returns all soundpacks currently found in {@link Paths#getCustomSoundpacksDir()}.
      * */
     public static List<File> listAllSoundpacks() {
         LOGGER.debug("Listing all soundpacks...");
@@ -40,7 +39,7 @@ public class SoundpackManager {
     }
 
     /**
-     * Installs given {@code toBeInstalled} soundpack inside {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SOUNDPACKS_DIR}.
+     * Installs given {@code toBeInstalled} soundpack inside {@link Paths#getCustomSoundpacksDir()}.
      * */
     public static void installSoundpack(File toBeInstalled, Consumer<Path> onDoneCallback) {
         LOGGER.info("Installing soundpack [{}]...", toBeInstalled);
@@ -53,10 +52,10 @@ public class SoundpackManager {
     }
 
     /**
-     * Retrieves the {@link com.dazednconfused.catalauncher.helper.Constants#CUSTOM_SOUNDPACKS_DIR} as a {@link File}.
+     * Retrieves the {@link Paths#getCustomSoundpacksDir()} as a {@link File}.
      * */
     private static File getSoundpacksFolder() {
-        File soundpacksPath = new File(CUSTOM_SOUNDPACKS_DIR);
+        File soundpacksPath = new File(Paths.getCustomSoundpacksDir());
         if (!soundpacksPath.exists()) {
             LOGGER.debug("Soundpacks folder [{}] not found. Creating...", soundpacksPath);
             Try.of(soundpacksPath::mkdirs).onFailure(t -> LOGGER.error("Could not create soundpacks destination folder [{}]", soundpacksPath, t));

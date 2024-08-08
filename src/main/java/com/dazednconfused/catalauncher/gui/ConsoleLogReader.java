@@ -1,6 +1,6 @@
 package com.dazednconfused.catalauncher.gui;
 
-import static com.dazednconfused.catalauncher.helper.Constants.LOG_FILE_PATH;
+import com.dazednconfused.catalauncher.helper.Paths;
 
 import io.vavr.control.Try;
 
@@ -32,7 +32,7 @@ public class ConsoleLogReader {
         this.textArea.setEditable(false);
 
         // populate current console with existing logs ---
-        File file = new File(LOG_FILE_PATH);
+        File file = new File(Paths.getLogFilePath());
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while ((line = reader.readLine()) != null) {

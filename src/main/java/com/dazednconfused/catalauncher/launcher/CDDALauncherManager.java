@@ -1,6 +1,6 @@
 package com.dazednconfused.catalauncher.launcher;
 
-import static com.dazednconfused.catalauncher.helper.Constants.LAUNCHER_FILES;
+import com.dazednconfused.catalauncher.helper.Paths;
 
 import io.vavr.control.Try;
 
@@ -19,7 +19,7 @@ public class CDDALauncherManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CDDALauncherManager.class);
 
     private static final String OSX_LAUNCHER_WRAPPER_SCRIPT = "osx_launcher_wrapper.sh";
-    private static final String OSX_LAUNCHER_WRAPPER_SCRIPT_FILEPATH = LAUNCHER_FILES + "/" + OSX_LAUNCHER_WRAPPER_SCRIPT;
+    private static final String OSX_LAUNCHER_WRAPPER_SCRIPT_FILEPATH = Paths.getLauncherFiles() + "/" + OSX_LAUNCHER_WRAPPER_SCRIPT;
 
     /**
      * Executes {@code CDDA}'s application with the given arguments.
@@ -38,10 +38,8 @@ public class CDDALauncherManager {
     }
 
     /**
-     * Used to refresh GUI after game exits.
-     * <br/><br/>
-     * Creates a new thread to monitor the CDDA application after it's been run, and waits for it to exit. When it does,
-     * it executes a Runnable object (in this case, it is passed {@code MainWindow#refreshGuiElements})
+     * Creates a new thread to monitor the {@code CDDA} application after it has been run, and waits for it to exit. When it does,
+     * it immediately executes the given {@link Runnable} object.
      * */
     public static void monitorCddaProcess(Process process, Runnable onExit) {
         new Thread(() -> {

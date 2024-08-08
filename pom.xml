@@ -25,6 +25,15 @@
             </activation>
 
             <build>
+                <testResources>
+                    <testResource>
+                        <directory>${project.basedir}/src/test/resources</directory>
+                    </testResource>
+                    <testResource>
+                        <directory>${project.basedir}/src/main/resources</directory>
+                    </testResource>
+                </testResources>
+
                 <plugins>
 
                     <plugin>
@@ -36,7 +45,7 @@
                             <excludes></excludes>
                             <reportFormat>plain</reportFormat>
                             <reuseForks>true</reuseForks>
-                            <forkCount>1C</forkCount>
+                            <forkCount>4C</forkCount>
                             <forkedProcessExitTimeoutInSeconds>3000</forkedProcessExitTimeoutInSeconds>
                             <forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
                             <parallel>all</parallel>
@@ -71,6 +80,23 @@
                         <configuration>
                             <source>11</source>
                             <target>11</target>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                    <version>1.18.34</version>
+                                </path>
+                                <path>
+                                    <groupId>org.mapstruct</groupId>
+                                    <artifactId>mapstruct-processor</artifactId>
+                                    <version>1.5.5.Final</version>
+                                </path>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok-mapstruct-binding</artifactId>
+                                    <version>0.2.0</version>
+                                </path>
+                            </annotationProcessorPaths>
                         </configuration>
                     </plugin>
 
@@ -255,6 +281,31 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.14.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-mapstruct-binding</artifactId>
+            <version>0.2.0</version>
         </dependency>
 
         <dependency>

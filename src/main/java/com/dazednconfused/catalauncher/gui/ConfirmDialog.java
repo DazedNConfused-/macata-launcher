@@ -1,7 +1,7 @@
 package com.dazednconfused.catalauncher.gui;
 
 import static com.dazednconfused.catalauncher.gui.helper.GuiResource.extractIconFrom;
-import static com.dazednconfused.catalauncher.helper.Constants.ICONS_PATH;
+import static com.dazednconfused.catalauncher.helper.Paths.RESOURCE_ICONS_PATH;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -23,9 +23,9 @@ public class ConfirmDialog extends JDialog {
 
     public static final Consumer<Boolean> DO_NOTHING_ACTION = bool -> { }; // does nothing - represents an empty action
 
-    private static final String ERROR_ICON = extractIconFrom(ICONS_PATH + "/" + "errorDialog.svg");
-    private static final String INFO_ICON = extractIconFrom(ICONS_PATH + "/" + "informationDialog.svg");
-    private static final String WARN_ICON = extractIconFrom(ICONS_PATH + "/" + "warningDialog.svg");
+    private static final String ERROR_ICON = extractIconFrom(RESOURCE_ICONS_PATH + "/" + "errorDialog.svg");
+    private static final String INFO_ICON = extractIconFrom(RESOURCE_ICONS_PATH + "/" + "informationDialog.svg");
+    private static final String WARN_ICON = extractIconFrom(RESOURCE_ICONS_PATH + "/" + "warningDialog.svg");
 
     private JPanel contentPane;
     private JButton buttonOK;
