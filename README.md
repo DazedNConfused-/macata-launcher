@@ -64,12 +64,13 @@ While not mandatory, if commits are not properly formatted, they may get rejecte
   - This shared data directory is located at `/<macata_launcher_folder>/userdir`
 - [x] Soundpack management
 - [x] Launcher autoupdater
+- [x] Mod management
 
 ### Planned
 
-- [ ] Mod support (soon)
 - [ ] Tileset support (soon)
 - [ ] Automatic CDDA binary updates & backups
+- [ ] Bright Nights support
 
 ### Maybes
 

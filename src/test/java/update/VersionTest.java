@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class VersionTest {
+class VersionTest {
 
     @Test
     void version_compare_minor_with_no_minor_success() {

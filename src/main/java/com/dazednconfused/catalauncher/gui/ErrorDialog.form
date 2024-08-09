@@ -137,6 +137,7 @@
                 <properties>
                   <editable value="false"/>
                   <enabled value="false"/>
+                  <lineWrap value="true"/>
                 </properties>
               </component>
             </children>
