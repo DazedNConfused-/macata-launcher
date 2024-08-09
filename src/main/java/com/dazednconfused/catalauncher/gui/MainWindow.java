@@ -868,7 +868,7 @@ public class MainWindow {
      */
     private void refreshGuiElements() {
         for (Runnable guiRefreshRunnable : this.guiRefreshingRunnables) {
-            guiRefreshRunnable.run();
+            new Thread(guiRefreshRunnable).start();
         }
     }
 
