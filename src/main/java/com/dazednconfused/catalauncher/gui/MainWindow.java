@@ -47,6 +47,8 @@ import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -460,9 +462,13 @@ public class MainWindow {
             int result = fileChooser.showSaveDialog(mainPanel);
 
             if (result == JFileChooser.APPROVE_OPTION && fileChooser.getSelectedFile() != null) {
+
+                // enable global progressbar
+                this.globalProgressBar.setEnabled(true);
+
                 // setup dummy timer to give user visual feedback that his operation is in progress...
                 Timer dummyTimer = new Timer(10, e1 -> {
-                    if (this.globalProgressBar.getValue() <= 100) {
+                    if (this.globalProgressBar.getValue() < 100) {
                         this.globalProgressBar.setValue(this.globalProgressBar.getValue() + 1);
                     }
                 });
@@ -470,13 +476,30 @@ public class MainWindow {
                 // start timer before triggering installation
                 dummyTimer.start();
 
-                // start installation and give it a callback to stop the dummy timer
-                SoundpackManager.installSoundpack(fileChooser.getSelectedFile(), p -> dummyTimer.stop());
+                // execute the installation in a background thread, outside the Event Dispatch Thread (EDT)
+                SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                    @Override
+                    protected Void doInBackground() {
+                        SoundpackManager.installSoundpack(fileChooser.getSelectedFile(), p -> dummyTimer.stop());
+                        return null;
+                    }
+
+                    @Override
+                    protected void done() {
+                        dummyTimer.stop(); // ensure the timer is stopped when the task is complete
+                        globalProgressBar.setValue(0);
+                        globalProgressBar.setEnabled(false);
+
+                        // refresh GUI elements on the EDT
+                        SwingUtilities.invokeLater(() -> refreshGuiElements());
+                    }
+                };
+
+                // start the worker thread
+                worker.execute();
             } else {
                 LOGGER.trace("Exiting soundpack finder dialog with no selection...");
             }
-
-            this.refreshGuiElements();
         });
 
         // SOUNDPACK DELETE BUTTON LISTENER ---
@@ -606,9 +629,13 @@ public class MainWindow {
             int result = fileChooser.showSaveDialog(mainPanel);
 
             if (result == JFileChooser.APPROVE_OPTION && fileChooser.getSelectedFile() != null) {
+
+                // enable global progressbar
+                this.globalProgressBar.setEnabled(true);
+
                 // setup dummy timer to give user visual feedback that his operation is in progress...
                 Timer dummyTimer = new Timer(10, e1 -> {
-                    if (this.globalProgressBar.getValue() <= 100) {
+                    if (this.globalProgressBar.getValue() < 100) {
                         this.globalProgressBar.setValue(this.globalProgressBar.getValue() + 1);
                     }
                 });
@@ -616,28 +643,48 @@ public class MainWindow {
                 // start timer before triggering installation
                 dummyTimer.start();
 
-                // start installation and give it a callback to stop the dummy timer
-                ModManager.getInstance().installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop()).toEither().fold(
-                    failure -> {
-                        dummyTimer.stop(); // abort dummyTimer on error
-                        LOGGER.error("There was a problem while installing mod [{}]", fileChooser.getSelectedFile(), failure.getError());
+                // execute the installation in a background thread, outside the Event Dispatch Thread (EDT)
+                SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                    @Override
+                    protected Void doInBackground() {
+                        ModManager.getInstance().installMod(fileChooser.getSelectedFile(), p -> dummyTimer.stop()).toEither().fold(
+                            failure -> {
+                                LOGGER.error("There was a problem while installing mod [{}]", fileChooser.getSelectedFile(), failure.getError());
 
-                        ErrorDialog.showErrorDialog(
-                            String.format("There was a problem while installing mod [%s]", fileChooser.getSelectedFile().getName()),
-                            failure.getError()
-                        ).packCenterAndShow(this.mainPanel);
-                        return null;
-                    },
-                    success -> {
-                        LOGGER.info("Mod [{}] has been successfully installed!", fileChooser.getSelectedFile());
+                                // show error dialog on the EDT
+                                SwingUtilities.invokeLater(() -> {
+                                    dummyTimer.stop(); // stop dummyTimer on error
+                                    ErrorDialog.showErrorDialog(
+                                        String.format("There was a problem while installing mod [%s]", fileChooser.getSelectedFile().getName()),
+                                        failure.getError()
+                                    ).packCenterAndShow(mainPanel);
+                                });
+                                return null;
+                            },
+                            success -> {
+                                LOGGER.info("Mod [{}] has been successfully installed!", fileChooser.getSelectedFile());
+                                return null;
+                            }
+                        );
                         return null;
                     }
-                );
+
+                    @Override
+                    protected void done() {
+                        dummyTimer.stop(); // ensure the timer is stopped when the task is complete
+                        globalProgressBar.setValue(0);
+                        globalProgressBar.setEnabled(false);
+
+                        // refresh GUI elements on the EDT
+                        SwingUtilities.invokeLater(() -> refreshGuiElements());
+                    }
+                };
+
+                // start the worker thread
+                worker.execute();
             } else {
                 LOGGER.trace("Exiting mod finder dialog with no selection...");
             }
-
-            this.refreshGuiElements();
         });
 
         // MOD DELETE BUTTON LISTENER ---
