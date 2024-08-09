@@ -438,7 +438,7 @@ public class MainWindow {
             // DETERMINE IF BACKUP RESTORE BUTTON SHOULD BE DISABLED  ---
             // DETERMINE IF BACKUP DELETE BUTTON SHOULD BE DISABLED ---
             // (ie: if last backup was just deleted)
-            if (SaveManager.listAllBackups().size() == 0 || this.saveBackupsTable.getSelectedRow() == -1) {
+            if (SaveManager.listAllBackups().isEmpty() || this.saveBackupsTable.getSelectedRow() == -1) {
                 this.backupDeleteButton.setEnabled(false);
                 this.backupRestoreButton.setEnabled(false);
             }
@@ -468,7 +468,7 @@ public class MainWindow {
 
                 // setup dummy timer to give user visual feedback that his operation is in progress...
                 Timer dummyTimer = new Timer(10, e1 -> {
-                    if (this.globalProgressBar.getValue() < 100) {
+                    if (this.globalProgressBar.getValue() < 99) { // it's important to keep this from hitting 100% while it is in its dummy-loop...
                         this.globalProgressBar.setValue(this.globalProgressBar.getValue() + 1);
                     }
                 });
@@ -487,11 +487,7 @@ public class MainWindow {
                     @Override
                     protected void done() {
                         dummyTimer.stop(); // ensure the timer is stopped when the task is complete
-                        globalProgressBar.setValue(0);
-                        globalProgressBar.setEnabled(false);
-
-                        // refresh GUI elements on the EDT
-                        SwingUtilities.invokeLater(() -> refreshGuiElements());
+                        globalProgressBar.setValue(100); // this will refresh the GUI upon hitting 100%
                     }
                 };
 
@@ -587,7 +583,7 @@ public class MainWindow {
 
             // DETERMINE IF SOUNDPACK DELETE BUTTON SHOULD BE DISABLED ---
             // (ie: if last backup was just deleted)
-            if (SoundpackManager.listAllSoundpacks().size() == 0 || this.soundpacksTable.getSelectedRow() == -1) {
+            if (SoundpackManager.listAllSoundpacks().isEmpty() || this.soundpacksTable.getSelectedRow() == -1) {
                 this.uninstallSoundpackButton.setEnabled(false);
             }
         };
@@ -635,7 +631,7 @@ public class MainWindow {
 
                 // setup dummy timer to give user visual feedback that his operation is in progress...
                 Timer dummyTimer = new Timer(10, e1 -> {
-                    if (this.globalProgressBar.getValue() < 100) {
+                    if (this.globalProgressBar.getValue() < 99) { // it's important to keep this from hitting 100% while it is in its dummy-loop...
                         this.globalProgressBar.setValue(this.globalProgressBar.getValue() + 1);
                     }
                 });
@@ -672,11 +668,7 @@ public class MainWindow {
                     @Override
                     protected void done() {
                         dummyTimer.stop(); // ensure the timer is stopped when the task is complete
-                        globalProgressBar.setValue(0);
-                        globalProgressBar.setEnabled(false);
-
-                        // refresh GUI elements on the EDT
-                        SwingUtilities.invokeLater(() -> refreshGuiElements());
+                        globalProgressBar.setValue(100); // this will refresh the GUI upon hitting 100%
                     }
                 };
 
