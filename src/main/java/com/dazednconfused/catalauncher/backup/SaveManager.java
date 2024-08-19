@@ -113,9 +113,9 @@ public class SaveManager {
 
     /**
      * If save files exist in {@link Paths#getCustomSavePath()}, returns the last modified valid save file. Save file is valid
-     * if it has a .sav file in it.
+     * if it has a {@code .sav} file in it.
      * */
-    public static Optional<File> getLastModifiedValidSave() {
+    private static Optional<File> getLastModifiedValidSave() {
         File savesFolder = new File(Paths.getCustomSavePath());
         if (!saveFilesExist()) {
             return Optional.empty();
@@ -133,10 +133,10 @@ public class SaveManager {
         return Optional.empty(); // No directory with .sav file found
 
     }
+
     /**
      * Determines whether save files exist in {@link Paths#getCustomSavePath()}.
      * */
-
     public static boolean saveFilesExist() {
         File savesFolder = new File(Paths.getCustomSavePath());
         return savesFolder.exists() && Arrays.stream(Objects.requireNonNull(savesFolder.listFiles())).anyMatch(file -> !file.getName().equals(".DS_Store"));

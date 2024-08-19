@@ -18,11 +18,11 @@ import org.mockito.MockedStatic;
 class SaveManagerTest {
 
     @Test
-    void list_all_backups_success(@TempDir Path mockedDirectory) {
+    void list_all_backups_success(@TempDir Path mockedBackupPath) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
 
             // pre-test assertions ---
             assertThat(new File(Paths.getSaveBackupPath())).exists();
@@ -61,6 +61,94 @@ class SaveManagerTest {
                 MOCKED_BACKUP_3,
                 MOCKED_BACKUP_4
             );
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void save_files_exist_success(@TempDir Path mockedSavePath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+
+            // pre-test assertions ---
+            assertThat(new File(Paths.getCustomSavePath())).exists();
+
+            File MOCKED_BACKUP_1 = new File(Paths.getCustomSavePath(), "20230216_111637.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
+                MOCKED_BACKUP_1
+            );
+
+            File MOCKED_BACKUP_2 = new File(Paths.getCustomSavePath(), "20230217_115559.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
+                MOCKED_BACKUP_2
+            );
+
+            File MOCKED_BACKUP_3 = new File(Paths.getCustomSavePath(), "20240808_205649.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
+                MOCKED_BACKUP_3
+            );
+
+            File MOCKED_BACKUP_4 = new File(Paths.getCustomSavePath(), "20240808_205736.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
+                MOCKED_BACKUP_4
+            );
+
+            // execute test ---
+            boolean result = SaveManager.saveFilesExist();
+
+            // verify assertions ---
+            assertThat(result).isTrue();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void save_files_exist_success_empty_folder(@TempDir Path mockedSavePath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+
+            // pre-test assertions ---
+            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(new File(Paths.getCustomSavePath()).listFiles()).isEmpty();
+
+            // execute test ---
+            boolean result = SaveManager.saveFilesExist();
+
+            // verify assertions ---
+            assertThat(result).isFalse();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void save_files_exist_success_non_existant_folder(@TempDir Path mockedSavePath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("a/missing/folder").toString());
+
+            // pre-test assertions ---
+            assertThat(new File(Paths.getCustomSavePath())).doesNotExist();
+
+            // execute test ---
+            boolean result = SaveManager.saveFilesExist();
+
+            // verify assertions ---
+            assertThat(result).isFalse();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
