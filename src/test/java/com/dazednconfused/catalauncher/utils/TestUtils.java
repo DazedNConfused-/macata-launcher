@@ -2,6 +2,8 @@ package com.dazednconfused.catalauncher.utils;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -25,7 +27,9 @@ public class TestUtils {
 
         // check that the resource exists
         if (resourceUrl != null) {
-            return new File(resourceUrl.getFile()); // convert the URL to a File object
+            // decode the URL to handle spaces and special characters
+            String decodedPath = URLDecoder.decode(resourceUrl.getFile(), StandardCharsets.UTF_8);
+            return new File(decodedPath);
         }
 
         throw new IllegalArgumentException("Could not find resource: " + fileName);
