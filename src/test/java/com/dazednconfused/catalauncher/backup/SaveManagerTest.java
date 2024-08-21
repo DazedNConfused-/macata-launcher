@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mockStatic;
 
 import com.dazednconfused.catalauncher.assertions.CustomFileAssertions;
 import com.dazednconfused.catalauncher.helper.Paths;
+import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.utils.TestUtils;
 
 import java.io.File;
@@ -620,6 +621,83 @@ class SaveManagerTest {
                 MOCKED_BACKUP_1,
                 MOCKED_BACKUP_2,
                 MOCKED_BACKUP_3
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void rename_backup_success(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+
+            File MOCKED_SAVE_BACKUP_DIRECTORY = new File(Paths.getSaveBackupPath());
+
+            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).exists();
+
+            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
+                MOCKED_BACKUP_1
+            );
+
+            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
+                MOCKED_BACKUP_2
+            );
+
+            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
+                MOCKED_BACKUP_3
+            );
+
+            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
+                MOCKED_BACKUP_4
+            );
+
+            // pre-test assertions ---
+            assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).isNotEmptyDirectory();
+
+            CustomFileAssertions.assertThat(
+                MOCKED_SAVE_BACKUP_DIRECTORY
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                "20230216_111637.zip",
+                "20230217_115559.zip",
+                "20240808_205649.zip",
+                "20240808_205736.zip"
+            ));
+
+            // execute test ---
+            Result<Throwable, File> result = SaveManager.renameBackup(MOCKED_BACKUP_4, "aRenamedBackup");
+
+            // verify assertions ---
+            File MOCKED_RENAMED_BACKUP = result.getOrElseThrowUnchecked();
+            assertThat(MOCKED_RENAMED_BACKUP).isNotNull();
+
+            CustomFileAssertions.assertThat(
+                MOCKED_SAVE_BACKUP_DIRECTORY
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                "20230216_111637.zip",
+                "20230217_115559.zip",
+                "20240808_205649.zip",
+                "aRenamedBackup.zip"
+            ));
+
+            assertThat(SaveManager.listAllBackups()).containsExactlyInAnyOrder(
+                MOCKED_BACKUP_1,
+                MOCKED_BACKUP_2,
+                MOCKED_BACKUP_3,
+                MOCKED_RENAMED_BACKUP
             );
 
         } catch (Exception e) {
