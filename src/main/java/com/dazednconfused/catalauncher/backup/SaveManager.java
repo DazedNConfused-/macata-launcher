@@ -58,11 +58,12 @@ public class SaveManager {
             Try.of(trashedSaves::mkdirs).onFailure(t -> LOGGER.error("There was an error while creating trashed saves' folder [{}]", trashedSaves, t));
         }
 
-        File trashedSavePath = new File(Paths.getCustomTrashedSavePath() + generateNameBasedOnCurrentTimestamp());
+        File trashedSavePath = new File(Paths.getCustomTrashedSavePath(), generateNameBasedOnCurrentTimestamp());
 
         if (!saveFilesExist()) {
             LOGGER.info("No current saves found. Nothing to move to trash folder.");
         } else {
+            LOGGER.debug("Trashing existent saves into [{}]...", trashedSavePath);
             File currentSave = new File(Paths.getCustomSavePath());
 
             Try.of(() -> Files.move(
