@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -193,12 +194,16 @@ class SaveManagerTest {
                 MOCKED_BACKUP_3
             );
 
+            File MOCKED_LAST_MODIFIED_BACKUP = Arrays.stream(Objects.requireNonNull(
+                new File(Paths.getCustomSavePath()).listFiles(File::isDirectory))
+            ).max(Comparator.comparingLong(File::lastModified)).orElseThrow(); // this is needed because we don't know which will be the last Backup to finish getting copied...
+
             // execute test ---
             Optional<File> result = SaveManager.getLatestSave();
 
             // verify assertions ---
             assertThat(result).isNotEmpty().contains(
-                MOCKED_BACKUP_3
+                MOCKED_LAST_MODIFIED_BACKUP
             );
 
         } catch (Exception e) {
