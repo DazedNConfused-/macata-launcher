@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,8 +20,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -274,13 +278,37 @@ public abstract class MigrateableH2Database extends H2Database implements Migrat
      *           {@code new Date(0)} as argument instead.
      */
     protected Result<Throwable, List<String>> getDatabaseMigrationFiles() {
+        LOGGER.trace("Searching for migration files in [{}]...", this.getDatabaseMigrationsResourcePath());
         List<String> filenames = new ArrayList<>();
 
-        try (InputStream in = this.getResourceAsStream(this.getDatabaseMigrationsResourcePath()); BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-            String resource;
+        try {
+            String resourcePath = this.getDatabaseMigrationsResourcePath();
+            if (!resourcePath.endsWith("/")) {
+                resourcePath += "/";
+            }
 
-            while ((resource = br.readLine()) != null) {
-                filenames.add(resource);
+            URL dirURL = this.getClass().getClassLoader().getResource(resourcePath);
+            if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+                // resources bundled inside a .jar file need special treatment, they are otherwise inaccessible
+                String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
+                try (JarFile jar = new JarFile(jarPath)) {
+                    Enumeration<JarEntry> entries = jar.entries(); // gives ALL entries in jar
+                    while (entries.hasMoreElements()) {
+                        String name = entries.nextElement().getName();
+                        if (name.startsWith(resourcePath) && !name.equals(resourcePath)) { // filter according to the directory
+                            filenames.add(name.substring(resourcePath.length()));
+                        }
+                    }
+                }
+            } else if (dirURL != null) {
+                // if resources are not in a JAR (ie: running through IDE, tests or just plain un-packaged java files), just list files regularly
+                try (InputStream in = dirURL.openStream(); BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+
+                    String fileName;
+                    while ((fileName = br.readLine()) != null) {
+                        filenames.add(fileName);
+                    }
+                }
             }
         } catch (IOException e) {
             LOGGER.error("There was an error while reading resource files from path [{}]", getDatabaseMigrationsResourcePath());
