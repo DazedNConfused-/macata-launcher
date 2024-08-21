@@ -276,7 +276,7 @@ class SaveManagerTest {
     }
 
     @Test
-    void backup_current_saves_success(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath, @TempDir Path mockedAssertionFolder) {
+    void backup_current_saves_success_multiple_saves_shallow_assertions(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath, @TempDir Path mockedAssertionFolder) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
@@ -353,7 +353,7 @@ class SaveManagerTest {
     }
 
     @Test
-    void backup_current_saves_success_deep_assertions(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath, @TempDir Path mockedAssertionFolder) {
+    void backup_current_saves_success_single_save_deep_assertions(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath, @TempDir Path mockedAssertionFolder) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
