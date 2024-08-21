@@ -514,4 +514,42 @@ class SaveManagerTest {
         }
     }
 
+    @Test
+    void backup_current_saves_success_empty_when_no_saves_are_found(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+
+            AtomicInteger calledTimes = new AtomicInteger(0);
+            AtomicReference<List<Integer>> calledWith = new AtomicReference<>(new ArrayList<>());
+            Consumer<Integer> MOCKED_CALLBACK = value -> {
+                calledTimes.incrementAndGet();
+                calledWith.get().add(value);
+            };
+
+            // pre-test assertions ---
+            assertThat(new File(Paths.getCustomSavePath())).exists().isEmptyDirectory();
+            assertThat(new File(Paths.getSaveBackupPath())).exists();
+
+            // execute test ---
+            Optional<Thread> result = SaveManager.backupCurrentSaves(MOCKED_CALLBACK);
+
+            // verify assertions ---
+            assertThat(result).isEmpty();
+
+            // callback assertions -
+            assertThat(calledTimes).hasValue(0);
+            assertThat(calledWith).matches(ints -> ints.get().isEmpty());
+
+            // backup assertions -
+            File MOCKED_CUSTOM_BACKUP_PATH = new File(Paths.getSaveBackupPath());
+            assertThat(MOCKED_CUSTOM_BACKUP_PATH).isEmptyDirectory();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
