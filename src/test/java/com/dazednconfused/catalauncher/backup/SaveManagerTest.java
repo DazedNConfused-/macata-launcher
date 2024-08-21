@@ -407,7 +407,7 @@ class SaveManagerTest {
             assertThat(MOCKED_ASSERTION_FOLDER.listFiles()).hasSize(1);
             File MOCKED_ACTUAL_BACKUP_CONTENTS = Objects.requireNonNull(MOCKED_ASSERTION_FOLDER.listFiles())[0];
 
-            CustomFileAssertions.assertThat( // assert that mod is available in trash folder
+            CustomFileAssertions.assertThat(
                 MOCKED_ACTUAL_BACKUP_CONTENTS
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                 "Stiles/maps/2.0.1/70.30.1.map",
@@ -529,9 +529,11 @@ class SaveManagerTest {
                 calledWith.get().add(value);
             };
 
+            File MOCKED_CUSTOM_BACKUP_PATH = new File(Paths.getSaveBackupPath());
+
             // pre-test assertions ---
             assertThat(new File(Paths.getCustomSavePath())).exists().isEmptyDirectory();
-            assertThat(new File(Paths.getSaveBackupPath())).exists();
+            assertThat(MOCKED_CUSTOM_BACKUP_PATH).exists();
 
             // execute test ---
             Optional<Thread> result = SaveManager.backupCurrentSaves(MOCKED_CALLBACK);
@@ -544,8 +546,81 @@ class SaveManagerTest {
             assertThat(calledWith).matches(ints -> ints.get().isEmpty());
 
             // backup assertions -
-            File MOCKED_CUSTOM_BACKUP_PATH = new File(Paths.getSaveBackupPath());
             assertThat(MOCKED_CUSTOM_BACKUP_PATH).isEmptyDirectory();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void delete_backup_success(@TempDir Path mockedSavePath, @TempDir Path mockedBackupPath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+
+            File MOCKED_SAVE_BACKUP_DIRECTORY = new File(Paths.getSaveBackupPath());
+
+            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).exists();
+
+            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
+                MOCKED_BACKUP_1
+            );
+
+            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
+                MOCKED_BACKUP_2
+            );
+
+            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
+                MOCKED_BACKUP_3
+            );
+
+            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            FileUtils.copyFile(
+                TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
+                MOCKED_BACKUP_4
+            );
+
+            // pre-test assertions ---
+            assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).isNotEmptyDirectory();
+
+            CustomFileAssertions.assertThat(
+                MOCKED_SAVE_BACKUP_DIRECTORY
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                "20230216_111637.zip",
+                "20230217_115559.zip",
+                "20240808_205649.zip",
+                "20240808_205736.zip"
+            ));
+
+            // execute test ---
+            boolean result = SaveManager.deleteBackup(MOCKED_BACKUP_4);
+
+            // verify assertions ---
+            assertThat(result).isTrue();
+
+            CustomFileAssertions.assertThat(
+                MOCKED_SAVE_BACKUP_DIRECTORY
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                "20230216_111637.zip",
+                "20230217_115559.zip",
+                "20240808_205649.zip"
+            ));
+
+            assertThat(SaveManager.listAllBackups()).containsExactlyInAnyOrder(
+                MOCKED_BACKUP_1,
+                MOCKED_BACKUP_2,
+                MOCKED_BACKUP_3
+            );
 
         } catch (Exception e) {
             throw new RuntimeException(e);
