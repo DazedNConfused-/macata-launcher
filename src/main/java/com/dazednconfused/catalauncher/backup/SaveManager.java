@@ -73,7 +73,7 @@ public class SaveManager {
 
         return Optional.of(decompressFolderAsJob(
                 backup2beRestored,
-                Paths.getLauncherRootFolder(), // we don't decompress into CUSTOM_SAVE_PATH because we end up with ./saves/saves/<actual world saves>
+                Path.of(Paths.getCustomSavePath()).getParent().toString(), // we don't decompress into CUSTOM_SAVE_PATH because we end up with ./saves/saves/<actual world saves>
                 onPercentDoneCallback
         ));
     }
