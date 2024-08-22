@@ -170,6 +170,7 @@ public class MainWindow {
 
                     saveBackupsTable.requestFocusInWindow();
                     soundpacksTable.requestFocusInWindow();
+                    modsTable.requestFocusInWindow();
                 }
             }
         });
@@ -767,7 +768,7 @@ public class MainWindow {
         return () -> {
             LOGGER.trace("Refreshing mod-management GUI elements...");
 
-            // SET SOUNDPACKS TABLE ---
+            // SET MODS TABLE ---
             this.refreshModsTable();
 
             // DETERMINE IF MOD DELETE BUTTON SHOULD BE DISABLED ---
@@ -865,6 +866,8 @@ public class MainWindow {
 
     /**
      * Refreshes all GUI elements according to diverse app statuses.
+     *
+     * @implNote Refresh is done in the background by means of individual {@link Thread}s.
      */
     private void refreshGuiElements() {
         for (Runnable guiRefreshRunnable : this.guiRefreshingRunnables) {
