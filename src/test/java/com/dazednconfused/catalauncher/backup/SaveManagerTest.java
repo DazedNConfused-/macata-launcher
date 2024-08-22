@@ -176,35 +176,46 @@ class SaveManagerTest {
             // pre-test assertions ---
             assertThat(Paths.getCustomSavePath().toFile()).exists();
 
-            File MOCKED_BACKUP_1 = Paths.getCustomSavePath().resolve("Braintree").toFile();
-            FileUtils.copyDirectory(
-                TestUtils.getFromResource("save/sample/Braintree"),
-                MOCKED_BACKUP_1
-            );
-
-            File MOCKED_BACKUP_2 = Paths.getCustomSavePath().resolve("San Perlita").toFile();
-            FileUtils.copyDirectory(
-                TestUtils.getFromResource("save/sample/San Perlita"),
-                MOCKED_BACKUP_2
-            );
-
-            File MOCKED_BACKUP_3 = Paths.getCustomSavePath().resolve("Stiles").toFile();
+            File MOCKED_BACKUP = Paths.getCustomSavePath().resolve("Braintree").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/Stiles"),
-                MOCKED_BACKUP_3
+                MOCKED_BACKUP
             );
-
-            File MOCKED_LAST_MODIFIED_BACKUP = Arrays.stream(Objects.requireNonNull(
-                Paths.getCustomSavePath().toFile().listFiles(File::isDirectory))
-            ).max(Comparator.comparingLong(File::lastModified)).orElseThrow(); // this is needed because we don't know which will be the last Backup to finish getting copied...
 
             // execute test ---
             Optional<File> result = SaveManager.getLatestSave();
 
             // verify assertions ---
             assertThat(result).isNotEmpty().contains(
-                MOCKED_LAST_MODIFIED_BACKUP
+                MOCKED_BACKUP
             );
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void get_latest_save_success_empty_when_latest_save_is_invalid(@TempDir Path mockedSavePath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+
+            // pre-test assertions ---
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+
+            File MOCKED_BACKUP = Paths.getCustomSavePath().resolve("Braintree").toFile();
+            FileUtils.copyDirectory(
+                TestUtils.getFromResource("save/sample/Braintree"),
+                MOCKED_BACKUP
+            );
+
+            // execute test ---
+            Optional<File> result = SaveManager.getLatestSave();
+
+            // verify assertions ---
+            assertThat(result).isEmpty();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
