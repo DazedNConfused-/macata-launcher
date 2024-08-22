@@ -32,7 +32,7 @@ public class ConsoleLogReader {
         this.textArea.setEditable(false);
 
         // populate current console with existing logs ---
-        File file = new File(Paths.getLogFilePath());
+        File file = Paths.getLogFilePath().toFile();
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while ((line = reader.readLine()) != null) {
