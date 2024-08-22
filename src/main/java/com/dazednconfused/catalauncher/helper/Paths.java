@@ -2,6 +2,8 @@ package com.dazednconfused.catalauncher.helper;
 
 import com.dazednconfused.catalauncher.Application;
 
+import java.nio.file.Path;
+
 /**
  * A set of common filesystem {@link Paths} used throughout the application.
  * */
@@ -11,8 +13,8 @@ public class Paths {
      * Retrieves the {@link Application}'s root folder - that is, the filesystem path where the binary is currently executing.
      * Most defined {@link Paths} depend on this one.
      * */
-    public static String getLauncherRootFolder() {
-        return Application.getRootFolder();
+    public static Path getLauncherRootFolder() {
+        return Path.of(Application.getRootFolder());
     }
 
     /**
@@ -22,8 +24,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/.macatalauncher"
      * }</pre>
      * */
-    public static String getLauncherFiles() {
-        return getLauncherRootFolder() + "/.macatalauncher";
+    public static Path getLauncherFiles() {
+        return getLauncherRootFolder().resolve(".macatalauncher");
     }
 
     /**
@@ -33,8 +35,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/.macatalauncher/logs/main.log"
      * }</pre>
      * */
-    public static String getLogFilePath() {
-        return getLauncherFiles() + "/logs/main.log";
+    public static Path getLogFilePath() {
+        return getLauncherFiles().resolve("logs/main.log");
     }
 
     /**
@@ -44,8 +46,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/saves/"
      * }</pre>
      * */
-    public static String getCustomSavePath() {
-        return getLauncherRootFolder() + "/saves/";
+    public static Path getCustomSavePath() {
+        return getLauncherRootFolder().resolve("saves");
     }
 
     /**
@@ -55,8 +57,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/trashed"
      * }</pre>
      * */
-    public static String getCustomTrashedPath() {
-        return getLauncherRootFolder() + "/trashed";
+    public static Path getCustomTrashedPath() {
+        return getLauncherRootFolder().resolve("trashed");
     }
 
     /**
@@ -66,8 +68,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/trashed/saves/"
      * }</pre>
      * */
-    public static String getCustomTrashedSavePath() {
-        return getCustomTrashedPath() + "/saves/";
+    public static Path getCustomTrashedSavePath() {
+        return getCustomTrashedPath().resolve("saves");
     }
 
     /**
@@ -77,8 +79,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/backups"
      * }</pre>
      * */
-    public static String getSaveBackupPath() {
-        return getLauncherRootFolder() + "/backups";
+    public static Path getSaveBackupPath() {
+        return getLauncherRootFolder().resolve("backups");
     }
 
     /**
@@ -88,8 +90,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/userdir/"
      * }</pre>
      * */
-    public static String getCustomUserDir() {
-        return getLauncherRootFolder() + "/userdir/";
+    public static Path getCustomUserDir() {
+        return getLauncherRootFolder().resolve("userdir");
     }
 
     /**
@@ -99,8 +101,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/userdir/sound/"
      * }</pre>
      * */
-    public static String getCustomSoundpacksDir() {
-        return getCustomUserDir() + "sound/";
+    public static Path getCustomSoundpacksDir() {
+        return getCustomUserDir().resolve("sound");
     }
 
     /**
@@ -110,21 +112,20 @@ public class Paths {
      *  getLauncherRootFolder() + "/userdir/mods/"
      * }</pre>
      * */
-    public static String getCustomModsDir() {
-        return getCustomUserDir() + "mods/";
+    public static Path getCustomModsDir() {
+        return getCustomUserDir().resolve("mods");
     }
 
     /**
      * Retrieves the {@link Application}'s custom path for trashed mods.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/trashed/saves/"
+     *  getLauncherRootFolder() + "/trashed/mods/"
      * }</pre>
      * */
-    public static String getCustomTrashedModsPath() {
-        return getCustomTrashedPath() + "/mods/";
+    public static Path getCustomTrashedModsPath() {
+        return getCustomTrashedPath().resolve("mods");
     }
-
 
     /**
      * Retrieves the {@link Application}'s database(s) directory.
@@ -133,8 +134,8 @@ public class Paths {
      *  getLauncherRootFolder() + "/.macatalauncher/db"
      * }</pre>
      * */
-    public static String getDatabaseDirectory() {
-        return getLauncherFiles() + "/db";
+    public static Path getDatabaseDirectory() {
+        return getLauncherFiles().resolve("db");
     }
 
     // java resources

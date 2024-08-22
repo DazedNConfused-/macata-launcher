@@ -138,14 +138,14 @@ public class ModManager {
             throw new IllegalArgumentException("Invalid Mod supplied for query");
         }
 
-        return Path.of(Paths.getCustomModsDir(), toBeQueried.getName());
+        return Paths.getCustomModsDir().resolve(toBeQueried.getName());
     }
 
     /**
      * Returns the {@link ModDTO} corresponding to the given {@code toBeQueried} {@link File}.
      * */
     public Optional<ModDTO> getModFor(File toBeQueried) {
-        if (toBeQueried == null || !toBeQueried.getPath().contains(Paths.getCustomModsDir())) {
+        if (toBeQueried == null || !toBeQueried.getPath().contains(Paths.getCustomModsDir().toString())) {
             throw new IllegalArgumentException("Invalid File supplied for query");
         }
 
@@ -205,7 +205,7 @@ public class ModManager {
     protected Result<Throwable, Void> trashModFromModsFolder(ModDTO toBeUninstalled) {
         return Try.run(() -> {
 
-            File trashedModsDir = new File(Paths.getCustomTrashedModsPath());
+            File trashedModsDir = Paths.getCustomTrashedModsPath().toFile();
             if (!trashedModsDir.exists()) {
                 LOGGER.debug("Trashed mods' folder [{}] doesn't exist. Generating...", trashedModsDir);
                 Try.of(trashedModsDir::mkdirs).onFailure(t -> LOGGER.error("There was an error while creating trashed mods' folder [{}]", trashedModsDir, t));
@@ -217,10 +217,7 @@ public class ModManager {
                 toBeUninstalled.getName()
             ).toString());
 
-            File toBeTrashed = new File(Path.of(
-                Paths.getCustomModsDir(),
-                toBeUninstalled.getName()
-            ).toString());
+            File toBeTrashed = Paths.getCustomModsDir().resolve(toBeUninstalled.getName()).toFile();
 
             LOGGER.debug("Trashing mod [{}] into [{}]...", toBeTrashed, trashedModDir);
 
@@ -234,7 +231,7 @@ public class ModManager {
                 FileUtils.moveFile(source, dest);
             }
 
-            File parentModFolder = new File(Paths.getCustomModsDir(), toBeUninstalled.getName());
+            File parentModFolder = Paths.getCustomModsDir().resolve(toBeUninstalled.getName()).toFile();
             if (com.dazednconfused.catalauncher.utils.FileUtils.hasContents(parentModFolder)) {
                 LOGGER.debug("Keeping parent folder [{}] because it still has contents after trashing all related mod files (maybe it had a tileset installed)...", parentModFolder.getPath());
                 if (LOGGER.isTraceEnabled()) {
@@ -259,7 +256,7 @@ public class ModManager {
      * Retrieves the {@link Paths#getCustomModsDir()} as a {@link File}.
      * */
     protected File getModsFolder() {
-        File modsPath = new File(Paths.getCustomModsDir());
+        File modsPath = Paths.getCustomModsDir().toFile();
         if (!modsPath.exists()) {
             LOGGER.debug("Mods folder [{}] not found. Creating...", modsPath);
             Try.of(modsPath::mkdirs).onFailure(t -> LOGGER.error("Could not create mods destination folder [{}]", modsPath, t));

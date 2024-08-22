@@ -67,8 +67,8 @@ public class MainWindow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainWindow.class);
 
-    private static final String[] CUSTOM_SAVE_DIR_ARGS = { "--savedir", Paths.getCustomSavePath() };
-    private static final String[] CUSTOM_USER_DIR_ARGS = { "--userdir", Paths.getCustomUserDir() };
+    private static final String[] CUSTOM_SAVE_DIR_ARGS = { "--savedir", Paths.getCustomSavePath().toString() };
+    private static final String[] CUSTOM_USER_DIR_ARGS = { "--userdir", Paths.getCustomUserDir().toString() };
 
     /**
      * The array of all {@link Runnable}s to be executed on invocation of {@link #refreshGuiElements()}.

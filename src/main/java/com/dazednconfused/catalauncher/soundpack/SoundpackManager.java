@@ -55,7 +55,7 @@ public class SoundpackManager {
      * Retrieves the {@link Paths#getCustomSoundpacksDir()} as a {@link File}.
      * */
     private static File getSoundpacksFolder() {
-        File soundpacksPath = new File(Paths.getCustomSoundpacksDir());
+        File soundpacksPath = Paths.getCustomSoundpacksDir().toFile();
         if (!soundpacksPath.exists()) {
             LOGGER.debug("Soundpacks folder [{}] not found. Creating...", soundpacksPath);
             Try.of(soundpacksPath::mkdirs).onFailure(t -> LOGGER.error("Could not create soundpacks destination folder [{}]", soundpacksPath, t));

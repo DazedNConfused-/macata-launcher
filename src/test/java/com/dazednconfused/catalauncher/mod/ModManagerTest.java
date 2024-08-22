@@ -335,13 +335,13 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
 
             // execute test ---
             File result = instance.getModsFolder();
 
             // verify assertions ---
-            assertThat(result).isEqualTo(new File(Paths.getCustomModsDir()));
+            assertThat(result).isEqualTo(Paths.getCustomModsDir().toFile());
         }
     }
 
@@ -350,16 +350,16 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.resolve("a/missing/folder").toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.resolve("a/missing/folder"));
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomModsDir())).doesNotExist();
+            assertThat(Paths.getCustomModsDir().toFile()).doesNotExist();
 
             // execute test ---
             File result = instance.getModsFolder();
 
             // verify assertions ---
-            assertThat(result).isEqualTo(new File(Paths.getCustomModsDir()));
+            assertThat(result).isEqualTo(Paths.getCustomModsDir().toFile());
         }
     }
 
@@ -482,7 +482,7 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
             // execute test ---
@@ -495,7 +495,7 @@ class ModManagerTest {
             File ACTUAL_RESULT = result.getOrElseThrowUnchecked();
             assertThat(ACTUAL_RESULT).isNotNull();
 
-            Path EXPECTED_PATH = Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod");
+            Path EXPECTED_PATH = Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod");
             assertThat(ACTUAL_RESULT.getPath()).isEqualTo(EXPECTED_PATH.toString());
 
             CustomFileAssertions.assertThat(
@@ -513,8 +513,8 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
-            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory);
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory);
 
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
@@ -527,7 +527,7 @@ class ModManagerTest {
             ModDTO registeredMod = installResult.getOrElseThrowUnchecked();
             assertThat(registeredMod).isNotNull();
 
-            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile();
 
             CustomFileAssertions.assertThat( // assert that mod is installed
                     MOCKED_INSTALLED_MOD
@@ -537,7 +537,7 @@ class ModManagerTest {
                     "items/armor/integrated.json"
             ));
 
-            File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
+            File MOCKED_TRASHED_MODS_FOLDER = Paths.getCustomTrashedModsPath().toFile();
             assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
 
             // execute test ---
@@ -574,8 +574,8 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
-            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.resolve("a/missing/folder").toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory);
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.resolve("a/missing/folder"));
 
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
@@ -588,7 +588,7 @@ class ModManagerTest {
             ModDTO registeredMod = installResult.getOrElseThrowUnchecked();
             assertThat(registeredMod).isNotNull();
 
-            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile();
 
             CustomFileAssertions.assertThat( // assert that mod is installed
                     MOCKED_INSTALLED_MOD
@@ -598,7 +598,7 @@ class ModManagerTest {
                     "items/armor/integrated.json"
             ));
 
-            File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
+            File MOCKED_TRASHED_MODS_FOLDER = Paths.getCustomTrashedModsPath().toFile();
             assertThat(MOCKED_TRASHED_MODS_FOLDER).doesNotExist(); // assert that trash folder does not exist yet
 
             // execute test ---
@@ -635,20 +635,21 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
-            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory);
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory);
 
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
             Result<Throwable, ModDTO> installResult = instance.installMod(MOCKED_MOD_ZIP, unused -> { });
 
             File MOCKED_FOREIGN_FILE = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
-            FileUtils.copyFile(MOCKED_FOREIGN_FILE, new File(Path.of(
-                    Paths.getCustomModsDir(),
-                    "cdda_mutation_rebalance_mod",
-                    "foreign_folder",
-                    "foreign_file.zip"
-            ).toString()));
+            FileUtils.copyFile(MOCKED_FOREIGN_FILE, Paths.getCustomModsDir()
+                    .resolve("cdda_mutation_rebalance_mod")
+                    .resolve("foreign_folder")
+                    .resolve("foreign_file.zip")
+                    .toFile()
+            );
+
 
             // pre-test assertions ---
             assertThat(installResult).isNotNull();
@@ -657,7 +658,7 @@ class ModManagerTest {
             ModDTO registeredMod = installResult.getOrElseThrowUnchecked();
             assertThat(registeredMod).isNotNull();
 
-            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile();
 
             CustomFileAssertions.assertThat( // assert that mod is installed
                     MOCKED_INSTALLED_MOD
@@ -668,7 +669,7 @@ class ModManagerTest {
                     "foreign_folder/foreign_file.zip"
             ));
 
-            File MOCKED_TRASHED_MODS_FOLDER = new File(Paths.getCustomTrashedModsPath());
+            File MOCKED_TRASHED_MODS_FOLDER = Paths.getCustomTrashedModsPath().toFile();
             assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
 
             // execute test ---
@@ -733,7 +734,7 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/unzipped/cdda_mutation_rebalance_mod");
 
             AtomicBoolean called = new AtomicBoolean(false);
@@ -760,9 +761,7 @@ class ModManagerTest {
             assertThat(called.get()).isTrue();
             assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
 
-            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(
-                    Path.of(Paths.getCustomModsDir())
-            );
+            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(Paths.getCustomModsDir());
 
             assertThat(ACTUAL_RESULT.getId()).isNotNull();
             assertThat(ACTUAL_RESULT.getCreatedDate()).isNotNull();
@@ -784,7 +783,7 @@ class ModManagerTest {
             ).containsExactlyInAnyOrderElementsOf(EXPECTED_RESULT.getModfiles());
 
             // assert on filesystem changes -
-            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile();
 
             CustomFileAssertions.assertThat(
                     MOCKED_INSTALLED_MOD
@@ -805,7 +804,7 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
 
             AtomicBoolean called = new AtomicBoolean(false);
@@ -832,9 +831,7 @@ class ModManagerTest {
             assertThat(called.get()).isTrue();
             assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
 
-            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(
-                    Path.of(Paths.getCustomModsDir())
-            );
+            ModDTO EXPECTED_RESULT = getExpectedModDtoForTests(Paths.getCustomModsDir());
 
             assertThat(ACTUAL_RESULT.getId()).isNotNull();
             assertThat(ACTUAL_RESULT.getCreatedDate()).isNotNull();
@@ -856,7 +853,7 @@ class ModManagerTest {
             ).containsExactlyInAnyOrderElementsOf(EXPECTED_RESULT.getModfiles());
 
             // assert on filesystem changes -
-            File MOCKED_INSTALLED_MOD = new File(Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod").toString());
+            File MOCKED_INSTALLED_MOD = Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile();
 
             CustomFileAssertions.assertThat(
                     MOCKED_INSTALLED_MOD
@@ -877,8 +874,8 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory.toString());
-            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory);
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory);
 
             File MOCKED_MOD_ZIP = TestUtils.getFromResource("mod/sample/zipped/cdda_mutation_rebalance_mod.zip");
 
@@ -897,14 +894,14 @@ class ModManagerTest {
             assertThat(instance.listAllRegisteredMods()).containsExactly(MOCKED_DTO);
 
             CustomFileAssertions.assertThat(
-                    new File(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")
+                    Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile()
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                     "modinfo.json",
                     "README.md",
                     "items/armor/integrated.json"
             ));
 
-            assertThat(new File(Paths.getCustomTrashedModsPath())).isEmptyDirectory();
+            assertThat(Paths.getCustomTrashedModsPath().toFile()).isEmptyDirectory();
 
             // execute test ---
             Result<Throwable, ModDTO> result = instance.uninstallMod(MOCKED_DTO, MOCKED_CALLBACK);
@@ -922,11 +919,11 @@ class ModManagerTest {
             assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
 
             // assert on filesystem changes -
-            assertThat(new File(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")).doesNotExist();
+            assertThat(Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod").toFile()).doesNotExist();
 
-            assertThat(new File(Paths.getCustomTrashedModsPath())).isNotEmptyDirectory();
+            assertThat(Paths.getCustomTrashedModsPath().toFile()).isNotEmptyDirectory();
             CustomFileAssertions.assertThat(
-                    Objects.requireNonNull(new File(Paths.getCustomTrashedModsPath()).listFiles())[0]
+                    Objects.requireNonNull(Paths.getCustomTrashedModsPath().toFile().listFiles())[0]
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                     "cdda_mutation_rebalance_mod/modinfo.json",
                     "cdda_mutation_rebalance_mod/README.md",
@@ -943,7 +940,7 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
             ModDTO MOCKED_DTO = ModDTO.builder().name("cdda_mutation_rebalance_mod").build();
 
             // execute test ---
@@ -951,7 +948,7 @@ class ModManagerTest {
 
             // verify assertions ---
             assertThat(instance.getPathFor(MOCKED_DTO)).isEqualTo(
-                    Path.of(Paths.getCustomModsDir(), "cdda_mutation_rebalance_mod")
+                    Paths.getCustomModsDir().resolve("cdda_mutation_rebalance_mod")
             );
         }
     }
@@ -961,7 +958,7 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
 
             ModfileDTO MOCKED_MODFILE_1_1 = ModfileDTO.builder()
                     .path("/a/mocked/1/1.path")
@@ -1044,10 +1041,7 @@ class ModManagerTest {
             ModDTO EXPECTED_RESULT_2 = instance.registerMod(MOCKED_MOD_2).getOrElseThrowUnchecked();
             ModDTO EXPECTED_RESULT_3 = instance.registerMod(MOCKED_MOD_3).getOrElseThrowUnchecked();
 
-            File MOCKED_MOD = new File(
-                    Paths.getCustomModsDir(),
-                    "mockedMod1"
-            );
+            File MOCKED_MOD = Paths.getCustomModsDir().resolve("mockedMod1").toFile();
 
             // pre-test assertions ---
             assertThat(instance.listAllRegisteredMods()).hasSize(3);
@@ -1068,12 +1062,9 @@ class ModManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory.toString());
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedDirectory);
 
-            File MOCKED_MOD = new File(
-                    Paths.getCustomModsDir(),
-                    "mockedMod1"
-            );
+            File MOCKED_MOD =  Paths.getCustomModsDir().resolve("mockedMod1").toFile();
 
             // pre-test assertions ---
             assertThat(instance.listAllRegisteredMods()).hasSize(0);

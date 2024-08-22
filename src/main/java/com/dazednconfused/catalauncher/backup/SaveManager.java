@@ -37,7 +37,7 @@ public class SaveManager {
             return Optional.empty();
         }
 
-        File savesFolder = new File(Paths.getCustomSavePath());
+        File savesFolder = Paths.getCustomSavePath().toFile();
         return Optional.of(compressFolderAsJob(
                 savesFolder,
                 getSaveBackupFolder().getAbsolutePath() + "/" + generateNameBasedOnCurrentTimestamp() + ".zip",
@@ -51,20 +51,20 @@ public class SaveManager {
     public static Optional<Thread> restoreBackup(File backup2beRestored, Consumer<Integer> onPercentDoneCallback) {
         LOGGER.info("Restoring backup [{}]...", backup2beRestored);
 
-        File trashedSaves = new File(Paths.getCustomTrashedSavePath());
+        File trashedSaves = Paths.getCustomTrashedSavePath().toFile();
 
         if (!trashedSaves.exists()) {
             LOGGER.debug("Trashed saves' folder [{}] doesn't exist. Generating...", trashedSaves);
             Try.of(trashedSaves::mkdirs).onFailure(t -> LOGGER.error("There was an error while creating trashed saves' folder [{}]", trashedSaves, t));
         }
 
-        File trashedSavePath = new File(Paths.getCustomTrashedSavePath(), generateNameBasedOnCurrentTimestamp());
+        File trashedSavePath = Paths.getCustomTrashedSavePath().resolve(generateNameBasedOnCurrentTimestamp()).toFile();
 
         if (!saveFilesExist()) {
             LOGGER.info("No current saves found. Nothing to move to trash folder.");
         } else {
             LOGGER.debug("Trashing existent saves into [{}]...", trashedSavePath);
-            File currentSave = new File(Paths.getCustomSavePath());
+            File currentSave = Paths.getCustomSavePath().toFile();
 
             Try.of(() -> Files.move(
                     currentSave.toPath(),
@@ -74,7 +74,7 @@ public class SaveManager {
 
         return Optional.of(decompressFolderAsJob(
                 backup2beRestored,
-                Path.of(Paths.getCustomSavePath()).getParent().toString(), // we don't decompress into CUSTOM_SAVE_PATH because we end up with ./saves/saves/<actual world saves>
+                Paths.getCustomSavePath().getParent().toString(), // we don't decompress into CUSTOM_SAVE_PATH because we end up with ./saves/saves/<actual world saves>
                 onPercentDoneCallback
         ));
     }
@@ -117,7 +117,7 @@ public class SaveManager {
      * if it has a {@code .sav} file in it.
      * */
     private static Optional<File> getLastModifiedValidSave() {
-        File savesFolder = new File(Paths.getCustomSavePath());
+        File savesFolder = Paths.getCustomSavePath().toFile();
         if (!saveFilesExist()) {
             return Optional.empty();
         }
@@ -139,7 +139,7 @@ public class SaveManager {
      * Determines whether save files exist in {@link Paths#getCustomSavePath()}.
      * */
     public static boolean saveFilesExist() {
-        File savesFolder = new File(Paths.getCustomSavePath());
+        File savesFolder = Paths.getCustomSavePath().toFile();
         return savesFolder.exists() && Arrays.stream(Objects.requireNonNull(savesFolder.listFiles())).anyMatch(file -> !file.getName().equals(".DS_Store"));
     }
 
@@ -160,7 +160,7 @@ public class SaveManager {
      * Retrieves the {@link Paths#getSaveBackupPath()} as a {@link File}.
      * */
     private static File getSaveBackupFolder() {
-        File backupPath = new File(Paths.getSaveBackupPath());
+        File backupPath = Paths.getSaveBackupPath().toFile();
         if (!backupPath.exists()) {
             LOGGER.debug("Save backup destination folder [{}] not found. Creating...", backupPath);
             Try.of(backupPath::mkdirs).onFailure(t -> LOGGER.error("Could not create backup destination folder [{}]", backupPath, t));
