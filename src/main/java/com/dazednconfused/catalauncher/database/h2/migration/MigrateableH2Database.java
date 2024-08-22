@@ -9,6 +9,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,6 +31,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -274,16 +282,37 @@ public abstract class MigrateableH2Database extends H2Database implements Migrat
      *           {@code new Date(0)} as argument instead.
      */
     protected Result<Throwable, List<String>> getDatabaseMigrationFiles() {
+        LOGGER.trace("Searching for migration files inside [{}]...", this.getDatabaseMigrationsResourcePath());
         List<String> filenames = new ArrayList<>();
 
-        try (InputStream in = this.getResourceAsStream(this.getDatabaseMigrationsResourcePath()); BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-            String resource;
+        try {
+            String resourcePath = this.getDatabaseMigrationsResourcePath();
+            URL resourceUrl = this.getResource(resourcePath);
 
-            while ((resource = br.readLine()) != null) {
-                filenames.add(resource);
+            if (resourceUrl == null) {
+                throw new IllegalArgumentException("Resource not found: " + resourcePath);
             }
-        } catch (IOException e) {
-            LOGGER.error("There was an error while reading resource files from path [{}]", getDatabaseMigrationsResourcePath());
+
+            URI uri = resourceUrl.toURI();
+            Path myPath;
+
+            if ("jar".equals(uri.getScheme())) {
+                LOGGER.trace("URI [{}] is inside a .jar file. Walking the file tree though appropriate FileSystem provider...", uri);
+                try (FileSystem fs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+                    myPath = fs.getPath(resourcePath);
+                    try (Stream<Path> walk = Files.walk(myPath, 1)) {
+                        walk.filter(Files::isRegularFile).forEach(path -> filenames.add(path.getFileName().toString()));
+                    }
+                }
+            } else {
+                LOGGER.trace("URI [{}] is not inside a .jar file. Walking the file tree through normal means...", uri);
+                myPath = Paths.get(uri);
+                try (Stream<Path> walk = Files.walk(myPath, 1)) {
+                    walk.filter(Files::isRegularFile).forEach(path -> filenames.add(path.getFileName().toString()));
+                }
+            }
+        } catch (IOException | URISyntaxException e) {
+            LOGGER.error("There was an error while reading resource files from path [{}]", this.getDatabaseMigrationsResourcePath());
             return Result.failure(e);
         }
 
@@ -306,13 +335,26 @@ public abstract class MigrateableH2Database extends H2Database implements Migrat
     }
 
     /**
-     * Reads a specific {@code resource} from the classpath.
+     * Returns the {@link InputStream} corresponding to the given {@code resource} from the classpath.
      *
      * @implNote It's up to this method's callers to properly close the resulting {@link InputStream}.
+     *
+     * @apiNote This method is <b>not</b> suitable for performing filesystem operations (like reading a file-tree) when {@code resource}
+     *          is bundled inside a {@code .jar} file. While individual files are perfectly accessible/readable, some other
+     *          operations (like listing files inside a folder) will return empty results <i>without</i> throwing any kind
+     *          of {@link Exception} whatsoever.
      */
     private InputStream getResourceAsStream(String resource) {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
         return in == null ? H2Database.class.getResourceAsStream(resource) : in;
+    }
+
+    /**
+     * Returns the {@link URL} corresponding to the given {@code resource} from the classpath.
+     */
+    private URL getResource(String resource) {
+        URL in = Thread.currentThread().getContextClassLoader().getResource(resource);
+        return in == null ? H2Database.class.getResource(resource) : in;
     }
 
     /**
