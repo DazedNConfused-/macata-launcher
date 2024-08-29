@@ -56,6 +56,7 @@ While not mandatory, if commits are not properly formatted, they may get rejecte
 ### Current
 
 - [x] Launch game & launch from last played world
+- [x] Game process monitor
 - [x] Save management & backups
   - Custom save directory is located at `/<macata_launcher_folder>/saves`
   - Custom backups directory is located at `/<macata_launcher_folder>/backups`
@@ -65,12 +66,12 @@ While not mandatory, if commits are not properly formatted, they may get rejecte
 - [x] Soundpack management
 - [x] Launcher autoupdater
 - [x] Mod management
+- [x] Bright Nights support
 
 ### Planned
 
 - [ ] Tileset support (soon)
 - [ ] Automatic CDDA binary updates & backups
-- [ ] Bright Nights support
 
 ### Maybes
 

@@ -20,7 +20,17 @@ else
     export ${K_LIBRARY_PATH}=. ${K_FRAMEWORK_PATH}=.
 fi
 
-# after setting up environment (just like in Cataclysm.app), run application with flags
+# check if 'cataclysm-tiles' or 'cataclysm-bn-tiles' exists, and run the appropriate one
+if [[ -f ./cataclysm-tiles ]]; then
+    EXECUTABLE="./cataclysm-tiles"
+elif [[ -f ./cataclysm-bn-tiles ]]; then
+    EXECUTABLE="./cataclysm-bn-tiles"
+else
+    echo "No valid executable found!"
+    exit 1
+fi
+
+# after setting up environment (just like in Cataclysm.app), run the appropriate application with flags
 # (keep arguments here without quotes - also, "$@" doesn't work)
 # ${2} is --savedir
 # ${3} is the custom save directory, in quotes in case there are spaces in the path
@@ -28,4 +38,4 @@ fi
 # ${5} is the custom user directory, in quotes in case there are spaces in the path
 # ${5} is --world
 # ${6} is the latest world's name, in quotes because it may have spaces (which is fairly common in randomized world names)
-./cataclysm-tiles ${2} "${3}" ${4} "${5}" ${6} "${7}"
+${EXECUTABLE} ${2} "${3}" ${4} "${5}" ${6} "${7}"

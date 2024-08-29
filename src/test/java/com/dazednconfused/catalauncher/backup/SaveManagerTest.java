@@ -33,30 +33,30 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getSaveBackupPath())).exists();
+            assertThat(Paths.getSaveBackupPath().toFile()).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            File MOCKED_BACKUP_1 = Paths.getSaveBackupPath().resolve("20230216_111637.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            File MOCKED_BACKUP_2 = Paths.getSaveBackupPath().resolve("20230217_115559.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            File MOCKED_BACKUP_3 = Paths.getSaveBackupPath().resolve("20240808_205649.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
                 MOCKED_BACKUP_3
             );
 
-            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            File MOCKED_BACKUP_4 = Paths.getSaveBackupPath().resolve("20240808_205736.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
                 MOCKED_BACKUP_4
@@ -83,30 +83,30 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getCustomSavePath(), "20230216_111637.zip");
+            File MOCKED_BACKUP_1 = Paths.getCustomSavePath().resolve("20230216_111637.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getCustomSavePath(), "20230217_115559.zip");
+            File MOCKED_BACKUP_2 = Paths.getCustomSavePath().resolve("20230217_115559.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getCustomSavePath(), "20240808_205649.zip");
+            File MOCKED_BACKUP_3 = Paths.getCustomSavePath().resolve("20240808_205649.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
                 MOCKED_BACKUP_3
             );
 
-            File MOCKED_BACKUP_4 = new File(Paths.getCustomSavePath(), "20240808_205736.zip");
+            File MOCKED_BACKUP_4 = Paths.getCustomSavePath().resolve("20240808_205736.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
                 MOCKED_BACKUP_4
@@ -128,11 +128,11 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
-            assertThat(new File(Paths.getCustomSavePath()).listFiles()).isEmpty();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+            assertThat(Paths.getCustomSavePath().toFile().listFiles()).isEmpty();
 
             // execute test ---
             boolean result = SaveManager.saveFilesExist();
@@ -150,10 +150,10 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("a/missing/folder").toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("a/missing/folder"));
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).doesNotExist();
+            assertThat(Paths.getCustomSavePath().toFile()).doesNotExist();
 
             // execute test ---
             boolean result = SaveManager.saveFilesExist();
@@ -171,40 +171,51 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getCustomSavePath(), "Braintree");
-            FileUtils.copyDirectory(
-                TestUtils.getFromResource("save/sample/Braintree"),
-                MOCKED_BACKUP_1
-            );
-
-            File MOCKED_BACKUP_2 = new File(Paths.getCustomSavePath(), "San Perlita");
-            FileUtils.copyDirectory(
-                TestUtils.getFromResource("save/sample/San Perlita"),
-                MOCKED_BACKUP_2
-            );
-
-            File MOCKED_BACKUP_3 = new File(Paths.getCustomSavePath(), "Stiles");
+            File MOCKED_BACKUP = Paths.getCustomSavePath().resolve("Braintree").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/Stiles"),
-                MOCKED_BACKUP_3
+                MOCKED_BACKUP
             );
-
-            File MOCKED_LAST_MODIFIED_BACKUP = Arrays.stream(Objects.requireNonNull(
-                new File(Paths.getCustomSavePath()).listFiles(File::isDirectory))
-            ).max(Comparator.comparingLong(File::lastModified)).orElseThrow(); // this is needed because we don't know which will be the last Backup to finish getting copied...
 
             // execute test ---
             Optional<File> result = SaveManager.getLatestSave();
 
             // verify assertions ---
             assertThat(result).isNotEmpty().contains(
-                MOCKED_LAST_MODIFIED_BACKUP
+                MOCKED_BACKUP
             );
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void get_latest_save_success_empty_when_latest_save_is_invalid(@TempDir Path mockedSavePath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+
+            // pre-test assertions ---
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+
+            File MOCKED_BACKUP = Paths.getCustomSavePath().resolve("Braintree").toFile();
+            FileUtils.copyDirectory(
+                TestUtils.getFromResource("save/sample/Braintree"),
+                MOCKED_BACKUP
+            );
+
+            // execute test ---
+            Optional<File> result = SaveManager.getLatestSave();
+
+            // verify assertions ---
+            assertThat(result).isEmpty();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -216,11 +227,11 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
-            assertThat(new File(Paths.getCustomSavePath()).listFiles()).isEmpty();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+            assertThat(Paths.getCustomSavePath().toFile().listFiles()).isEmpty();
 
             // execute test ---
             Optional<File> result = SaveManager.getLatestSave();
@@ -238,10 +249,10 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("a/missing/folder").toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("a/missing/folder"));
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).doesNotExist();
+            assertThat(Paths.getCustomSavePath().toFile()).doesNotExist();
 
             // execute test ---
             Optional<File> result = SaveManager.getLatestSave();
@@ -259,12 +270,12 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getCustomSavePath(), "Braintree");
+            File MOCKED_BACKUP_1 = Paths.getCustomSavePath().resolve("Braintree").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
@@ -286,8 +297,8 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
 
             AtomicInteger calledTimes = new AtomicInteger(0);
             AtomicReference<List<Integer>> calledWith = new AtomicReference<>(new ArrayList<>());
@@ -297,22 +308,22 @@ class SaveManagerTest {
             };
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
-            assertThat(new File(Paths.getSaveBackupPath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+            assertThat(Paths.getSaveBackupPath().toFile()).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getCustomSavePath(), "Braintree");
+            File MOCKED_BACKUP_1 = Paths.getCustomSavePath().resolve("Braintree").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/Braintree"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getCustomSavePath(), "San Perlita");
+            File MOCKED_BACKUP_2 = Paths.getCustomSavePath().resolve("San Perlita").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/San Perlita"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getCustomSavePath(), "Stiles");
+            File MOCKED_BACKUP_3 = Paths.getCustomSavePath().resolve("Stiles").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/Stiles"),
                 MOCKED_BACKUP_3
@@ -330,7 +341,7 @@ class SaveManagerTest {
             assertThat(calledWith).matches(ints -> !ints.get().isEmpty());
 
             // backup assertions -
-            File MOCKED_CUSTOM_BACKUP_PATH = new File(Paths.getSaveBackupPath());
+            File MOCKED_CUSTOM_BACKUP_PATH = Paths.getSaveBackupPath().toFile();
             assertThat(MOCKED_CUSTOM_BACKUP_PATH.listFiles()).hasSize(1);
 
             File MOCKED_ACTUAL_BACKUP = Objects.requireNonNull(MOCKED_CUSTOM_BACKUP_PATH.listFiles())[0];
@@ -363,8 +374,8 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
 
             AtomicInteger calledTimes = new AtomicInteger(0);
             AtomicReference<List<Integer>> calledWith = new AtomicReference<>(new ArrayList<>());
@@ -374,10 +385,10 @@ class SaveManagerTest {
             };
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists();
-            assertThat(new File(Paths.getSaveBackupPath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+            assertThat(Paths.getSaveBackupPath().toFile()).exists();
 
-            File MOCKED_BACKUP = new File(Paths.getCustomSavePath(), "Stiles");
+            File MOCKED_BACKUP = Paths.getCustomSavePath().resolve("Stiles").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/Stiles"),
                 MOCKED_BACKUP
@@ -395,7 +406,7 @@ class SaveManagerTest {
             assertThat(calledWith).matches(ints -> !ints.get().isEmpty());
 
             // backup assertions -
-            File MOCKED_CUSTOM_BACKUP_PATH = new File(Paths.getSaveBackupPath());
+            File MOCKED_CUSTOM_BACKUP_PATH = Paths.getSaveBackupPath().toFile();
             assertThat(MOCKED_CUSTOM_BACKUP_PATH.listFiles()).hasSize(1);
 
             File MOCKED_ACTUAL_BACKUP = Objects.requireNonNull(MOCKED_CUSTOM_BACKUP_PATH.listFiles())[0];
@@ -525,8 +536,8 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
 
             AtomicInteger calledTimes = new AtomicInteger(0);
             AtomicReference<List<Integer>> calledWith = new AtomicReference<>(new ArrayList<>());
@@ -535,10 +546,10 @@ class SaveManagerTest {
                 calledWith.get().add(value);
             };
 
-            File MOCKED_CUSTOM_BACKUP_PATH = new File(Paths.getSaveBackupPath());
+            File MOCKED_CUSTOM_BACKUP_PATH = Paths.getSaveBackupPath().toFile();
 
             // pre-test assertions ---
-            assertThat(new File(Paths.getCustomSavePath())).exists().isEmptyDirectory();
+            assertThat(Paths.getCustomSavePath().toFile()).exists().isEmptyDirectory();
             assertThat(MOCKED_CUSTOM_BACKUP_PATH).exists();
 
             // execute test ---
@@ -564,33 +575,33 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
 
-            File MOCKED_SAVE_BACKUP_DIRECTORY = new File(Paths.getSaveBackupPath());
+            File MOCKED_SAVE_BACKUP_DIRECTORY = Paths.getSaveBackupPath().toFile();
 
-            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
             assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            File MOCKED_BACKUP_1 = Paths.getSaveBackupPath().resolve("20230216_111637.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            File MOCKED_BACKUP_2 = Paths.getSaveBackupPath().resolve("20230217_115559.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            File MOCKED_BACKUP_3 = Paths.getSaveBackupPath().resolve("20240808_205649.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
                 MOCKED_BACKUP_3
             );
 
-            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            File MOCKED_BACKUP_4 = Paths.getSaveBackupPath().resolve("20240808_205736.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
                 MOCKED_BACKUP_4
@@ -638,33 +649,33 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
 
-            File MOCKED_SAVE_BACKUP_DIRECTORY = new File(Paths.getSaveBackupPath());
+            File MOCKED_SAVE_BACKUP_DIRECTORY = Paths.getSaveBackupPath().toFile();
 
-            assertThat(new File(Paths.getCustomSavePath())).exists();
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
             assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            File MOCKED_BACKUP_1 = Paths.getSaveBackupPath().resolve("20230216_111637.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            File MOCKED_BACKUP_2 = Paths.getSaveBackupPath().resolve("20230217_115559.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            File MOCKED_BACKUP_3 = Paths.getSaveBackupPath().resolve("20240808_205649.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
                 MOCKED_BACKUP_3
             );
 
-            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            File MOCKED_BACKUP_4 = Paths.getSaveBackupPath().resolve("20240808_205736.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
                 MOCKED_BACKUP_4
@@ -715,13 +726,13 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("saves/").toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
-            mockedPaths.when(Paths::getCustomTrashedSavePath).thenReturn(mockedTrashedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("saves/"));
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
+            mockedPaths.when(Paths::getCustomTrashedSavePath).thenReturn(mockedTrashedSavePath);
 
-            File MOCKED_CUSTOM_SAVE_DIRECTORY = new File(Paths.getCustomSavePath());
-            File MOCKED_SAVE_BACKUP_DIRECTORY = new File(Paths.getSaveBackupPath());
-            File MOCKED_TRASHED_SAVE_DIRECTORY = new File(Paths.getCustomTrashedSavePath());
+            File MOCKED_CUSTOM_SAVE_DIRECTORY = Paths.getCustomSavePath().toFile();
+            File MOCKED_SAVE_BACKUP_DIRECTORY = Paths.getSaveBackupPath().toFile();
+            File MOCKED_TRASHED_SAVE_DIRECTORY = Paths.getCustomTrashedSavePath().toFile();
 
             assertThat(MOCKED_CUSTOM_SAVE_DIRECTORY.mkdirs()).isTrue(); // we are using a custom relative path, which we must create first...
 
@@ -729,25 +740,25 @@ class SaveManagerTest {
             assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).exists();
             assertThat(MOCKED_TRASHED_SAVE_DIRECTORY).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            File MOCKED_BACKUP_1 = Paths.getSaveBackupPath().resolve("20230216_111637.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            File MOCKED_BACKUP_2 = Paths.getSaveBackupPath().resolve("20230217_115559.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            File MOCKED_BACKUP_3 = Paths.getSaveBackupPath().resolve("20240808_205649.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
                 MOCKED_BACKUP_3
             );
 
-            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            File MOCKED_BACKUP_4 = Paths.getSaveBackupPath().resolve("20240808_205736.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
                 MOCKED_BACKUP_4
@@ -1134,13 +1145,13 @@ class SaveManagerTest {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
-            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("saves/").toString());
-            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath.toString());
-            mockedPaths.when(Paths::getCustomTrashedSavePath).thenReturn(mockedTrashedSavePath.toString());
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath.resolve("saves/"));
+            mockedPaths.when(Paths::getSaveBackupPath).thenReturn(mockedBackupPath);
+            mockedPaths.when(Paths::getCustomTrashedSavePath).thenReturn(mockedTrashedSavePath);
 
-            File MOCKED_CUSTOM_SAVE_DIRECTORY = new File(Paths.getCustomSavePath());
-            File MOCKED_SAVE_BACKUP_DIRECTORY = new File(Paths.getSaveBackupPath());
-            File MOCKED_TRASHED_SAVE_DIRECTORY = new File(Paths.getCustomTrashedSavePath());
+            File MOCKED_CUSTOM_SAVE_DIRECTORY = Paths.getCustomSavePath().toFile();
+            File MOCKED_SAVE_BACKUP_DIRECTORY = Paths.getSaveBackupPath().toFile();
+            File MOCKED_TRASHED_SAVE_DIRECTORY = Paths.getCustomTrashedSavePath().toFile();
 
             assertThat(MOCKED_CUSTOM_SAVE_DIRECTORY.mkdirs()).isTrue(); // we are using a custom relative path, which we must create first...
 
@@ -1148,31 +1159,31 @@ class SaveManagerTest {
             assertThat(MOCKED_SAVE_BACKUP_DIRECTORY).exists();
             assertThat(MOCKED_TRASHED_SAVE_DIRECTORY).exists();
 
-            File MOCKED_BACKUP_1 = new File(Paths.getSaveBackupPath(), "20230216_111637.zip");
+            File MOCKED_BACKUP_1 = Paths.getSaveBackupPath().resolve("20230216_111637.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230216_111637.zip"),
                 MOCKED_BACKUP_1
             );
 
-            File MOCKED_BACKUP_2 = new File(Paths.getSaveBackupPath(), "20230217_115559.zip");
+            File MOCKED_BACKUP_2 = Paths.getSaveBackupPath().resolve("20230217_115559.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20230217_115559.zip"),
                 MOCKED_BACKUP_2
             );
 
-            File MOCKED_BACKUP_3 = new File(Paths.getSaveBackupPath(), "20240808_205649.zip");
+            File MOCKED_BACKUP_3 = Paths.getSaveBackupPath().resolve("20240808_205649.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205649.zip"),
                 MOCKED_BACKUP_3
             );
 
-            File MOCKED_BACKUP_4 = new File(Paths.getSaveBackupPath(), "20240808_205736.zip");
+            File MOCKED_BACKUP_4 = Paths.getSaveBackupPath().resolve("20240808_205736.zip").toFile();
             FileUtils.copyFile(
                 TestUtils.getFromResource("save/backup/sample/20240808_205736.zip"),
                 MOCKED_BACKUP_4
             );
 
-            File MOCKED_EXISTENT_SAVE = new File(Paths.getCustomSavePath(), "Braintree");
+            File MOCKED_EXISTENT_SAVE = Paths.getCustomSavePath().resolve("Braintree").toFile();
             FileUtils.copyDirectory(
                 TestUtils.getFromResource("save/sample/Braintree"),
                 MOCKED_EXISTENT_SAVE

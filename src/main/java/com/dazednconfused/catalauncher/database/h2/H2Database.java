@@ -24,7 +24,7 @@ public abstract class H2Database implements DisposableDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(H2Database.class);
 
-    private static final String DATABASE_DIRECTORY = Paths.getDatabaseDirectory();
+    private static final String DATABASE_DIRECTORY = Paths.getDatabaseDirectory().toString();
     private static final String JDBC_URL_TEMPLATE = "jdbc:h2:" + DATABASE_DIRECTORY + "/%s;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=TRUE";
 
     private static final String USER = null;
