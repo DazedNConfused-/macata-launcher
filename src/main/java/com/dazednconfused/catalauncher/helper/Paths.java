@@ -43,7 +43,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom savefile path.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/saves/"
+     *  getLauncherRootFolder() + "/saves"
      * }</pre>
      * */
     public static Path getCustomSavePath() {
@@ -65,7 +65,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom path for trashed savefiles.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/trashed/saves/"
+     *  getLauncherRootFolder() + "/trashed/saves"
      * }</pre>
      * */
     public static Path getCustomTrashedSavePath() {
@@ -87,7 +87,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom {@code userdir/} directory.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/userdir/"
+     *  getLauncherRootFolder() + "/userdir"
      * }</pre>
      * */
     public static Path getCustomUserDir() {
@@ -98,7 +98,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom {@code userdir/sound} directory.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/userdir/sound/"
+     *  getLauncherRootFolder() + "/userdir/sound"
      * }</pre>
      * */
     public static Path getCustomSoundpacksDir() {
@@ -109,7 +109,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom {@code userdir/mods} directory.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/userdir/mods/"
+     *  getLauncherRootFolder() + "/userdir/mods"
      * }</pre>
      * */
     public static Path getCustomModsDir() {
@@ -120,7 +120,7 @@ public class Paths {
      * Retrieves the {@link Application}'s custom path for trashed mods.
      *
      * <pre> {@code
-     *  getLauncherRootFolder() + "/trashed/mods/"
+     *  getLauncherRootFolder() + "/trashed/mods"
      * }</pre>
      * */
     public static Path getCustomTrashedModsPath() {
