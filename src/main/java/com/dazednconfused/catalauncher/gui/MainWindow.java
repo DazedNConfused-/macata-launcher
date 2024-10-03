@@ -213,7 +213,7 @@ public class MainWindow {
         });
 
         // RUN LATEST WORLD BUTTON LISTENER ---
-        runLatestWorldButton.addActionListener(e -> {
+        this.runLatestWorldButton.addActionListener(e -> {
             LOGGER.trace("Run Latest World clicked");
             this.runLatestWorldButton.setEnabled(false);
 
