@@ -202,6 +202,7 @@ public class MainWindow {
         // RUN BUTTON LISTENER ---
         this.runButton.addActionListener(e -> {
             LOGGER.trace("Run button clicked");
+            this.runButton.setEnabled(false);
 
             String[] launcherArgs = ArrayUtils.addAll(CUSTOM_SAVE_DIR_ARGS, CUSTOM_USER_DIR_ARGS);
 
@@ -212,8 +213,9 @@ public class MainWindow {
         });
 
         // RUN LATEST WORLD BUTTON LISTENER ---
-        runLatestWorldButton.addActionListener(e -> {
+        this.runLatestWorldButton.addActionListener(e -> {
             LOGGER.trace("Run Latest World clicked");
+            this.runLatestWorldButton.setEnabled(false);
 
             String[] lastWorldArgs = SaveManager.getLatestSave().map(latestSave -> new String[]{ "--world", latestSave.getName() }).orElse(new String[]{});
             String[] launcherArgs = ArrayUtils.addAll(
