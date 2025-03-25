@@ -10,16 +10,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Custom assertions for {@link File} objects.
+ * <p>
+ * This class provides custom assertion methods for {@link File} objects,
+ * extending the functionality of AssertJ's {@link AbstractAssert}.
+ * It allows for more readable and expressive tests when working with file
+ * system operations, particularly in verifying the contents of directories.
+ * </p>
+ * <p>
+ * Example usage:
+ * <pre>
+ * {@code
+ * File directory = new File("path/to/directory");
+ * CustomFileAssertions.assertThat(directory)
+ *     .containsExactlyFilesWithRelativePaths(Arrays.asList("file1.txt", "file2.txt"));
+ * }
+ * </pre>
+ * </p>
+ */
 public class CustomFileAssertions extends AbstractAssert<CustomFileAssertions, File> {
 
+    /**
+     * Protected constructor.
+     *
+     * @param actual the actual File object to be asserted
+     */
     protected CustomFileAssertions(File actual) {
         super(actual, CustomFileAssertions.class);
     }
 
+    /**
+     * Entry point for {@link CustomFileAssertions}.
+     *
+     * @param actual the actual File object to be asserted
+     * @return a new instance of CustomFileAssertions
+     */
     public static CustomFileAssertions assertThat(File actual) {
         return new CustomFileAssertions(actual);
     }
 
+    /**
+     * Asserts that the directory contains exactly the files with the specified relative paths.
+     *
+     * @param expectedRelativePaths the list of expected relative paths of files
+     * @return the current instance of {@link CustomFileAssertions} for method chaining
+     */
     public CustomFileAssertions containsExactlyFilesWithRelativePaths(List<String> expectedRelativePaths) {
 
         // collect all files from the directory
