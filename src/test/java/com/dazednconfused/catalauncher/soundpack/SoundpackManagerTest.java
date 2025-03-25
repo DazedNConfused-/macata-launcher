@@ -3,6 +3,7 @@ package com.dazednconfused.catalauncher.soundpack;
 import com.dazednconfused.catalauncher.assertions.CustomFileAssertions;
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
+import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 import com.dazednconfused.catalauncher.utils.TestUtils;
 
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.mockito.MockedStatic;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -30,8 +32,8 @@ class SoundpackManagerTest {
             File MOCKED_SOUNDPACK_DIR = TestUtils.getFromResource("soundpack/sample/unzipped/CC-Sounds-sfx-sample-for-tests");
 
             AtomicBoolean called = new AtomicBoolean(false);
-            AtomicReference<Path> calledWith = new AtomicReference<>();
-            Consumer<Path> MOCKED_CALLBACK = result -> {
+            AtomicReference<SoundpackDTO> calledWith = new AtomicReference<>();
+            Consumer<SoundpackDTO> MOCKED_CALLBACK = result -> {
                 called.set(true);
                 calledWith.set(result);
             };
@@ -41,14 +43,14 @@ class SoundpackManagerTest {
             assertThat(MOCKED_SOUNDPACK_DIR).isDirectory();
 
             // execute test ---
-            Result<Throwable, Path> result = SoundpackManager.installSoundpack(MOCKED_SOUNDPACK_DIR, MOCKED_CALLBACK);
+            Result<Throwable, SoundpackDTO> result = SoundpackManager.installSoundpack(MOCKED_SOUNDPACK_DIR, MOCKED_CALLBACK);
 
             // verify assertions ---
             assertThat(result).isNotNull(); // assert non-null result
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
             // assert on result -
-            Path ACTUAL_RESULT = result.getOrElseThrowUnchecked();
+            SoundpackDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
 
             assertThat(called.get()).isTrue();
             assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
@@ -74,7 +76,9 @@ class SoundpackManagerTest {
             ));
 
             // assert on registered changes -
-            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(new File(ACTUAL_RESULT.toString()));
+            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(
+                Paths.getCustomSoundpacksDir().resolve(ACTUAL_RESULT.getName()).toFile()
+            );
         }
     }
 
@@ -94,7 +98,7 @@ class SoundpackManagerTest {
     }
 
     @Test
-    void get_Soundpacks_folder_folder_not_yet_created_success(@TempDir Path mockedDirectory) {
+    void get_soundpacks_folder_folder_not_yet_created_success(@TempDir Path mockedDirectory) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
@@ -112,27 +116,31 @@ class SoundpackManagerTest {
     }
 
     @Test
-    void trash_soundpack_from_soundpacks_folder_success(@TempDir Path mockedSoundpacksDirectory) {
+    void uninstall_soundpack_success(@TempDir Path mockedSoundpacksDirectory, @TempDir Path mockedTrashedSoundpacksDirectory) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
             // prepare mock data ---
             mockedPaths.when(Paths::getCustomSoundpacksDir).thenReturn(mockedSoundpacksDirectory);
+            mockedPaths.when(Paths::getCustomTrashedSoundpacksPath).thenReturn(mockedTrashedSoundpacksDirectory);
 
-            File MOCKED_Soundpack_ZIP = TestUtils.getFromResource("soundpack/sample/unzipped/CC-Sounds-sfx-sample-for-tests");
+            File MOCKED_SOUNDPACK_ZIP = TestUtils.getFromResource("soundpack/sample/unzipped/CC-Sounds-sfx-sample-for-tests");
 
-            Result<Throwable, Path> installResult = SoundpackManager.installSoundpack(MOCKED_Soundpack_ZIP, unused -> { });
+            SoundpackDTO MOCKED_SOUNDPACK = SoundpackManager.installSoundpack(MOCKED_SOUNDPACK_ZIP, unused -> { }).getOrElseThrowUnchecked();
+
+            AtomicBoolean called = new AtomicBoolean(false);
+            AtomicReference<SoundpackDTO> calledWith = new AtomicReference<>();
+            Consumer<SoundpackDTO> MOCKED_CALLBACK = SoundpackDTO -> {
+                called.set(true);
+                calledWith.set(SoundpackDTO);
+            };
 
             // pre-test assertions ---
-            assertThat(installResult).isNotNull();
-            assertThat(installResult.toEither().isRight()).isTrue();
+            assertThat(MOCKED_SOUNDPACK).isNotNull();
 
-            Path installedSoundpack = installResult.getOrElseThrowUnchecked();
-            assertThat(installedSoundpack).isNotNull();
+            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(Paths.getCustomSoundpacksDir().resolve(MOCKED_SOUNDPACK.getName()).toFile());
 
-            File MOCKED_INSTALLED_SOUNDPACK = Paths.getCustomSoundpacksDir().resolve("CC-Sounds-sfx-sample-for-tests").toFile();
-
-            CustomFileAssertions.assertThat( // assert that soundpack is installed
-                MOCKED_INSTALLED_SOUNDPACK
+            CustomFileAssertions.assertThat(
+                    Paths.getCustomSoundpacksDir().resolve("CC-Sounds-sfx-sample-for-tests").toFile()
             ).containsExactlyFilesWithRelativePaths(Arrays.asList(
                 "soundpack.txt",
                 "explosion/default/credits.md",
@@ -148,15 +156,46 @@ class SoundpackManagerTest {
                 "explosion/small/explosion_small.ogg"
             ));
 
+            assertThat(Paths.getCustomTrashedSoundpacksPath().toFile()).isEmptyDirectory();
+
             // execute test ---
-            Result<Throwable, Void> result = SoundpackManager.deleteSoundpack(installedSoundpack.toFile());
+            Result<Throwable, SoundpackDTO> result = SoundpackManager.uninstallSoundpack(MOCKED_SOUNDPACK, MOCKED_CALLBACK);
 
             // verify assertions ---
-            assertThat(result).isNotNull(); // assert non-null result
 
+            // assert on DTO result -
+            assertThat(result).isNotNull(); // assert non-null result
             assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
 
-            assertThat(MOCKED_INSTALLED_SOUNDPACK).doesNotExist(); // assert that soundpack no longer exists
+            SoundpackDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
+            assertThat(ACTUAL_RESULT).isEqualTo(MOCKED_SOUNDPACK);
+
+            assertThat(called.get()).isTrue();
+            assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
+
+            // assert on filesystem changes -
+            assertThat(Paths.getCustomSoundpacksDir().resolve("CC-Sounds-sfx-sample-for-tests").toFile()).doesNotExist();
+
+            assertThat(Paths.getCustomTrashedSoundpacksPath().toFile()).isNotEmptyDirectory();
+            CustomFileAssertions.assertThat(
+                    Objects.requireNonNull(Paths.getCustomTrashedSoundpacksPath().toFile().listFiles())[0]
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                "CC-Sounds-sfx-sample-for-tests/soundpack.txt",
+                "CC-Sounds-sfx-sample-for-tests/explosion/default/credits.md",
+                "CC-Sounds-sfx-sample-for-tests/explosion/default/explosion_default.json",
+                "CC-Sounds-sfx-sample-for-tests/explosion/default/explosion_default_1.ogg",
+                "CC-Sounds-sfx-sample-for-tests/explosion/default/explosion_default_2.ogg",
+                "CC-Sounds-sfx-sample-for-tests/explosion/huge/credits.md",
+                "CC-Sounds-sfx-sample-for-tests/explosion/huge/explosion_huge.json",
+                "CC-Sounds-sfx-sample-for-tests/explosion/huge/explosion_huge_1.ogg",
+                "CC-Sounds-sfx-sample-for-tests/explosion/huge/explosion_huge_2.ogg",
+                "CC-Sounds-sfx-sample-for-tests/explosion/small/credits.md",
+                "CC-Sounds-sfx-sample-for-tests/explosion/small/explosion_small.json",
+                "CC-Sounds-sfx-sample-for-tests/explosion/small/explosion_small.ogg"
+            ));
+
+            // assert on remaining filesystem -
+            assertThat(SoundpackManager.listAllSoundpacks()).isEmpty();
         }
     }
 

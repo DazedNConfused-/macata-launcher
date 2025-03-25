@@ -106,6 +106,17 @@ public class Paths {
     }
 
     /**
+     * Retrieves the {@link Application}'s custom path for trashed mods.
+     *
+     * <pre> {@code
+     *  getLauncherRootFolder() + "/trashed/sound"
+     * }</pre>
+     * */
+    public static Path getCustomTrashedSoundpacksPath() {
+        return getCustomTrashedPath().resolve("sound");
+    }
+
+    /**
      * Retrieves the {@link Application}'s custom {@code userdir/mods} directory.
      *
      * <pre> {@code

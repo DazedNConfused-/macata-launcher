@@ -2,6 +2,7 @@ package com.dazednconfused.catalauncher.gui.listener;
 
 import com.dazednconfused.catalauncher.gui.ConfirmDialog;
 import com.dazednconfused.catalauncher.helper.FileExplorerManager;
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
 
 import java.awt.event.ActionListener;
@@ -24,6 +25,8 @@ import javax.swing.Timer;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+
+import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 
 import li.flor.nativejfilechooser.NativeJFileChooser;
 
@@ -125,13 +128,20 @@ public class SoundpackActions {
             LOGGER.trace("Soundpack currently on selection: [{}]", selectedSoundpack);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to delete the soundpack [%s]? This action is irreversible!", selectedSoundpack.getName()),
+                String.format(
+                    "Are you sure you want to uninstall the mod [%s]? It will be moved to trash folder [%s]",
+                    selectedSoundpack.getName(),
+                    Paths.getCustomTrashedSoundpacksPath()
+                ),
                 ConfirmDialog.ConfirmDialogType.WARNING,
                 confirmed -> {
                     LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
                     if (confirmed) {
-                        SoundpackManager.deleteSoundpack(selectedSoundpack);
+                        SoundpackManager.uninstallSoundpack(
+                            SoundpackDTO.builder().name(selectedSoundpack.getName()).build(), // create a DTO for the selected soundpack
+                            SoundpackManager.DO_NOTHING_ACTION
+                        );
                     }
 
                     this.refreshSoundpackGui();
