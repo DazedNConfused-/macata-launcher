@@ -76,9 +76,7 @@ class SoundpackManagerTest {
             ));
 
             // assert on registered changes -
-            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(
-                Paths.getCustomSoundpacksDir().resolve(ACTUAL_RESULT.getName()).toFile()
-            );
+            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(ACTUAL_RESULT);
         }
     }
 
@@ -137,7 +135,7 @@ class SoundpackManagerTest {
             // pre-test assertions ---
             assertThat(MOCKED_SOUNDPACK).isNotNull();
 
-            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(Paths.getCustomSoundpacksDir().resolve(MOCKED_SOUNDPACK.getName()).toFile());
+            assertThat(SoundpackManager.listAllSoundpacks()).containsExactly(MOCKED_SOUNDPACK);
 
             CustomFileAssertions.assertThat(
                     Paths.getCustomSoundpacksDir().resolve("CC-Sounds-sfx-sample-for-tests").toFile()
@@ -845,76 +843,6 @@ class SoundpackManagerTest {
 //    }
 //
 //    @Test
-//    void install_Soundpack_success_with_directory(@TempDir Path mockedDirectory) {
-//        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
-//
-//            // prepare mock data ---
-//            mockedPaths.when(Paths::getCustomSoundpacksDir).thenReturn(mockedDirectory);
-//            File MOCKED_Soundpack_ZIP = TestUtils.getFromResource("Soundpack/sample/unzipped/cdda_mutation_rebalance_Soundpack");
-//
-//            AtomicBoolean called = new AtomicBoolean(false);
-//            AtomicReference<SoundpackDTO> calledWith = new AtomicReference<>();
-//            Consumer<SoundpackDTO> MOCKED_CALLBACK = SoundpackDTO -> {
-//                called.set(true);
-//                calledWith.set(SoundpackDTO);
-//            };
-//
-//            // pre-test assertions ---
-//            assertThat(MOCKED_Soundpack_ZIP).isNotNull();
-//            assertThat(MOCKED_Soundpack_ZIP).isDirectory();
-//
-//            // execute test ---
-//            Result<Throwable, SoundpackDTO> result = instance.installSoundpack(MOCKED_Soundpack_ZIP, MOCKED_CALLBACK);
-//
-//            // verify assertions ---
-//            assertThat(result).isNotNull(); // assert non-null result
-//            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
-//
-//            // assert on DTO result -
-//            SoundpackDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
-//
-//            assertThat(called.get()).isTrue();
-//            assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
-//
-//            SoundpackDTO EXPECTED_RESULT = getExpectedSoundpackDtoForTests(Paths.getCustomSoundpacksDir());
-//
-//            assertThat(ACTUAL_RESULT.getId()).isNotNull();
-//            assertThat(ACTUAL_RESULT.getCreatedDate()).isNotNull();
-//            assertThat(ACTUAL_RESULT.getUpdatedDate()).isNotNull();
-//            assertThat(ACTUAL_RESULT.getCreatedDate()).isEqualTo(ACTUAL_RESULT.getUpdatedDate());
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).isNotNull();
-//            assertThat(ACTUAL_RESULT).usingRecursiveComparison().ignoringFields(
-//                    "id", "createdDate", "updatedDate",
-//                    "Soundpackfiles" // this one will be asserted on individually next
-//            ).isEqualTo(EXPECTED_RESULT);
-//
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).extracting(SoundpackfileDTO::getId).isNotNull();
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).extracting(SoundpackfileDTO::getSoundpackId).isNotNull();
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).extracting(SoundpackfileDTO::getCreatedDate).isNotNull();
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).extracting(SoundpackfileDTO::getUpdatedDate).isNotNull();
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).allSatisfy(dto -> assertThat(dto.getCreatedDate()).isEqualTo(dto.getUpdatedDate()));
-//            assertThat(ACTUAL_RESULT.getSoundpackfiles()).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
-//                    "id", "SoundpackId", "createdDate", "updatedDate"
-//            ).containsExactlyInAnyOrderElementsOf(EXPECTED_RESULT.getSoundpackfiles());
-//
-//            // assert on filesystem changes -
-//            File MOCKED_INSTALLED_Soundpack = Paths.getCustomSoundpacksDir().resolve("cdda_mutation_rebalance_Soundpack").toFile();
-//
-//            CustomFileAssertions.assertThat(
-//                    MOCKED_INSTALLED_Soundpack
-//            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
-//                    "Soundpackinfo.json",
-//                    "README.md",
-//                    "items/armor/integrated.json"
-//            ));
-//
-//            // assert on database changes -
-//            assertThat(instance.listAllRegisteredSoundpacks()).containsExactly(ACTUAL_RESULT);
-//
-//        }
-//    }
-//
-//    @Test
 //    void install_Soundpack_success_with_zip(@TempDir Path mockedDirectory) {
 //        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 //
@@ -984,71 +912,6 @@ class SoundpackManagerTest {
 //        }
 //    }
 //
-//    @Test
-//    void uninstall_Soundpack_success(@TempDir Path mockedSoundpacksDirectory, @TempDir Path mockedTrashedSoundpacksDirectory) {
-//        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
-//
-//            // prepare mock data ---
-//            mockedPaths.when(Paths::getCustomSoundpacksDir).thenReturn(mockedSoundpacksDirectory);
-//            mockedPaths.when(Paths::getCustomTrashedSoundpacksPath).thenReturn(mockedTrashedSoundpacksDirectory);
-//
-//            File MOCKED_Soundpack_ZIP = TestUtils.getFromResource("Soundpack/sample/zipped/cdda_mutation_rebalance_Soundpack.zip");
-//
-//            SoundpackDTO MOCKED_DTO = instance.installSoundpack(MOCKED_Soundpack_ZIP, unused -> { }).getOrElseThrowUnchecked();
-//
-//            AtomicBoolean called = new AtomicBoolean(false);
-//            AtomicReference<SoundpackDTO> calledWith = new AtomicReference<>();
-//            Consumer<SoundpackDTO> MOCKED_CALLBACK = SoundpackDTO -> {
-//                called.set(true);
-//                calledWith.set(SoundpackDTO);
-//            };
-//
-//            // pre-test assertions ---
-//            assertThat(MOCKED_DTO).isNotNull();
-//
-//            assertThat(instance.listAllRegisteredSoundpacks()).containsExactly(MOCKED_DTO);
-//
-//            CustomFileAssertions.assertThat(
-//                    Paths.getCustomSoundpacksDir().resolve("cdda_mutation_rebalance_Soundpack").toFile()
-//            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
-//                    "Soundpackinfo.json",
-//                    "README.md",
-//                    "items/armor/integrated.json"
-//            ));
-//
-//            assertThat(Paths.getCustomTrashedSoundpacksPath().toFile()).isEmptyDirectory();
-//
-//            // execute test ---
-//            Result<Throwable, SoundpackDTO> result = instance.uninstallSoundpack(MOCKED_DTO, MOCKED_CALLBACK);
-//
-//            // verify assertions ---
-//
-//            // assert on DTO result -
-//            assertThat(result).isNotNull(); // assert non-null result
-//            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
-//
-//            SoundpackDTO ACTUAL_RESULT = result.getOrElseThrowUnchecked();
-//            assertThat(ACTUAL_RESULT).isEqualTo(MOCKED_DTO);
-//
-//            assertThat(called.get()).isTrue();
-//            assertThat(calledWith.get()).isEqualTo(ACTUAL_RESULT);
-//
-//            // assert on filesystem changes -
-//            assertThat(Paths.getCustomSoundpacksDir().resolve("cdda_mutation_rebalance_Soundpack").toFile()).doesNotExist();
-//
-//            assertThat(Paths.getCustomTrashedSoundpacksPath().toFile()).isNotEmptyDirectory();
-//            CustomFileAssertions.assertThat(
-//                    Objects.requireNonNull(Paths.getCustomTrashedSoundpacksPath().toFile().listFiles())[0]
-//            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
-//                    "cdda_mutation_rebalance_Soundpack/Soundpackinfo.json",
-//                    "cdda_mutation_rebalance_Soundpack/README.md",
-//                    "cdda_mutation_rebalance_Soundpack/items/armor/integrated.json"
-//            ));
-//
-//            // assert on database changes -
-//            assertThat(instance.listAllRegisteredSoundpacks()).isEmpty();
-//        }
-//    }
 //
 //    @Test
 //    void get_path_for_success(@TempDir Path mockedDirectory) {

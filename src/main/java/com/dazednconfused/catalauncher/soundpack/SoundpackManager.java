@@ -28,11 +28,16 @@ public class SoundpackManager {
     /**
      * Returns all soundpacks currently found in {@link Paths#getCustomSoundpacksDir()}.
      * */
-    public static List<File> listAllSoundpacks() {
+    public static List<SoundpackDTO> listAllSoundpacks() {
         LOGGER.debug("Listing all soundpacks...");
         return Arrays.stream(Objects.requireNonNull(getSoundpacksFolder().listFiles()))
                 .filter(file -> !file.getName().equals(".DS_Store"))
-                .collect(Collectors.toList());
+                .map(file ->
+                    SoundpackDTO.builder()
+                        .name(file.getName())
+                        .path(file.toPath())
+                        .build()
+                ).collect(Collectors.toList());
     }
 
     /**
@@ -42,7 +47,7 @@ public class SoundpackManager {
         LOGGER.info("Uninstalling soundpack [{}]...", toBeUninstalled);
 
         return Try.of(() -> {
-            // remove mod from mods folder -
+            // remove soundpack from soundpacks folder -
             SoundpackManager.trashSoundpackFromSoundsFolder(toBeUninstalled).getOrElseThrowUnchecked();
 
             return toBeUninstalled;
@@ -51,7 +56,7 @@ public class SoundpackManager {
             onDoneCallback.accept(dto);
             return dto;
         }).onFailure(
-            t -> LOGGER.error("There was an error uninstalling mod [{}]", toBeUninstalled.getName(), t)
+            t -> LOGGER.error("There was an error uninstalling soundpack [{}]", toBeUninstalled.getName(), t)
         ).map(dto -> {
             LOGGER.info("Soundpack [{}] has been successfully uninstalled!", dto.getName());
             return Result.success(dto);
@@ -65,18 +70,15 @@ public class SoundpackManager {
         LOGGER.info("Installing soundpack [{}]...", toBeInstalled);
 
         return Try.of(() -> {
-            // parse destination -
-            File installInto = new File(getSoundpacksFolder().getPath() + "/" + toBeInstalled.getName());
+            // copy to soundpacks folder -
+            File copiedSoundpack = SoundpackManager.copySoundpackToSoundpacksFolder(toBeInstalled).getOrElseThrowUnchecked();
 
-            // copy to sounds folder -
-            LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
-            FileUtils.copyDirectory(toBeInstalled, installInto);
-
-            return installInto.toPath();
-        }).map(installPath ->
             // parse into DTO -
-            SoundpackDTO.builder().name(installPath.getFileName().toString()).build()
-        ).map(dto -> {
+            return SoundpackDTO.builder()
+                .name(copiedSoundpack.getName())
+                .path(copiedSoundpack.toPath())
+                .build();
+        }).map(dto -> {
             // perform callback on successful installation -
             onDoneCallback.accept(dto);
             return dto;
@@ -86,6 +88,23 @@ public class SoundpackManager {
             LOGGER.info("Soundpack [{}] has been successfully installed!", dto.getName());
             return Result.success(dto);
         }).recover(Result::failure).get();
+    }
+
+    /**
+     * Copies the given {@code toBeInstalled} soundpack into the {@link Paths#getCustomSoundpacksDir()} folder.
+     *
+     * @return The final {@link File} after it has finished copying.
+     * */
+    protected static Result<Throwable, File> copySoundpackToSoundpacksFolder(File toBeInstalled) {
+        File installInto = new File(getSoundpacksFolder().getPath() + "/" + toBeInstalled.getName());
+
+        return Try.of(() -> {
+            LOGGER.debug("Copying soundpack [{}] into [{}]...", toBeInstalled, installInto);
+            FileUtils.copyDirectory(toBeInstalled, installInto);
+            return installInto;
+        }).onFailure(
+            t -> LOGGER.error("There was an error installing soundpack [{}]", toBeInstalled, t)
+        ).map(Result::success).recover(Result::failure).get();
     }
 
     /**

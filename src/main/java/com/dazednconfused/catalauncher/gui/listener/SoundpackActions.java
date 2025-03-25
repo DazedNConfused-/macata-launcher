@@ -4,6 +4,7 @@ import com.dazednconfused.catalauncher.gui.ConfirmDialog;
 import com.dazednconfused.catalauncher.helper.FileExplorerManager;
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
+import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -25,8 +26,6 @@ import javax.swing.Timer;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-
-import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 
 import li.flor.nativejfilechooser.NativeJFileChooser;
 
@@ -228,13 +227,15 @@ public class SoundpackActions {
         String[] columns = new String[]{"Name", "Path", "Size", "Date"};
 
         List<Object[]> values = new ArrayList<>();
-        SoundpackManager.listAllSoundpacks().stream().sorted(Comparator.comparing(File::lastModified).reversed()).forEach(soundpack ->
-            values.add(new Object[]{
-                soundpack.getName(),
-                soundpack,
-                FileUtils.sizeOfDirectory(soundpack) / (1024 * 1024) + " MB",
-                new Date(soundpack.lastModified())
-            })
+        SoundpackManager.listAllSoundpacks().stream()
+            .map(soundpackDTO -> soundpackDTO.getPath().orElseThrow().toFile())
+            .sorted(Comparator.comparing(File::lastModified).reversed()).forEach(soundpack ->
+                values.add(new Object[]{
+                    soundpack.getName(),
+                    soundpack,
+                    FileUtils.sizeOfDirectory(soundpack) / (1024 * 1024) + " MB",
+                    new Date(soundpack.lastModified())
+                })
         );
 
         TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
