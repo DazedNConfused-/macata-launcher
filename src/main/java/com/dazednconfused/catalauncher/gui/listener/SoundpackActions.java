@@ -129,7 +129,7 @@ public class SoundpackActions {
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
                 String.format(
-                    "Are you sure you want to uninstall the mod [%s]? It will be moved to trash folder [%s]",
+                    "Are you sure you want to uninstall the soundpack [%s]? It will be moved to trash folder [%s]",
                     selectedSoundpack.getName(),
                     Paths.getCustomTrashedSoundpacksPath()
                 ),
