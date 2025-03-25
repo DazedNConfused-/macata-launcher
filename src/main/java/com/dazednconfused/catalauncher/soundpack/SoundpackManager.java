@@ -2,6 +2,9 @@ package com.dazednconfused.catalauncher.soundpack;
 
 import com.dazednconfused.catalauncher.helper.Paths;
 
+import com.dazednconfused.catalauncher.helper.result.Result;
+import com.dazednconfused.catalauncher.mod.dto.ModDTO;
+
 import io.vavr.control.Try;
 
 import java.io.File;
@@ -41,20 +44,29 @@ public class SoundpackManager {
     /**
      * Installs given {@code toBeInstalled} soundpack inside {@link Paths#getCustomSoundpacksDir()}.
      * */
-    public static void installSoundpack(File toBeInstalled, Consumer<Path> onDoneCallback) {
+    public static Result<Throwable, Path> installSoundpack(File toBeInstalled, Consumer<Path> onDoneCallback) {
         LOGGER.info("Installing soundpack [{}]...", toBeInstalled);
         File installInto = new File(getSoundpacksFolder().getPath() + "/" + toBeInstalled.getName());
 
-        Try.run(() -> {
+        return Try.of(() -> {
             LOGGER.debug("Copying [{}] into [{}]...", toBeInstalled, installInto);
+
             FileUtils.copyDirectory(toBeInstalled, installInto);
-        }).onFailure(t -> LOGGER.error("There was an error installing soundpack [{}]", toBeInstalled, t)).andThen(() -> onDoneCallback.accept(installInto.toPath()));
+
+            return installInto.toPath();
+        }).onFailure(t ->
+            LOGGER.error("There was an error installing soundpack [{}]", toBeInstalled, t)
+        ).map(installedPath -> {
+            LOGGER.info("Soundpack [{}] has been successfully installed!", toBeInstalled);
+            onDoneCallback.accept(installedPath);
+            return Result.success(installedPath);
+        }).recover(Result::failure).get();
     }
 
     /**
      * Retrieves the {@link Paths#getCustomSoundpacksDir()} as a {@link File}.
      * */
-    private static File getSoundpacksFolder() {
+    protected static File getSoundpacksFolder() {
         File soundpacksPath = Paths.getCustomSoundpacksDir().toFile();
         if (!soundpacksPath.exists()) {
             LOGGER.debug("Soundpacks folder [{}] not found. Creating...", soundpacksPath);
