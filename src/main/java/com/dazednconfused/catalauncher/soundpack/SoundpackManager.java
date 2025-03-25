@@ -36,9 +36,13 @@ public class SoundpackManager {
     /**
      * Deletes given {@code toBeDeleted} soundpack.
      * */
-    public static void deleteSoundpack(File toBeDeleted) {
+    public static Result<Throwable, Void> deleteSoundpack(File toBeDeleted) {
         LOGGER.info("Deleting soundpack [{}]...", toBeDeleted);
-        Try.run(() -> FileUtils.deleteDirectory(toBeDeleted)).onFailure(t -> LOGGER.error("There was an error deleting soundpack [{}]", toBeDeleted, t));
+        return Try.run(() ->
+            FileUtils.deleteDirectory(toBeDeleted)
+        ).onFailure(t ->
+            LOGGER.error("There was an error deleting soundpack [{}]", toBeDeleted, t)
+        ).map(Result::success).recover(Result::failure).get();
     }
 
     /**

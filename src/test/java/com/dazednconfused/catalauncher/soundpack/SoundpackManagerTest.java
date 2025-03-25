@@ -111,6 +111,55 @@ class SoundpackManagerTest {
         }
     }
 
+    @Test
+    void trash_soundpack_from_soundpacks_folder_success(@TempDir Path mockedSoundpacksDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSoundpacksDir).thenReturn(mockedSoundpacksDirectory);
+
+            File MOCKED_Soundpack_ZIP = TestUtils.getFromResource("soundpack/sample/unzipped/CC-Sounds-sfx-sample-for-tests");
+
+            Result<Throwable, Path> installResult = SoundpackManager.installSoundpack(MOCKED_Soundpack_ZIP, unused -> { });
+
+            // pre-test assertions ---
+            assertThat(installResult).isNotNull();
+            assertThat(installResult.toEither().isRight()).isTrue();
+
+            Path installedSoundpack = installResult.getOrElseThrowUnchecked();
+            assertThat(installedSoundpack).isNotNull();
+
+            File MOCKED_INSTALLED_SOUNDPACK = Paths.getCustomSoundpacksDir().resolve("CC-Sounds-sfx-sample-for-tests").toFile();
+
+            CustomFileAssertions.assertThat( // assert that soundpack is installed
+                MOCKED_INSTALLED_SOUNDPACK
+            ).containsExactlyFilesWithRelativePaths(Arrays.asList(
+                "soundpack.txt",
+                "explosion/default/credits.md",
+                "explosion/default/explosion_default.json",
+                "explosion/default/explosion_default_1.ogg",
+                "explosion/default/explosion_default_2.ogg",
+                "explosion/huge/credits.md",
+                "explosion/huge/explosion_huge.json",
+                "explosion/huge/explosion_huge_1.ogg",
+                "explosion/huge/explosion_huge_2.ogg",
+                "explosion/small/credits.md",
+                "explosion/small/explosion_small.json",
+                "explosion/small/explosion_small.ogg"
+            ));
+
+            // execute test ---
+            Result<Throwable, Void> result = SoundpackManager.deleteSoundpack(installedSoundpack.toFile());
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.toEither().isRight()).isTrue(); // assert that Result is Success
+
+            assertThat(MOCKED_INSTALLED_SOUNDPACK).doesNotExist(); // assert that soundpack no longer exists
+        }
+    }
+
 //        // prepare mock data ---
 //        SoundpackfileDTO MOCKED_SoundpackFILE_1 = SoundpackfileDTO.builder()
 //                .path("/a/mocked/1.path")
