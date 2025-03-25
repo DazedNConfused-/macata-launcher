@@ -220,6 +220,12 @@ public class ModManager {
 
             File toBeTrashed = Paths.getCustomModsDir().resolve(toBeUninstalled.getName()).toFile();
 
+            if (!toBeTrashed.exists()) {
+                throw new IllegalArgumentException(String.format(
+                    "Mod to be uninstalled does not exist! Aborting trashing operation for [%s].", toBeTrashed
+                ));
+            }
+
             LOGGER.debug("Trashing mod [{}] into [{}]...", toBeTrashed, trashedModDir);
 
             for (ModfileDTO modfile : toBeUninstalled.getModfiles()) {

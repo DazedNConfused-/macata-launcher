@@ -2,6 +2,8 @@ package com.dazednconfused.catalauncher.soundpack;
 
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
+import com.dazednconfused.catalauncher.mod.dto.ModDTO;
+import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
 import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 import com.dazednconfused.catalauncher.utils.CustomTimeUtils;
 
@@ -126,6 +128,12 @@ public class SoundpackManager {
             ).toString());
 
             File toBeTrashed = Paths.getCustomSoundpacksDir().resolve(toBeUninstalled.getName()).toFile();
+
+            if (!toBeTrashed.exists()) {
+                throw new IllegalArgumentException(String.format(
+                    "Soundpack to be uninstalled does not exist! Aborting trashing operation for [%s].", toBeTrashed
+                ));
+            }
 
             LOGGER.debug("Trashing soundpack [{}] into [{}]...", toBeTrashed, trashedSoundpackDir);
 

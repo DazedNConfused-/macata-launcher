@@ -708,6 +708,34 @@ class ModManagerTest {
     }
 
     @Test
+    void trash_mod_from_mods_folder_failure_when_to_be_trashed_mod_does_not_exist(@TempDir Path mockedModsDirectory, @TempDir Path mockedTrashedModsDirectory) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomModsDir).thenReturn(mockedModsDirectory);
+            mockedPaths.when(Paths::getCustomTrashedModsPath).thenReturn(mockedTrashedModsDirectory);
+
+            ModDTO badMod = ModDTO.builder().name("aNonExistingMod").build();
+
+            // pre-test assertions ---
+
+            File MOCKED_TRASHED_MODS_FOLDER = Paths.getCustomTrashedModsPath().toFile();
+            assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
+
+            // execute test ---
+            Result<Throwable, Void> result = instance.trashModFromModsFolder(badMod);
+
+            // verify assertions ---
+            assertThat(result).isNotNull(); // assert non-null result
+
+            assertThat(result.toEither().isLeft()).isTrue(); // assert that Result is Failure
+
+            // trashed mod assertions -
+            assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
+        }
+    }
+
+    @Test
     void parse_file_to_dto_success() {
 
         // prepare mock data ---
