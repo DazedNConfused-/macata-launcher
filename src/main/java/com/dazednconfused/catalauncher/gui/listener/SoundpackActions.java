@@ -2,7 +2,9 @@ package com.dazednconfused.catalauncher.gui.listener;
 
 import com.dazednconfused.catalauncher.gui.ConfirmDialog;
 import com.dazednconfused.catalauncher.helper.FileExplorerManager;
+import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.soundpack.SoundpackManager;
+import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -125,13 +127,20 @@ public class SoundpackActions {
             LOGGER.trace("Soundpack currently on selection: [{}]", selectedSoundpack);
 
             ConfirmDialog confirmDialog = new ConfirmDialog(
-                String.format("Are you sure you want to delete the soundpack [%s]? This action is irreversible!", selectedSoundpack.getName()),
+                String.format(
+                    "Are you sure you want to uninstall the soundpack [%s]? It will be moved to trash folder [%s]",
+                    selectedSoundpack.getName(),
+                    Paths.getCustomTrashedSoundpacksPath()
+                ),
                 ConfirmDialog.ConfirmDialogType.WARNING,
                 confirmed -> {
                     LOGGER.trace("Confirmation dialog result: [{}]", confirmed);
 
                     if (confirmed) {
-                        SoundpackManager.deleteSoundpack(selectedSoundpack);
+                        SoundpackManager.uninstallSoundpack(
+                            SoundpackDTO.builder().name(selectedSoundpack.getName()).build(), // create a DTO for the selected soundpack
+                            SoundpackManager.DO_NOTHING_ACTION
+                        );
                     }
 
                     this.refreshSoundpackGui();
@@ -218,13 +227,15 @@ public class SoundpackActions {
         String[] columns = new String[]{"Name", "Path", "Size", "Date"};
 
         List<Object[]> values = new ArrayList<>();
-        SoundpackManager.listAllSoundpacks().stream().sorted(Comparator.comparing(File::lastModified).reversed()).forEach(soundpack ->
-            values.add(new Object[]{
-                soundpack.getName(),
-                soundpack,
-                FileUtils.sizeOfDirectory(soundpack) / (1024 * 1024) + " MB",
-                new Date(soundpack.lastModified())
-            })
+        SoundpackManager.listAllSoundpacks().stream()
+            .map(soundpackDTO -> soundpackDTO.getPath().orElseThrow().toFile())
+            .sorted(Comparator.comparing(File::lastModified).reversed()).forEach(soundpack ->
+                values.add(new Object[]{
+                    soundpack.getName(),
+                    soundpack,
+                    FileUtils.sizeOfDirectory(soundpack) / (1024 * 1024) + " MB",
+                    new Date(soundpack.lastModified())
+                })
         );
 
         TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][]{}), columns) {
