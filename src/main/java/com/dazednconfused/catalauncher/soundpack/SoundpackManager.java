@@ -2,8 +2,6 @@ package com.dazednconfused.catalauncher.soundpack;
 
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.helper.result.Result;
-import com.dazednconfused.catalauncher.mod.dto.ModDTO;
-import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
 import com.dazednconfused.catalauncher.soundpack.dto.SoundpackDTO;
 import com.dazednconfused.catalauncher.utils.CustomTimeUtils;
 

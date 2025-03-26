@@ -718,7 +718,6 @@ class ModManagerTest {
             ModDTO badMod = ModDTO.builder().name("aNonExistingMod").build();
 
             // pre-test assertions ---
-
             File MOCKED_TRASHED_MODS_FOLDER = Paths.getCustomTrashedModsPath().toFile();
             assertThat(MOCKED_TRASHED_MODS_FOLDER).isEmptyDirectory(); // assert that trash folder is empty
 
