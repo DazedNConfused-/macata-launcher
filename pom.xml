@@ -13,7 +13,8 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <sonar.organization>dazednconfused</sonar.organization>
+        <sonar.organization>dazednconfused</sonar.organization> <!-- should match .github/workflows/sonarcloud.yml -->
+        <sonar.projectKey>dazednconfused_macata-launcher</sonar.projectKey> <!-- ^ditto -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.cpd.exclusions>**/gui/**</sonar.cpd.exclusions>
     </properties>
