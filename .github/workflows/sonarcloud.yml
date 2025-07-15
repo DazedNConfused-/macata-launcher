@@ -43,4 +43,4 @@ jobs:
           mvn -B verify sonar:sonar \
             -Dsonar.projectKey=dazednconfused_macata-launcher \
             -Dsonar.organization=dazednconfused \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.token=$SONAR_TOKEN
