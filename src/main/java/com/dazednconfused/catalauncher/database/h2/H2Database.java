@@ -104,7 +104,6 @@ public abstract class H2Database implements DisposableDatabase {
         ).map(Result::success).recover(Result::failure).get();
     }
 
-
     /**
      * Completely wipes this database of any and all data, <b>including</b> the underlying schema.
      *
