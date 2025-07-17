@@ -8,6 +8,7 @@ import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +59,20 @@ public class ModH2RepositoryImpl extends MigrateableH2Database implements ModRep
         );
 
         return result;
+    }
+
+    @Override
+    public int bulkInsert(Collection<ModEntity> entities) throws DAOException {
+        LOGGER.debug("Bulk inserting [{}] ModEntity(ies)...", entities.size());
+
+        int insertedCount = (int) entities.stream()
+            .map(this::insert)
+            .filter(Objects::nonNull)
+            .count();
+
+        LOGGER.debug("Bulk inserted [{}] ModEntity(ies)", insertedCount);
+
+        return insertedCount;
     }
 
     @Override
@@ -121,10 +136,11 @@ public class ModH2RepositoryImpl extends MigrateableH2Database implements ModRep
     private List<ModfileEntity> insertChildEntities(long modId, List<ModfileEntity> entities) throws DAOException {
         LOGGER.debug("Inserting [{}] ModfileEntity(s) associated to modId [{}]", entities.size(), modId);
 
-        List<ModfileEntity> result = entities.stream()
+        this.modfileDAO.bulkInsert(entities.stream()
             .peek(e -> e.setModId(modId)) // set/overwrite with entity ID
-            .map(modfileDAO::insert)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList())
+        );
+        List<ModfileEntity> result = modfileDAO.findAllByModId(modId);
 
         LOGGER.debug("Inserted [{}] ModfileEntity(s) associated to modId [{}]", result.size(), modId);
 

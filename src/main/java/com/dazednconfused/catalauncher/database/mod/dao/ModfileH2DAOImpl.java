@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -41,7 +43,7 @@ public class ModfileH2DAOImpl extends MigrateableH2Database implements ModfileDA
     public ModfileEntity insert(ModfileEntity entity) throws DAOException {
         LOGGER.debug("Inserting ModfileEntity [{}]...", entity);
 
-        String sql = "INSERT INTO " + TABLE_NAME + "" +
+        String sql = "INSERT INTO " + TABLE_NAME + " " +
             "(mod_id, path, hash, created_date, updated_date) " +
             "VALUES " +
             "(?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())";
@@ -56,6 +58,40 @@ public class ModfileH2DAOImpl extends MigrateableH2Database implements ModfileDA
             return this.getLatestGeneratedId(pstmt).map(this::findById).orElseThrow(DAOException::new).orElseThrow(DAOException::new);
         } catch (SQLException e) {
             LOGGER.error("An error occurred while inserting entity [{}]", entity, e);
+            throw new DAOException(e);
+        }
+    }
+
+    @Override
+    public int bulkInsert(Collection<ModfileEntity> entities) throws DAOException {
+
+        if (entities == null || entities.isEmpty()) {
+            LOGGER.warn("No entities provided for bulk insert. No operation shall be performed.");
+            return 0;
+        }
+
+        LOGGER.debug("Bulk inserting [{}] ModfileEntity(ies)...", entities.size());
+
+        String sql = "INSERT INTO " + TABLE_NAME + " " +
+            "(mod_id, path, hash, created_date, updated_date) " +
+            "VALUES " +
+            "(?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())";
+
+        try (Connection conn = this.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            for (ModfileEntity entity : entities) {
+                pstmt.setLong(1, entity.getModId());
+                pstmt.setString(2, entity.getPath());
+                pstmt.setString(3, entity.getHash());
+                pstmt.addBatch();
+            }
+
+            int[] results = pstmt.executeBatch();
+
+            int insertedCount = Arrays.stream(results).filter(result -> result > 0).sum();
+            LOGGER.debug("Bulk inserted [{}] ModfileEntity(ies)", insertedCount);
+            return insertedCount;
+        } catch (SQLException e) {
+            LOGGER.error("An error occurred during bulk insert of ModfileEntity(ies)", e);
             throw new DAOException(e);
         }
     }
