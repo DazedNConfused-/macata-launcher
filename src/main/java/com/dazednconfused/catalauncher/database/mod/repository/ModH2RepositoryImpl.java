@@ -65,15 +65,10 @@ public class ModH2RepositoryImpl extends MigrateableH2Database implements ModRep
     public int bulkInsert(Collection<ModEntity> entities) throws DAOException {
         LOGGER.debug("Bulk inserting [{}] ModEntity(ies)...", entities.size());
 
-        int insertedCount = 0;
-
-        for (ModEntity entity : entities) {
-            ModEntity insertedEntity = this.insert(entity);
-            if (insertedEntity != null) {
-                this.insertChildEntities(insertedEntity.getId(), entity.getModfiles());
-                insertedCount++;
-            }
-        }
+        int insertedCount = (int) entities.stream()
+            .map(this::insert)
+            .filter(Objects::nonNull)
+            .count();
 
         LOGGER.debug("Bulk inserted [{}] ModEntity(ies)", insertedCount);
 
@@ -141,7 +136,7 @@ public class ModH2RepositoryImpl extends MigrateableH2Database implements ModRep
     private List<ModfileEntity> insertChildEntities(long modId, List<ModfileEntity> entities) throws DAOException {
         LOGGER.debug("Inserting [{}] ModfileEntity(s) associated to modId [{}]", entities.size(), modId);
 
-        modfileDAO.bulkInsert(entities.stream()
+        this.modfileDAO.bulkInsert(entities.stream()
             .peek(e -> e.setModId(modId)) // set/overwrite with entity ID
             .collect(Collectors.toList())
         );

@@ -98,6 +98,46 @@ public class ModDAOTest {
     }
 
     @Test
+    void bulk_insert_success() {
+
+        // prepare mock data ---
+        ModEntity entity1 = ModEntity.builder()
+            .name("testName1")
+            .modinfo("testModinfo1")
+            .build();
+
+        ModEntity entity2 = ModEntity.builder()
+            .name("testName2")
+            .modinfo("testModinfo2")
+            .build();
+
+        ModEntity entity3 = ModEntity.builder()
+            .name("testName3")
+            .modinfo("testModinfo3")
+            .build();
+
+        // execute test ---
+        int result = dao.bulkInsert(List.of(entity1, entity2, entity3));
+
+        // verify assertions ---
+        assertThat(result).isEqualTo(3);
+
+        List<ModEntity> allEntities = dao.findAll();
+        assertThat(allEntities).hasSize(3);
+
+        assertThat(allEntities)
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "updatedDate")
+            .containsExactlyInAnyOrder(entity1, entity2, entity3);
+
+        for (ModEntity entity : allEntities) {
+            assertThat(entity.getId()).isNotZero();
+            assertThat(entity.getCreatedDate()).isNotNull();
+            assertThat(entity.getUpdatedDate()).isNotNull();
+            assertThat(entity.getCreatedDate()).isEqualTo(entity.getUpdatedDate());
+        }
+    }
+
+    @Test
     void find_by_id_success() {
 
         // prepare mock data ---

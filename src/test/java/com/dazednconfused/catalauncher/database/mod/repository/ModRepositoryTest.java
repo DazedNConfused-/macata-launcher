@@ -124,6 +124,72 @@ public class ModRepositoryTest {
     }
 
     @Test
+    void bulk_insert_success() {
+
+        // prepare mock data ---
+        ModEntity entity1 = ModEntity.builder()
+            .name("testName1")
+            .modinfo("testModinfo1")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder().path("testPath1_1").hash("testHash1_1").build(),
+                ModfileEntity.builder().path("testPath1_2").hash("testHash1_2").build(),
+                ModfileEntity.builder().path("testPath1_3").hash("testHash1_3").build()
+            ))
+            .build();
+
+        ModEntity entity2 = ModEntity.builder()
+            .name("testName2")
+            .modinfo("testModinfo2")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder().path("testPath2_1").hash("testHash2_1").build(),
+                ModfileEntity.builder().path("testPath2_2").hash("testHash2_2").build(),
+                ModfileEntity.builder().path("testPath2_3").hash("testHash2_3").build()
+            ))
+            .build();
+
+        ModEntity entity3 = ModEntity.builder()
+            .name("testName3")
+            .modinfo("testModinfo3")
+            .modfiles(Arrays.asList(
+                ModfileEntity.builder().path("testPath3_1").hash("testHash3_1").build(),
+                ModfileEntity.builder().path("testPath3_2").hash("testHash3_2").build(),
+                ModfileEntity.builder().path("testPath3_3").hash("testHash3_3").build()
+            ))
+            .build();
+
+        // execute test ---
+        int result = repository.bulkInsert(Arrays.asList(entity1, entity2, entity3));
+
+        // verify assertions ---
+        assertThat(result).isEqualTo(3);
+
+        List<ModEntity> allEntities = repository.findAll();
+        assertThat(allEntities).hasSize(3);
+
+        assertThat(allEntities)
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+                "id", "createdDate", "updatedDate",
+                "modfiles.id", "modfiles.createdDate", "modfiles.updatedDate"
+            )
+            .containsExactlyInAnyOrder(entity1, entity2, entity3);
+
+        for (ModEntity entity : allEntities) {
+            assertThat(entity.getId()).isNotZero();
+            assertThat(entity.getCreatedDate()).isNotNull();
+            assertThat(entity.getUpdatedDate()).isNotNull();
+            assertThat(entity.getCreatedDate()).isEqualTo(entity.getUpdatedDate());
+            assertThat(entity.getModfiles()).hasSize(3);
+
+            for (ModfileEntity modfile : entity.getModfiles()) {
+                assertThat(modfile.getModId()).isEqualTo(entity.getId());
+                assertThat(modfile.getCreatedDate()).isNotNull();
+                assertThat(modfile.getUpdatedDate()).isNotNull();
+                assertThat(modfile.getCreatedDate()).isEqualTo(modfile.getUpdatedDate());
+            }
+        }
+    }
+
+    @Test
     void find_by_id_success() {
 
         // prepare mock data ---
