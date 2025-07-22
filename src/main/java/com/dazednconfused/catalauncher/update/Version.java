@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
  * </ul>
  *
  * @see <a href="https://stackoverflow.com/a/11024200">https://stackoverflow.com/a/11024200</a>
- * */
+ *
+ */
 public class Version implements Comparable<Version> {
 
     private static final Pattern VERSION_PATTERN = Pattern.compile("^(?:prerelease-)?v?([0-9]+(\\.[0-9]+)*)(?:-(.+))?$");
@@ -23,7 +24,26 @@ public class Version implements Comparable<Version> {
     private final String preReleaseTag;
     private final boolean isPreRelease;
 
-   /**
+    /**
+     * Constructs a {@link Version} object from a version string.
+     *
+     * @param versionString the version string, e.g., "v1.2.3", "prerelease-v1.2.3-alpha", etc
+     * @throws IllegalArgumentException if the version string is null or does not match the expected format
+     */
+    public Version(String versionString) {
+        if (versionString == null) {
+            throw new IllegalArgumentException("Version cannot be null");
+        }
+        Matcher matcher = VERSION_PATTERN.matcher(versionString);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid version format");
+        }
+        this.isPreRelease = versionString.startsWith("prerelease-");
+        this.semver = matcher.group(1);
+        this.preReleaseTag = matcher.group(3);
+    }
+
+    /**
      * Returns the semantic version of the {@link Version}.
      *
      * @return The semantic version (ie: {@code 1.2.3})
@@ -48,26 +68,6 @@ public class Version implements Comparable<Version> {
      */
     public boolean isPreRelease() {
         return this.isPreRelease;
-    }
-
-    /**
-     * Constructs a {@link Version} object from a version string.
-     *
-     * @param versionString the version string, e.g., "v1.2.3", "prerelease-v1.2.3-alpha", etc
-     *
-     * @throws IllegalArgumentException if the version string is null or does not match the expected format
-     */
-    public Version(String versionString) {
-        if (versionString == null) {
-            throw new IllegalArgumentException("Version cannot be null");
-        }
-        Matcher matcher = VERSION_PATTERN.matcher(versionString);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid version format");
-        }
-        this.isPreRelease = versionString.startsWith("prerelease-");
-        this.semver = matcher.group(1);
-        this.preReleaseTag = matcher.group(3);
     }
 
     @Override
@@ -134,12 +134,15 @@ public class Version implements Comparable<Version> {
      * Returns the full version string.
      *
      * @return "v" followed by the semantic version if not a pre-release (ie: {@code v1.2.3}); or "prerelease-" followed
-     *         by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
+     * by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
      */
     @Override
     public String toString() {
-        if (isPreRelease && preReleaseTag != null) {
-            return "prerelease-" + semver + "-" + preReleaseTag;
+        if (isPreRelease) {
+            if (preReleaseTag != null) {
+                return "prerelease-" + semver + "-" + preReleaseTag;
+            }
+            return "prerelease-" + semver;
         }
         return "v" + this.semver;
     }

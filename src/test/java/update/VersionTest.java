@@ -162,7 +162,7 @@ class VersionTest {
     @Test
     void version_toString_returns_expected_for_prerelease_without_tag() {
         Version v = new Version("prerelease-1.2.3");
-        assertThat(v.toString()).isEqualTo("v1.2.3");
+        assertThat(v.toString()).isEqualTo("prerelease-1.2.3");
     }
 
 }
