@@ -23,41 +23,37 @@ public class Version implements Comparable<Version> {
     private final String preReleaseTag;
     private final boolean isPreRelease;
 
-    /**
-     * Returns the full version string.
+   /**
+     * Returns the semantic version of the {@link Version}.
      *
-     * @return "v" followed by the semantic version if not a pre-release (ie: {@code v1.2.3}); or "prerelease-" followed
-     *         by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
+     * @return The semantic version (ie: {@code 1.2.3})
      */
-    public String get() {
-        if (isPreRelease && preReleaseTag != null) {
-            return "prerelease-" + semver + "-" + preReleaseTag;
-        }
-        return "v" + this.semver;
+    public String getSemver() {
+        return this.semver;
     }
 
     /**
-     * Returns the pre-release tag of the version.
+     * Returns the pre-release tag of the {@link Version}.
      *
-     * @return The pre-release tag, or {@code null} if not a pre-release.
+     * @return The pre-release tag, or {@code null} if not a pre-release
      */
     public String getPreReleaseTag() {
         return this.preReleaseTag;
     }
 
     /**
-     * Checks if the version is a pre-release.
+     * Checks if the {@link Version} is a pre-release.
      *
-     * @return {@code true} if the version is a pre-release, {@code false} otherwise.
+     * @return {@code true} if the version is a pre-release, {@code false} otherwise
      */
     public boolean isPreRelease() {
         return this.isPreRelease;
     }
 
     /**
-     * Constructs a Version object from a version string.
+     * Constructs a {@link Version} object from a version string.
      *
-     * @param versionString the version string, e.g., "v1.2.3", "prerelease-v1.2.3-alpha", etc.
+     * @param versionString the version string, e.g., "v1.2.3", "prerelease-v1.2.3-alpha", etc
      *
      * @throws IllegalArgumentException if the version string is null or does not match the expected format
      */
@@ -134,11 +130,17 @@ public class Version implements Comparable<Version> {
         return Objects.hash(semver, preReleaseTag, isPreRelease);
     }
 
+    /**
+     * Returns the full version string.
+     *
+     * @return "v" followed by the semantic version if not a pre-release (ie: {@code v1.2.3}); or "prerelease-" followed
+     *         by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
+     */
     @Override
     public String toString() {
         if (isPreRelease && preReleaseTag != null) {
             return "prerelease-" + semver + "-" + preReleaseTag;
         }
-        return semver;
+        return "v" + this.semver;
     }
 }

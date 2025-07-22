@@ -57,7 +57,7 @@ public class UpdateManager {
     public static void openReleaseInDefaultBrowser(Version tag) {
         LOGGER.info("Opening [{}]'s release's homepage using default browser...", tag);
 
-        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.get()))
+        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.toString()))
             .onFailure(t -> LOGGER.error("There was an error opening the latest release tagged [{}] in remote repository [{}/{}]", tag, GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t));
     }
 
