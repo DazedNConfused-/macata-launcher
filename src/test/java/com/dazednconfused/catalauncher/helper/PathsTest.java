@@ -159,6 +159,22 @@ class PathsTest {
     }
 
     @Test
+    void get_custom_trashed_soundpacks_path_success() {
+        try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
+
+            // prepare mock data ---
+            mockedSystem.when(Application::getRootFolder).thenReturn(MOCKED_APPLICATION_ROOT);
+
+            // execute test ---
+            Path result = Paths.getCustomTrashedSoundpacksPath();
+
+            // verify assertions ---
+            assertThat(result).isEqualTo(Paths.getCustomTrashedPath().resolve("sound"));
+            assertThat(result.toString()).isEqualTo(MOCKED_APPLICATION_ROOT + "/trashed/sound");
+        }
+    }
+
+    @Test
     void get_custom_mods_dir_success() {
         try (MockedStatic<Application> mockedSystem = mockStatic(Application.class)) {
 

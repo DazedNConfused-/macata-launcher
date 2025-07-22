@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.dazednconfused.catalauncher.database.base.DisposableDatabase;
-import com.dazednconfused.catalauncher.database.h2.H2Database;
 import com.dazednconfused.catalauncher.database.mod.entity.ModEntity;
 import com.dazednconfused.catalauncher.database.mod.entity.ModfileEntity;
 
@@ -122,6 +121,49 @@ public class ModfileDAOTest {
         assertThat(result.getUpdatedDate()).isNotNull();
 
         assertThat(result.getCreatedDate()).isEqualTo(result.getUpdatedDate());
+    }
+
+    @Test
+    void bulk_insert_success() {
+
+        // prepare mock data ---
+        ModfileEntity entity1 = ModfileEntity.builder()
+            .modId(parentModId)
+            .path("testPath1")
+            .hash("testHash1")
+            .build();
+
+        ModfileEntity entity2 = ModfileEntity.builder()
+            .modId(parentModId)
+            .path("testPath2")
+            .hash("testHash2")
+            .build();
+
+        ModfileEntity entity3 = ModfileEntity.builder()
+            .modId(parentModId)
+            .path("testPath3")
+            .hash("testHash3")
+            .build();
+
+        // execute test ---
+        int result = dao.bulkInsert(List.of(entity1, entity2, entity3));
+
+        // verify assertions ---
+        assertThat(result).isEqualTo(3);
+
+        List<ModfileEntity> allEntities = dao.findAll();
+        assertThat(allEntities).hasSize(3);
+
+        assertThat(allEntities)
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "updatedDate")
+            .containsExactlyInAnyOrder(entity1, entity2, entity3);
+
+        for (ModfileEntity entity : allEntities) {
+            assertThat(entity.getId()).isNotZero();
+            assertThat(entity.getCreatedDate()).isNotNull();
+            assertThat(entity.getUpdatedDate()).isNotNull();
+            assertThat(entity.getCreatedDate()).isEqualTo(entity.getUpdatedDate());
+        }
     }
 
     @Test

@@ -219,4 +219,10 @@
         </module>
         <module name="UnusedImports"/>
     </module>
+
+    <module name="RegexpMultiline">
+        <property name="format" value="(\n\s*){3,}"/>
+        <property name="message" value="Too many consecutive blank lines."/>
+        <property name="severity" value="error"/>
+    </module>
 </module>

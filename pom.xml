@@ -6,16 +6,17 @@
 
     <groupId>com.dazednconfused</groupId>
     <artifactId>macatalauncher</artifactId>
-    <version>0.3.3</version>
+    <version>0.4.0</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <sonar.organization>dazednconfused</sonar.organization>
+        <sonar.organization>dazednconfused</sonar.organization> <!-- should match .github/workflows/sonarcloud.yml -->
+        <sonar.projectKey>dazednconfused_macata-launcher</sonar.projectKey> <!-- ^ditto -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.cpd.exclusions>**/MainWindow.java</sonar.cpd.exclusions>
+        <sonar.cpd.exclusions>**/gui/**</sonar.cpd.exclusions>
     </properties>
 
     <profiles>
@@ -102,16 +103,11 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <version>3.3.0</version>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <version>0.0.8</version>
                         <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <mainClass>com.dazednconfused.catalauncher.Application</mainClass>
-                                </manifest>
-                            </archive>
+                            <mainClass>com.dazednconfused.catalauncher.Application</mainClass>
                         </configuration>
                     </plugin>
 
@@ -246,6 +242,24 @@
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
             <version>3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>li.flor</groupId>
+            <artifactId>native-j-file-chooser</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>19.0.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>19.0.2.1</version>
         </dependency>
 
         <dependency>

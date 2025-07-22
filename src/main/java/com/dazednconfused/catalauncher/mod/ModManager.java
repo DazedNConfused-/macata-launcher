@@ -11,6 +11,8 @@ import com.dazednconfused.catalauncher.mod.dto.ModDTO;
 import com.dazednconfused.catalauncher.mod.dto.ModfileDTO;
 import com.dazednconfused.catalauncher.mod.mapper.ModMapper;
 
+import com.dazednconfused.catalauncher.utils.CustomTimeUtils;
+
 import io.vavr.control.Try;
 
 import java.io.BufferedReader;
@@ -18,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -213,11 +214,17 @@ public class ModManager {
 
             File trashedModDir = new File(Path.of(
                 trashedModsDir.getPath(),
-                getYyyyMmDdHhMmSsTimestamp(),
+                CustomTimeUtils.getYyyyMmDdHhMmSsTimestamp(),
                 toBeUninstalled.getName()
             ).toString());
 
             File toBeTrashed = Paths.getCustomModsDir().resolve(toBeUninstalled.getName()).toFile();
+
+            if (!toBeTrashed.exists()) {
+                throw new IllegalArgumentException(String.format(
+                    "Mod to be uninstalled does not exist! Aborting trashing operation for [%s].", toBeTrashed
+                ));
+            }
 
             LOGGER.debug("Trashing mod [{}] into [{}]...", toBeTrashed, trashedModDir);
 
@@ -364,12 +371,5 @@ public class ModManager {
         } else {
             throw new IOException("Expected folder not found: " + specificFolderPath);
         }
-    }
-
-    /**
-     * Generates a timestamp based on current's {@link java.util.Date}.
-     * */
-    private static String getYyyyMmDdHhMmSsTimestamp() {
-        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
     }
 }

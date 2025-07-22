@@ -1,6 +1,7 @@
 package update;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.dazednconfused.catalauncher.update.Version;
 
@@ -56,8 +57,8 @@ class VersionTest {
         versions.add(new Version("1.01.0"));
         versions.add(new Version("1.00.1"));
 
-        assertThat(Collections.min(versions).get()).isEqualTo("1.00.1");
-        assertThat(Collections.max(versions).get()).isEqualTo("2");
+        assertThat(Collections.min(versions).getSemver()).isEqualTo("1.00.1");
+        assertThat(Collections.max(versions).getSemver()).isEqualTo("2");
     }
 
     @Test
@@ -75,4 +76,93 @@ class VersionTest {
 
         assertThat(a.equals(b)).isTrue();
     }
+
+    @Test
+    void version_with_prerelease_is_lower_than_release() {
+        Version prerelease = new Version("prerelease-1.0.0-alpha");
+        Version release = new Version("1.0.0");
+
+        assertThat(prerelease.compareTo(release)).isEqualTo(-1); // (prerelease < release)
+        assertThat(prerelease).isNotEqualTo(release);
+    }
+
+    @Test
+    void version_with_prerelease_tags_are_compared_lexicographically() {
+        Version alpha = new Version("prerelease-1.0.0-alpha");
+        Version beta = new Version("prerelease-1.0.0-beta");
+
+        assertThat(alpha.compareTo(beta)).isEqualTo(-1); // (alpha < beta)
+        assertThat(alpha).isNotEqualTo(beta);
+    }
+
+    @Test
+    void version_with_prerelease_and_no_tag_is_lower_than_with_tag() {
+        Version noTag = new Version("prerelease-1.0.0");
+        Version withTag = new Version("prerelease-1.0.0-alpha");
+
+        assertThat(noTag.compareTo(withTag)).isEqualTo(-1); // (noTag < withTag)
+        assertThat(noTag).isNotEqualTo(withTag);
+    }
+
+    @Test
+    void version_with_invalid_format_throws_exception() {
+        assertThatThrownBy(() -> new Version("invalid-version"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Invalid version format");
+    }
+
+    @Test
+    void version_with_null_string_throws_exception() {
+        assertThatThrownBy(() -> new Version(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Version cannot be null");
+    }
+
+    @Test
+    void version_with_extra_zeroes_in_prerelease_tag_is_not_equal() {
+        Version a = new Version("prerelease-1.0.0-alpha");
+        Version b = new Version("prerelease-1.0.0-alpha.0");
+
+        assertThat(a).isNotEqualTo(b);
+    }
+
+    @Test
+    void version_with_prerelease_and_same_base_version_is_equal() {
+        Version a = new Version("prerelease-1.0.0");
+        Version b = new Version("prerelease-1.0.0");
+
+        assertThat(a.compareTo(b)).isEqualTo(0); // (a == b)
+        assertThat(a.equals(b)).isTrue();
+    }
+
+    @Test
+    void version_toString_returns_expected_for_release() {
+        Version v = new Version("1.2.3");
+        assertThat(v.toString()).hasToString("v1.2.3");
+    }
+
+    @Test
+    void version_toString_returns_expected_for_release_with_v_prefix() {
+        Version v = new Version("v2.0.1");
+        assertThat(v.toString()).hasToString("v2.0.1");
+    }
+
+    @Test
+    void version_toString_returns_expected_for_prerelease_with_tag() {
+        Version v = new Version("prerelease-1.2.3-alpha");
+        assertThat(v.toString()).hasToString("prerelease-1.2.3-alpha");
+    }
+
+    @Test
+    void version_toString_returns_expected_for_prerelease_with_complex_tag() {
+        Version v = new Version("prerelease-1.2.3-20240601_123456");
+        assertThat(v.toString()).hasToString("prerelease-1.2.3-20240601_123456");
+    }
+
+    @Test
+    void version_toString_returns_expected_for_prerelease_without_tag() {
+        Version v = new Version("prerelease-1.2.3");
+        assertThat(v.toString()).hasToString("prerelease-1.2.3");
+    }
+
 }

@@ -20,12 +20,15 @@ else
     export ${K_LIBRARY_PATH}=. ${K_FRAMEWORK_PATH}=.
 fi
 
-# check if 'cataclysm-tiles' or 'cataclysm-bn-tiles' exists, and run the appropriate one
-if [[ -f ./cataclysm-tiles ]]; then
-    EXECUTABLE="./cataclysm-tiles"
-elif [[ -f ./cataclysm-bn-tiles ]]; then
-    EXECUTABLE="./cataclysm-bn-tiles"
-else
+# find the first matching executable that starts with "cataclysm-" and is executable
+for candidate in ./cataclysm-*; do
+    if [[ -x "$candidate" && ! -d "$candidate" ]]; then
+        EXECUTABLE="$candidate"
+        break
+    fi
+done
+
+if [[ -z "$EXECUTABLE" ]]; then
     echo "No valid executable found!"
     exit 1
 fi

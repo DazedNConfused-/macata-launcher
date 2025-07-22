@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,6 +27,11 @@ public interface BaseDAO<T extends BaseEntity> {
      * Inserts the given {@link BaseEntity} into the table.
      * */
     T insert(T t) throws DAOException;
+
+    /**
+     * Inserts the given {@link BaseEntity}(ies) into the table.
+     * */
+    int bulkInsert(Collection<T> t) throws DAOException;
 
     /**
      * Updates the given {@link BaseEntity}. It must have an ID set.

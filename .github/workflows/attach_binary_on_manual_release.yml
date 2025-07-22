@@ -1,4 +1,4 @@
-name: Attach binary to release
+name: Attach binary on manual release
 
 on:
   release:

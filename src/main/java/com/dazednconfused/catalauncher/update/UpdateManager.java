@@ -55,9 +55,9 @@ public class UpdateManager {
      * Opens the webpage for the given binary release in the official remote repository.
      * */
     public static void openReleaseInDefaultBrowser(Version tag) {
-        LOGGER.info("Opening v[{}]'s release's homepage using default browser...", tag);
+        LOGGER.info("Opening [{}]'s release's homepage using default browser...", tag);
 
-        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.get()))
+        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.toString()))
             .onFailure(t -> LOGGER.error("There was an error opening the latest release tagged [{}] in remote repository [{}/{}]", tag, GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t));
     }
 
@@ -67,7 +67,7 @@ public class UpdateManager {
     public static Optional<Version> getLatestReleaseTag() {
         LOGGER.info("Querying latest release's tag from internet repository...");
 
-        return Try.of(() -> getLatestReleaseTagFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME))
+        return Try.of(() -> getLatestReleaseTagFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, true))
             .map(Version::new)
             .onFailure(t -> LOGGER.error("There was an error retrieving the latest release from remote repository [{}/{}]", GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t))
             .toJavaOptional();
@@ -75,8 +75,12 @@ public class UpdateManager {
 
     /**
      * Queries the remote GitHub repository in search for the latest release for the given {@code owner}/{@code repo} combination.
+     *
+     * @param owner the owner of the GitHub repository
+     * @param repo the name of the GitHub repository
+     * @param includePreReleases whether to include pre-releases in the search
      * */
-    private static String getLatestReleaseTagFromGithub(String owner, String repo) throws IOException {
+    private static String getLatestReleaseTagFromGithub(String owner, String repo, boolean includePreReleases) throws IOException {
         String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
 
         URL url = new URL(apiUrl);
@@ -94,9 +98,37 @@ public class UpdateManager {
 
         connection.disconnect();
 
-        // Parse JSON response to get the latest release name (including pre-releases)
+        // parse JSON response to get the latest release name
         String jsonResponse = response.toString();
-        return jsonResponse.split("\"tag_name\":\"")[1].split("\",")[0];
+
+        // use a simple JSON parser to find the first release matching the flag
+        int idx = 0;
+        while (true) {
+            int tagIdx = jsonResponse.indexOf("\"tag_name\":\"", idx);
+            if (tagIdx == -1) {
+                break;
+            }
+            int tagStart = tagIdx + "\"tag_name\":\"".length();
+            int tagEnd = jsonResponse.indexOf("\"", tagStart);
+            String tagName = jsonResponse.substring(tagStart, tagEnd);
+
+            int prereleaseIdx = jsonResponse.indexOf("\"prerelease\":", tagEnd);
+            if (prereleaseIdx == -1) {
+                break;
+            }
+            int prereleaseValueStart = prereleaseIdx + "\"prerelease\":".length();
+            int prereleaseValueEnd = jsonResponse.indexOf(",", prereleaseValueStart);
+            String prereleaseValue = jsonResponse.substring(prereleaseValueStart, prereleaseValueEnd).trim();
+
+            boolean isPreRelease = prereleaseValue.equals("true");
+            if (includePreReleases || !isPreRelease) {
+                return tagName;
+            }
+            idx = tagEnd;
+        }
+
+        // if no suitable release was found, throw an exception
+        throw new IOException("No suitable release found");
     }
 
     /**
@@ -104,7 +136,7 @@ public class UpdateManager {
      * combination.
      * */
     private static void openGithubReleaseInDefaultBrowser(String owner, String repo, String tag) throws IOException {
-        String latestReleaseUrl = String.format("https://github.com/%s/%s/releases/tag/v%s", owner, repo, tag);
+        String latestReleaseUrl = String.format("https://github.com/%s/%s/releases/tag/%s", owner, repo, tag);
 
         Desktop desktop = Desktop.getDesktop();
         if (desktop.isSupported(Desktop.Action.BROWSE)) {
