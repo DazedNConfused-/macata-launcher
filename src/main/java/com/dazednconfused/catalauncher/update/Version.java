@@ -134,7 +134,7 @@ public class Version implements Comparable<Version> {
      * Returns the full version string.
      *
      * @return "v" followed by the semantic version if not a pre-release (ie: {@code v1.2.3}); or "prerelease-" followed
-     * by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
+     *         by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
      */
     @Override
     public String toString() {
