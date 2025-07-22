@@ -4,6 +4,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @see <a href="https://stackoverflow.com/a/11024200">https://stackoverflow.com/a/11024200</a>
+ * */
 public class Version implements Comparable<Version> {
 
     private static final Pattern VERSION_PATTERN =
