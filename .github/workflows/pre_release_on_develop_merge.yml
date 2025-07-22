@@ -33,14 +33,18 @@ jobs:
         id: extract_version
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
+      - name: Generate Timestamp
+        id: gen_timestamp
+        run: echo "timestamp=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+
       - name: Create Pre-release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: prerelease-${{ steps.extract_version.outputs.version }}-${{ github.run_number }}
-          release_name: Pre-release ${{ steps.extract_version.outputs.version }} (build ${{ github.run_number }})
+          tag_name: prerelease-${{ steps.extract_version.outputs.version }}-${{ steps.gen_timestamp.outputs.timestamp }}
+          release_name: Pre-release ${{ steps.extract_version.outputs.version }} (${{ steps.gen_timestamp.outputs.timestamp }})
           draft: false
           prerelease: true
 
@@ -51,5 +55,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./target/macatalauncher-${{ steps.extract_version.outputs.version }}.jar
-          asset_name: macatalauncher-${{ steps.extract_version.outputs.version }}.jar
+          asset_name: macatalauncher-${{ steps.extract_version.outputs.version }}-${{ steps.gen_timestamp.outputs.timestamp }}.jar
           asset_content_type: application/java-archive
