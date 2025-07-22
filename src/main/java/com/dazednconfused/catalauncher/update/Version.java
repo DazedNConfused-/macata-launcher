@@ -9,8 +9,7 @@ import java.util.regex.Pattern;
  * */
 public class Version implements Comparable<Version> {
 
-    private static final Pattern VERSION_PATTERN =
-        Pattern.compile("^(?:prerelease-)?v?([0-9]+(\\.[0-9]+)*)(?:-(.+))?$");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^(?:prerelease-)?v?([0-9]+(\\.[0-9]+)*)(?:-(.+))?$");
 
     private final String semver;
     private final String preReleaseTag;
@@ -28,6 +27,13 @@ public class Version implements Comparable<Version> {
         return this.isPreRelease;
     }
 
+    /**
+     * Constructs a Version object from a version string.
+     *
+     * @param versionString the version string, e.g., "v1.2.3", "prerelease-v1.2.3-alpha", etc.
+     *
+     * @throws IllegalArgumentException if the version string is null or does not match the expected format
+     */
     public Version(String versionString) {
         if (versionString == null) {
             throw new IllegalArgumentException("Version cannot be null");
