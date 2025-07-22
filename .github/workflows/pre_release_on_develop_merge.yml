@@ -1,25 +1,21 @@
 name: Pre-release on develop merge
 
 on:
-  workflow_run:
-    workflows: ["Java build & test"]
-    types:
-      - completed
+  push:
+    branches:
+      - develop
 
 jobs:
-  build-and-release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up JDK 18
         uses: actions/setup-java@v3
         with:
           java-version: '18'
           distribution: 'adopt'
           cache: maven
-
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -27,18 +23,35 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Build and Test with Maven
+        run: mvn verify
 
+  build-and-release:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 18
+        uses: actions/setup-java@v3
+        with:
+          java-version: '18'
+          distribution: 'adopt'
+          cache: maven
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Build with Maven
         run: mvn package
-
       - name: Extract Version from POM
         id: extract_version
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-
       - name: Generate Timestamp
         id: gen_timestamp
         run: echo "timestamp=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
-
       - name: Create Pre-release
         id: create_release
         uses: actions/create-release@v1
@@ -49,7 +62,6 @@ jobs:
           release_name: Pre-release ${{ steps.extract_version.outputs.version }} (${{ steps.gen_timestamp.outputs.timestamp }})
           draft: false
           prerelease: true
-
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
