@@ -16,7 +16,10 @@ public class Version implements Comparable<Version> {
     private final boolean isPreRelease;
 
     public String get() {
-        return this.semver;
+        if (isPreRelease && preReleaseTag != null) {
+            return "prerelease-" + semver + "-" + preReleaseTag;
+        }
+        return "v" + this.semver;
     }
 
     public String getPreReleaseTag() {
