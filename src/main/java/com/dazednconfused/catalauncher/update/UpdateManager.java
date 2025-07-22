@@ -67,7 +67,7 @@ public class UpdateManager {
     public static Optional<Version> getLatestReleaseTag() {
         LOGGER.info("Querying latest release's tag from internet repository...");
 
-        return Try.of(() -> getLatestReleaseTagFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, false))
+        return Try.of(() -> getLatestReleaseTagFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, true))
             .map(Version::new)
             .onFailure(t -> LOGGER.error("There was an error retrieving the latest release from remote repository [{}/{}]", GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t))
             .toJavaOptional();
