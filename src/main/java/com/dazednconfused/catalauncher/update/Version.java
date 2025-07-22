@@ -5,6 +5,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Represents a version with optional pre-release information. This class supports semantic versioning and pre-release tags.
+ * <br/><br/>
+ * Examples of valid version strings:
+ * <ul>
+ *     <li>{@code v1.2.3}</li>
+ *     <li>{@code prerelease-1.2.3-YYYYmmDD_HHmmSS}</li>
+ * </ul>
+ *
  * @see <a href="https://stackoverflow.com/a/11024200">https://stackoverflow.com/a/11024200</a>
  * */
 public class Version implements Comparable<Version> {
@@ -15,6 +23,12 @@ public class Version implements Comparable<Version> {
     private final String preReleaseTag;
     private final boolean isPreRelease;
 
+    /**
+     * Returns the full version string.
+     *
+     * @return "v" followed by the semantic version if not a pre-release (ie: {@code v1.2.3}); or "prerelease-" followed
+     *         by the semantic version and pre-release tag if it is a pre-release (ie: {@code prerelease-1.2.3-YYYYmmDD_HHmmSS}).
+     */
     public String get() {
         if (isPreRelease && preReleaseTag != null) {
             return "prerelease-" + semver + "-" + preReleaseTag;
@@ -22,10 +36,20 @@ public class Version implements Comparable<Version> {
         return "v" + this.semver;
     }
 
+    /**
+     * Returns the pre-release tag of the version.
+     *
+     * @return The pre-release tag, or {@code null} if not a pre-release.
+     */
     public String getPreReleaseTag() {
         return this.preReleaseTag;
     }
 
+    /**
+     * Checks if the version is a pre-release.
+     *
+     * @return {@code true} if the version is a pre-release, {@code false} otherwise.
+     */
     public boolean isPreRelease() {
         return this.isPreRelease;
     }
