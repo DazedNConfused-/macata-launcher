@@ -1,12 +1,14 @@
 name: Pre-release on develop merge
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: ["Java build & test"]
+    types:
+      - completed
 
 jobs:
   build-and-release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
