@@ -55,9 +55,9 @@ public class UpdateManager {
      * Opens the webpage for the given binary release in the official remote repository.
      * */
     public static void openReleaseInDefaultBrowser(Version tag) {
-        LOGGER.info("Opening v[{}]'s release's homepage using default browser...", tag);
+        LOGGER.info("Opening [{}]'s release's homepage using default browser...", tag);
 
-        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.get()))
+        Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.toString()))
             .onFailure(t -> LOGGER.error("There was an error opening the latest release tagged [{}] in remote repository [{}/{}]", tag, GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t));
     }
 
@@ -136,7 +136,7 @@ public class UpdateManager {
      * combination.
      * */
     private static void openGithubReleaseInDefaultBrowser(String owner, String repo, String tag) throws IOException {
-        String latestReleaseUrl = String.format("https://github.com/%s/%s/releases/tag/v%s", owner, repo, tag);
+        String latestReleaseUrl = String.format("https://github.com/%s/%s/releases/tag/%s", owner, repo, tag);
 
         Desktop desktop = Desktop.getDesktop();
         if (desktop.isSupported(Desktop.Action.BROWSE)) {
