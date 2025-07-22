@@ -83,7 +83,7 @@ class VersionTest {
         Version release = new Version("1.0.0");
 
         assertThat(prerelease.compareTo(release)).isEqualTo(-1); // (prerelease < release)
-        assertThat(prerelease.equals(release)).isFalse();
+        assertThat(prerelease).isNotEqualTo(release);
     }
 
     @Test
@@ -92,7 +92,7 @@ class VersionTest {
         Version beta = new Version("prerelease-1.0.0-beta");
 
         assertThat(alpha.compareTo(beta)).isEqualTo(-1); // (alpha < beta)
-        assertThat(alpha.equals(beta)).isFalse();
+        assertThat(alpha).isNotEqualTo(beta);
     }
 
     @Test
@@ -101,7 +101,7 @@ class VersionTest {
         Version withTag = new Version("prerelease-1.0.0-alpha");
 
         assertThat(noTag.compareTo(withTag)).isEqualTo(-1); // (noTag < withTag)
-        assertThat(noTag.equals(withTag)).isFalse();
+        assertThat(noTag).isNotEqualTo(withTag);
     }
 
     @Test
@@ -123,7 +123,7 @@ class VersionTest {
         Version a = new Version("prerelease-1.0.0-alpha");
         Version b = new Version("prerelease-1.0.0-alpha.0");
 
-        assertThat(a.equals(b)).isFalse();
+        assertThat(a).isNotEqualTo(b);
     }
 
     @Test
@@ -138,31 +138,31 @@ class VersionTest {
     @Test
     void version_toString_returns_expected_for_release() {
         Version v = new Version("1.2.3");
-        assertThat(v.toString()).isEqualTo("v1.2.3");
+        assertThat(v.toString()).hasToString("v1.2.3");
     }
 
     @Test
     void version_toString_returns_expected_for_release_with_v_prefix() {
         Version v = new Version("v2.0.1");
-        assertThat(v.toString()).isEqualTo("v2.0.1");
+        assertThat(v.toString()).hasToString("v2.0.1");
     }
 
     @Test
     void version_toString_returns_expected_for_prerelease_with_tag() {
         Version v = new Version("prerelease-1.2.3-alpha");
-        assertThat(v.toString()).isEqualTo("prerelease-1.2.3-alpha");
+        assertThat(v.toString()).hasToString("prerelease-1.2.3-alpha");
     }
 
     @Test
     void version_toString_returns_expected_for_prerelease_with_complex_tag() {
         Version v = new Version("prerelease-1.2.3-20240601_123456");
-        assertThat(v.toString()).isEqualTo("prerelease-1.2.3-20240601_123456");
+        assertThat(v.toString()).hasToString("prerelease-1.2.3-20240601_123456");
     }
 
     @Test
     void version_toString_returns_expected_for_prerelease_without_tag() {
         Version v = new Version("prerelease-1.2.3");
-        assertThat(v.toString()).isEqualTo("prerelease-1.2.3");
+        assertThat(v.toString()).hasToString("prerelease-1.2.3");
     }
 
 }

@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class Version implements Comparable<Version> {
 
     private static final Pattern VERSION_PATTERN = Pattern.compile("^(?:prerelease-)?v?([0-9]+(\\.[0-9]+)*)(?:-(.+))?$");
+    private static final String PRERELEASE_PREFIX = "prerelease-";
 
     private final String semver;
     private final String preReleaseTag;
@@ -38,7 +39,7 @@ public class Version implements Comparable<Version> {
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Invalid version format");
         }
-        this.isPreRelease = versionString.startsWith("prerelease-");
+        this.isPreRelease = versionString.startsWith(PRERELEASE_PREFIX);
         this.semver = matcher.group(1);
         this.preReleaseTag = matcher.group(3);
     }
@@ -140,9 +141,9 @@ public class Version implements Comparable<Version> {
     public String toString() {
         if (isPreRelease) {
             if (preReleaseTag != null) {
-                return "prerelease-" + semver + "-" + preReleaseTag;
+                return PRERELEASE_PREFIX + semver + "-" + preReleaseTag;
             }
-            return "prerelease-" + semver;
+            return PRERELEASE_PREFIX + semver;
         }
         return "v" + this.semver;
     }
