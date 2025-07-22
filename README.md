@@ -66,7 +66,8 @@ While not mandatory, if commits are not properly formatted, they may get rejecte
 - [x] Soundpack management
 - [x] Launcher autoupdater
 - [x] Mod management
-- [x] Bright Nights support
+- [x] [Bright Nights](https://github.com/cataclysmbnteam/Cataclysm-BN) support
+- [x] [The Last Generation](https://github.com/Cataclysm-TLG/Cataclysm-TLG) support
 
 ### Planned
 
