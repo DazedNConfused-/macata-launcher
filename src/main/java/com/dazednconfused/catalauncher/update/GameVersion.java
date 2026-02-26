@@ -33,25 +33,33 @@ public class GameVersion implements Comparable<GameVersion> {
      */
     private static final Pattern DATE_PATTERN = Pattern.compile("^(?:cdda-experimental-)?(\\d{4})-(\\d{2})-(\\d{2})-(\\d+)$");
 
+    /**
+     * Enum representing the type of version.
+     * <ul>
+     *     <li>{@code STABLE}: Stable release versions</li>
+     *     <li>{@code EXPERIMENTAL}: Experimental or date-based versions</li>
+     *     <li>{@code GENERIC}: Generic versions that do not match the other patterns</li>
+     * </ul>
+     */
     private enum VersionType {
         STABLE,
         EXPERIMENTAL,
         GENERIC
     }
 
-    private final String originalVersion;
-    private final VersionType type;
+    private final String originalVersion; // the original version string provided
+    private final VersionType type; // the type of the version (STABLE, EXPERIMENTAL, GENERIC)
 
-    // Stable version components
-    private int stableMajor;
-    private char stableMinor;
-    private int stablePatch;
+    // stable version components
+    private int stableMajor; // major version number for stable releases
+    private char stableMinor; // minor version letter for stable releases
+    private int stablePatch; // patch number for stable releases (optional)
 
-    // Experimental version components
-    private int expYear;
-    private int expMonth;
-    private int expDay;
-    private int expBuild;
+    // experimental version components
+    private int expYear; // year component for experimental versions
+    private int expMonth; // month component for experimental versions
+    private int expDay; // day component for experimental versions
+    private int expBuild; // build number for experimental versions
 
     /**
      * Constructs a {@link GameVersion} object from a version string.
@@ -118,6 +126,20 @@ public class GameVersion implements Comparable<GameVersion> {
         return type == VersionType.EXPERIMENTAL;
     }
 
+    /**
+     * Compares this {@link GameVersion} with another {@link GameVersion}.
+     *
+     * <p>Comparison rules:
+     * <ul>
+     *     <li>Stable versions are compared by major, minor, and patch numbers.</li>
+     *     <li>Experimental versions are compared by year, month, day, and build number.</li>
+     *     <li>Generic versions are compared lexicographically by their original strings.</li>
+     *     <li>Experimental versions are always considered newer than stable versions.</li>
+     * </ul>
+     *
+     * @param that the other {@link GameVersion} to compare to
+     * @return a negative integer, zero, or a positive integer as this version is less than, equal to, or greater than the specified version
+     */
     @Override
     public int compareTo(GameVersion that) {
         if (that == null) {
@@ -132,6 +154,7 @@ public class GameVersion implements Comparable<GameVersion> {
                 case EXPERIMENTAL:
                     return compareExperimental(that);
                 case GENERIC:
+                default:
                     return this.originalVersion.compareTo(that.originalVersion);
             }
         }
@@ -149,41 +172,63 @@ public class GameVersion implements Comparable<GameVersion> {
         return this.originalVersion.compareTo(that.originalVersion);
     }
 
+    /**
+     * Compares two stable versions.
+     *
+     * @param that the other {@link GameVersion} to compare to
+     * @return a negative integer, zero, or a positive integer as this stable version is less than, equal to, or greater than
+     *         the specified stable version
+     */
     private int compareStable(GameVersion that) {
-        // Compare major version
+        // compare major version
         if (this.stableMajor != that.stableMajor) {
             return Integer.compare(this.stableMajor, that.stableMajor);
         }
 
-        // Compare minor version (letter - A < B < C < ... < Z)
+        // compare minor version (letter - A < B < C < ... < Z)
         if (this.stableMinor != that.stableMinor) {
             return Character.compare(this.stableMinor, that.stableMinor);
         }
 
-        // Compare patch version
+        // compare patch version
         return Integer.compare(this.stablePatch, that.stablePatch);
     }
 
+    /**
+     * Compares two experimental versions.
+     *
+     * @param that the other {@link GameVersion} to compare to
+     * @return a negative integer, zero, or a positive integer as this experimental version is less than, equal to, or greater
+     *         than the specified experimental version
+     */
     private int compareExperimental(GameVersion that) {
-        // Compare year
+        // compare year
         if (this.expYear != that.expYear) {
             return Integer.compare(this.expYear, that.expYear);
         }
 
-        // Compare month
+        // compare month
         if (this.expMonth != that.expMonth) {
             return Integer.compare(this.expMonth, that.expMonth);
         }
 
-        // Compare day
+        // compare day
         if (this.expDay != that.expDay) {
             return Integer.compare(this.expDay, that.expDay);
         }
 
-        // Compare build number
+        // compare build number
         return Integer.compare(this.expBuild, that.expBuild);
     }
 
+    /**
+     * Checks if this {@link GameVersion} is equal to another object.
+     *
+     * <p>Two {@link GameVersion} objects are considered equal if their comparison result is zero.
+     *
+     * @param that the object to compare to
+     * @return {@code true} if the objects are equal, {@code false} otherwise
+     */
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -195,11 +240,21 @@ public class GameVersion implements Comparable<GameVersion> {
         return this.compareTo((GameVersion) that) == 0;
     }
 
+    /**
+     * Returns the hash code for this {@link GameVersion}.
+     *
+     * @return the hash code
+     */
     @Override
     public int hashCode() {
         return Objects.hash(originalVersion);
     }
 
+    /**
+     * Returns the string representation of this {@link GameVersion}.
+     *
+     * @return the original version string
+     */
     @Override
     public String toString() {
         return originalVersion;

@@ -171,27 +171,8 @@ public class LauncherMenuBar {
                 return;
             }
 
-            LOGGER.info("Checking for game updates...");
-            GameUpdateManager.isGameUpdateAvailable().ifPresentOrElse(
-                updateAvailable -> {
-                    if (updateAvailable) {
-                        new ConfirmDialog(
-                            "A new game version is available! Open the releases page?",
-                            ConfirmDialog.ConfirmDialogType.INFO,
-                            confirmed -> {
-                                if (confirmed) {
-                                    GameUpdateManager.openLatestGameReleaseInDefaultBrowser();
-                                }
-                            }
-                        ).packCenterAndShow(parent);
-                    } else {
-                        new ConfirmDialog("Your game is up to date!").packCenterAndShow(parent);
-                    }
-                },
-                () -> new ConfirmDialog(
-                    "Could not check for updates. Please verify your configuration."
-                ).packCenterAndShow(parent)
-            );
+            // use the new dialog that offers download option ---
+            GameUpdateAvailableDialog.checkAndShow(parent, true);
         };
     }
 

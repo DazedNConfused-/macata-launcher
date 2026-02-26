@@ -139,6 +139,28 @@ public class Paths {
     }
 
     /**
+     * Retrieves the {@link Application}'s custom path for trashed game binaries.
+     *
+     * <pre> {@code
+     *  getLauncherRootFolder() + "/trashed/game"
+     * }</pre>
+     * */
+    public static Path getCustomTrashedGamePath() {
+        return getCustomTrashedPath().resolve("game");
+    }
+
+    /**
+     * Retrieves the {@link Application}'s temporary download directory.
+     *
+     * <pre> {@code
+     *  getLauncherRootFolder() + "/.macatalauncher/downloads"
+     * }</pre>
+     * */
+    public static Path getDownloadsPath() {
+        return getLauncherFiles().resolve("downloads");
+    }
+
+    /**
      * Retrieves the {@link Application}'s database(s) directory.
      *
      * <pre> {@code

@@ -4,13 +4,13 @@ import static com.dazednconfused.catalauncher.helper.Constants.APP_NAME;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.gui.listener.ExecutableLauncherActions;
-import com.dazednconfused.catalauncher.update.GameUpdateManager;
 import com.dazednconfused.catalauncher.gui.listener.ModActions;
 import com.dazednconfused.catalauncher.gui.listener.SaveBackupActions;
 import com.dazednconfused.catalauncher.gui.listener.SoundpackActions;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.helper.sysinfo.SystemInfoManager;
+import com.dazednconfused.catalauncher.update.GameUpdateManager;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 
@@ -379,22 +379,7 @@ public class MainWindow {
             return;
         }
 
-        LOGGER.info("Checking for game updates...");
-        GameUpdateManager.isGameUpdateAvailable().ifPresent(updateAvailable -> {
-            if (updateAvailable) {
-                LOGGER.info("Game update available!");
-                new ConfirmDialog(
-                    "A new game version is available! Open the releases page?",
-                    ConfirmDialog.ConfirmDialogType.INFO,
-                    confirmed -> {
-                        if (confirmed) {
-                            GameUpdateManager.openLatestGameReleaseInDefaultBrowser();
-                        }
-                    }
-                ).packCenterAndShow(this.mainPanel);
-            } else {
-                LOGGER.debug("Game is up to date");
-            }
-        });
+        // use the dialog that offers download option (don't show if no update) ---
+        GameUpdateAvailableDialog.checkAndShow(this.mainPanel, false);
     }
 }

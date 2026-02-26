@@ -1,13 +1,11 @@
 package com.dazednconfused.catalauncher.gui;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
-import com.dazednconfused.catalauncher.update.GameUpdateManager;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Optional;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -96,11 +94,13 @@ public class GameUpdateSettingsDialog extends JDialog {
         String owner = config.getGameGithubRepoOwner();
         String name = config.getGameGithubRepoName();
         String version = config.getInstalledGameVersion();
-        boolean autoCheck = config.isShouldCheckForGameUpdates();
 
         repoOwnerTextField.setText(owner != null ? owner : "");
         repoNameTextField.setText(name != null ? name : "");
         installedVersionTextField.setText(version != null ? version : "");
+
+        boolean autoCheck = config.isShouldCheckForGameUpdates();
+
         autoCheckCheckbox.setSelected(autoCheck);
     }
 
@@ -128,46 +128,8 @@ public class GameUpdateSettingsDialog extends JDialog {
      * Performs an update check and shows appropriate dialog.
      */
     private void checkForGameUpdates() {
-        if (!GameUpdateManager.isConfigured()) {
-            new ConfirmDialog(
-                "Please configure the GitHub repository owner and name first."
-            ).packCenterAndShow(contentPane);
-            return;
-        }
-
-        if (!GameUpdateManager.isInstalledVersionConfigured()) {
-            new ConfirmDialog(
-                "Please enter your currently installed game version."
-            ).packCenterAndShow(contentPane);
-            return;
-        }
-
-        LOGGER.info("Checking for game updates...");
-
-        Optional<Boolean> updateAvailable = GameUpdateManager.isGameUpdateAvailable();
-
-        if (updateAvailable.isEmpty()) {
-            new ConfirmDialog(
-                "Could not determine if an update is available. Check the console log for details."
-            ).packCenterAndShow(contentPane);
-            return;
-        }
-
-        if (!updateAvailable.get()) {
-            new ConfirmDialog(
-                "Your game is up to date!"
-            ).packCenterAndShow(contentPane);
-        } else {
-            new ConfirmDialog(
-                "A new game version is available! Open the releases page?",
-                ConfirmDialog.ConfirmDialogType.INFO,
-                confirmed -> {
-                    if (confirmed) {
-                        GameUpdateManager.openLatestGameReleaseInDefaultBrowser();
-                    }
-                }
-            ).packCenterAndShow(contentPane);
-        }
+        // use the new dialog that offers download option ---
+        GameUpdateAvailableDialog.checkAndShow(contentPane, true);
     }
 
     /**
