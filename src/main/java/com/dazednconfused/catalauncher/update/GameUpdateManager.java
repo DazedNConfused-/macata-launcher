@@ -494,6 +494,31 @@ public class GameUpdateManager {
             }
 
             LOGGER.debug("App bundle copied to: {}", destApp.getAbsolutePath());
+
+            // remove quarantine attributes ---
+            ProcessBuilder xattrPb = new ProcessBuilder(
+                "xattr", "-cr", destApp.getAbsolutePath()
+            );
+            xattrPb.start().waitFor();
+            LOGGER.debug("Cleared extended attributes from: {}", destApp.getAbsolutePath());
+
+            // ensure executable permissions on the main binaries ---
+            ProcessBuilder chmodMacOsPb = new ProcessBuilder(
+                "chmod", "-R", "+x", destApp.getAbsolutePath() + "/Contents/MacOS"
+            );
+            chmodMacOsPb.start().waitFor();
+            LOGGER.debug("Set executable permissions on: {}/Contents/MacOS", destApp.getAbsolutePath());
+
+            // also set executable permissions on Resources where game binaries typically reside ---
+            File resourcesDir = new File(destApp, "Contents/Resources");
+            if (resourcesDir.exists()) {
+                ProcessBuilder chmodResourcesPb = new ProcessBuilder(
+                    "chmod", "-R", "+x", resourcesDir.getAbsolutePath()
+                );
+                chmodResourcesPb.start().waitFor();
+                LOGGER.debug("Set executable permissions on: {}", resourcesDir.getAbsolutePath());
+            }
+
             return destApp;
 
         } catch (Exception e) {
@@ -520,8 +545,7 @@ public class GameUpdateManager {
      */
     private static boolean moveToTrash(File file) {
         try {
-            Path trashDir = Paths.getCustomTrashedGamePath()
-                .resolve(CustomTimeUtils.getYyyyMmDdHhMmSsTimestamp());
+            Path trashDir = Paths.getCustomTrashedGamePath().resolve(CustomTimeUtils.getYyyyMmDdHhMmSsTimestamp());
             Files.createDirectories(trashDir);
 
             File destination = trashDir.resolve(file.getName()).toFile();
