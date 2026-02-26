@@ -3,6 +3,9 @@ package com.dazednconfused.catalauncher.gui;
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.update.GameUpdateManager;
+import com.dazednconfused.catalauncher.update.GameVersion;
+
+import java.util.Optional;
 
 import io.vavr.control.Try;
 
@@ -159,12 +162,12 @@ public class LauncherMenuBar {
 
             if (!GameUpdateManager.isInstalledVersionConfigured()) {
                 new ConfirmDialog(
-                    "Installed game version not set. Configure now?",
+                    "Installed game version not set. Download latest version now?",
                     ConfirmDialog.ConfirmDialogType.INFO,
                     confirmed -> {
                         if (confirmed) {
-                            GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
-                            dialog.packCenterAndShow(parent);
+                            // offer to download latest based on current configuration
+                            offerLatestDownload(parent);
                         }
                     }
                 ).packCenterAndShow(parent);
@@ -185,5 +188,32 @@ public class LauncherMenuBar {
             GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
             dialog.packCenterAndShow(parent);
         };
+    }
+
+    /**
+     * Offers to download the latest version when installed version is not configured.
+     */
+    private static void offerLatestDownload(Component parent) {
+        LOGGER.trace("Offering latest download (no installed version set)");
+
+        // check CDDA path first
+        if (!GameUpdateManager.isCddaPathConfigured()) {
+            new ConfirmDialog(
+                "CDDA executable path is not configured. Please set it in the Launcher tab first."
+            ).packCenterAndShow(parent);
+            return;
+        }
+
+        // get the latest version
+        Optional<GameVersion> latestVersion = GameUpdateManager.getLatestGameReleaseTag();
+        if (latestVersion.isEmpty()) {
+            new ConfirmDialog(
+                "Could not determine latest version. Check your repository configuration."
+            ).packCenterAndShow(parent);
+            return;
+        }
+
+        // show the download dialog
+        new GameUpdateAvailableDialog(parent, latestVersion.get()).packCenterAndShow(parent);
     }
 }

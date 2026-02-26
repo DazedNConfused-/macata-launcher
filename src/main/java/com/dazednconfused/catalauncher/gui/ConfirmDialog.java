@@ -148,16 +148,16 @@ public class ConfirmDialog extends JDialog {
      * Represents the action to be taken when the {@code OK} button is clicked.
      * */
     private void onOK(Consumer<Boolean> doOnResult) {
-        doOnResult.accept(true);
         dispose();
+        doOnResult.accept(true);
     }
 
     /**
      * Represents the action to be taken when the {@code Cancel} button is clicked.
      * */
     private void onCancel(Consumer<Boolean> doOnResult) {
-        doOnResult.accept(false);
         dispose();
+        doOnResult.accept(false);
     }
 
     /**

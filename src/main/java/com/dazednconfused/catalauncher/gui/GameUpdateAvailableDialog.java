@@ -187,8 +187,30 @@ public class GameUpdateAvailableDialog extends JDialog {
         }
 
         if (!GameUpdateManager.isInstalledVersionConfigured()) {
+            // offer to download latest instead of just asking to configure
             new ConfirmDialog(
-                "Installed game version not set. Configure it first."
+                "Installed game version not set. Download latest version now?",
+                ConfirmDialog.ConfirmDialogType.INFO,
+                confirmed -> {
+                    if (confirmed) {
+                        if (!GameUpdateManager.isCddaPathConfigured()) {
+                            new ConfirmDialog(
+                                "CDDA executable path is not configured. Please set it in the Launcher tab first."
+                            ).packCenterAndShow(parent);
+                            return;
+                        }
+
+                        Optional<GameVersion> latestVersion = GameUpdateManager.getLatestGameReleaseTag();
+                        if (latestVersion.isEmpty()) {
+                            new ConfirmDialog(
+                                "Could not determine latest version. Check your repository configuration."
+                            ).packCenterAndShow(parent);
+                            return;
+                        }
+
+                        new GameUpdateAvailableDialog(parent, latestVersion.get()).packCenterAndShow(parent);
+                    }
+                }
             ).packCenterAndShow(parent);
             return;
         }
