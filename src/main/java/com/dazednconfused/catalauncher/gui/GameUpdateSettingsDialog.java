@@ -46,32 +46,32 @@ public class GameUpdateSettingsDialog extends JDialog {
         setModal(true);
         setTitle("Game Update Settings");
 
-        // Load current configuration
+        // load current configuration ---
         loadConfiguration();
 
-        // Configure save button
+        // configure save button ---
         saveButton.addActionListener(e -> {
             LOGGER.trace("Save button clicked");
             saveConfiguration();
             dispose();
         });
 
-        // Configure cancel button
+        // configure cancel button ---
         cancelButton.addActionListener(e -> {
             LOGGER.trace("Cancel button clicked");
             dispose();
         });
 
-        // Configure check now button
+        // configure check now button ---
         checkNowButton.addActionListener(e -> {
             LOGGER.trace("Check now button clicked");
-            // Save current values first
+            // save current values first...
             saveConfiguration();
-            // Then check for updates
+            // then check for updates...
             checkForGameUpdates();
         });
 
-        // Close on window close
+        // call onCancel() when cross is clicked ---
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -79,7 +79,7 @@ public class GameUpdateSettingsDialog extends JDialog {
             }
         });
 
-        // Close on ESCAPE
+        // call onCancel() on ESCAPE ---
         contentPane.registerKeyboardAction(
             e -> dispose(),
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
