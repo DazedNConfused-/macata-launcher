@@ -26,6 +26,9 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_NAME;
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_OWNER;
+
 /**
  * Manages game update checking and downloading functionality.
  */
@@ -583,14 +586,18 @@ public class GameUpdateManager {
     }
 
     /**
-     * Checks if the configured repo is the official CleverRaven/Cataclysm-DDA repository.
+     * Checks if the configured repo is the official {@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_OWNER}/
+     * {@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_NAME} repository.
+     * </br></br>
      * Only this repo has stable releases; all others are experimental-only.
      */
     public static boolean isOfficialCddaRepo() {
         String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
         String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
-        boolean result = "CleverRaven".equalsIgnoreCase(owner) && "Cataclysm-DDA".equalsIgnoreCase(repo);
-        LOGGER.trace("isOfficialCddaRepo: owner=[{}], repo=[{}], result={}", owner, repo, result);
+
+        boolean result = OFFICIAL_CDDA_REPOSITORY_OWNER.equalsIgnoreCase(owner) && OFFICIAL_CDDA_REPOSITORY_NAME.equalsIgnoreCase(repo);
+        LOGGER.trace("isOfficialCddaRepo: owner=[{}], repo=[{}], result=[{}]", owner, repo, result);
+
         return result;
     }
 
@@ -609,6 +616,7 @@ public class GameUpdateManager {
             LOGGER.debug("Not official repo, including all prereleases");
             return true;
         }
+
         LOGGER.debug("Official repo, returning config value: {}", configValue);
         return configValue;
     }
@@ -668,7 +676,7 @@ public class GameUpdateManager {
         int tagEnd = jsonResponse.indexOf("\"", tagStart);
         String tagName = jsonResponse.substring(tagStart, tagEnd);
 
-        LOGGER.info("Found release tag: {}", tagName);
+        LOGGER.debug("Found release tag: [{}]", tagName);
         return tagName;
     }
 

@@ -21,6 +21,9 @@ import javax.swing.event.DocumentListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_NAME;
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_OWNER;
+
 /**
  * Dialog for configuring game update source settings.
  */
@@ -139,21 +142,22 @@ public class GameUpdateSettingsDialog extends JDialog {
 
     /**
      * Updates the prerelease checkbox enabled state based on the current repo values.
-     * Only CleverRaven/Cataclysm-DDA has stable releases, so the checkbox is only
-     * meaningful for that repo. For other repos, it's always "experimental".
+     * </br></br>
+     * Only {@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_OWNER}/{@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_NAME}
+     * has stable releases, so the checkbox is only meaningful for that repo. For other repos, it's always "experimental".
      */
     private void updatePreReleaseCheckboxState() {
         String owner = repoOwnerTextField.getText().trim();
         String name = repoNameTextField.getText().trim();
 
-        boolean isOfficialRepo = "CleverRaven".equalsIgnoreCase(owner) && "Cataclysm-DDA".equalsIgnoreCase(name);
+        boolean isOfficialRepo = OFFICIAL_CDDA_REPOSITORY_OWNER.equalsIgnoreCase(owner) && OFFICIAL_CDDA_REPOSITORY_NAME.equalsIgnoreCase(name);
 
         includePreReleasesCheckbox.setEnabled(isOfficialRepo);
 
         if (isOfficialRepo) {
             preReleaseHintLabel.setText("Stable releases are less frequent but more polished");
         } else if (owner.isEmpty() && name.isEmpty()) {
-            preReleaseHintLabel.setText("Only CleverRaven/Cataclysm-DDA has stable releases");
+            preReleaseHintLabel.setText("Only " + OFFICIAL_CDDA_REPOSITORY_OWNER + "/" + OFFICIAL_CDDA_REPOSITORY_NAME + " has stable releases");
         } else {
             preReleaseHintLabel.setText("This repo only has experimental builds (always latest)");
         }
@@ -177,8 +181,10 @@ public class GameUpdateSettingsDialog extends JDialog {
         config.setShouldCheckForGameUpdates(autoCheck);
         config.setIncludePreReleaseBuilds(includePreReleases);
 
-        LOGGER.info("Game update settings saved: owner=[{}], repo=[{}], version=[{}], autoCheck=[{}], includePreReleases=[{}]",
-            owner, name, version, autoCheck, includePreReleases);
+        LOGGER.debug(
+            "Game update settings saved: owner=[{}], repo=[{}], version=[{}], autoCheck=[{}], includePreReleases=[{}]",
+            owner, name, version, autoCheck, includePreReleases
+        );
     }
 
     /**
