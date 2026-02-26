@@ -160,6 +160,7 @@ public class GameUpdateSettingsDialog extends JDialog {
             preReleaseHintLabel.setText("Only " + OFFICIAL_CDDA_REPOSITORY_OWNER + "/" + OFFICIAL_CDDA_REPOSITORY_NAME + " has stable releases");
         } else {
             preReleaseHintLabel.setText("This repo only has experimental builds (always latest)");
+            includePreReleasesCheckbox.setSelected(true); // we show the box as checked by default
         }
     }
 
