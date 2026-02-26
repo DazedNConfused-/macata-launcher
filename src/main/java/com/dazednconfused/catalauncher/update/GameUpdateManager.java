@@ -1,5 +1,8 @@
 package com.dazednconfused.catalauncher.update;
 
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_NAME;
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_OWNER;
+
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.Paths;
 import com.dazednconfused.catalauncher.utils.CustomTimeUtils;
@@ -25,9 +28,6 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_NAME;
-import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_OWNER;
 
 /**
  * Manages game update checking and downloading functionality.
@@ -588,7 +588,7 @@ public class GameUpdateManager {
     /**
      * Checks if the configured repo is the official {@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_OWNER}/
      * {@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_NAME} repository.
-     * </br></br>
+     * <br><br>
      * Only this repo has stable releases; all others are experimental-only.
      */
     public static boolean isOfficialCddaRepo() {

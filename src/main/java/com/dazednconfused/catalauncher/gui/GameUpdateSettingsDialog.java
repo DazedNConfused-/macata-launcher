@@ -1,5 +1,8 @@
 package com.dazednconfused.catalauncher.gui;
 
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_NAME;
+import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_OWNER;
+
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 
 import java.awt.Component;
@@ -20,9 +23,6 @@ import javax.swing.event.DocumentListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_NAME;
-import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REPOSITORY_OWNER;
 
 /**
  * Dialog for configuring game update source settings.
@@ -142,7 +142,7 @@ public class GameUpdateSettingsDialog extends JDialog {
 
     /**
      * Updates the prerelease checkbox enabled state based on the current repo values.
-     * </br></br>
+     * <br><br>
      * Only {@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_OWNER}/{@link com.dazednconfused.catalauncher.helper.Constants#OFFICIAL_CDDA_REPOSITORY_NAME}
      * has stable releases, so the checkbox is only meaningful for that repo. For other repos, it's always "experimental".
      */
