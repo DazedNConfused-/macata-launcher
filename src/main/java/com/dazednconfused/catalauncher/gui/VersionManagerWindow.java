@@ -4,7 +4,7 @@ import static com.dazednconfused.catalauncher.helper.Constants.APP_NAME;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
-import com.dazednconfused.catalauncher.update.UpdateManager;
+import com.dazednconfused.catalauncher.update.LauncherUpdateManager;
 
 import io.vavr.control.Try;
 
@@ -95,7 +95,7 @@ public class VersionManagerWindow extends JDialog {
     public static void checkForUpdates(JPanel parent, boolean showDialogIfNoUpdateAvailable) {
         LOGGER.info("Checking for updates...");
 
-        boolean updateAvailable = UpdateManager.isUpdateAvailable().orElse(false);
+        boolean updateAvailable = LauncherUpdateManager.isUpdateAvailable().orElse(false);
 
         if (!updateAvailable) {
             LOGGER.debug("No update is available");
@@ -117,7 +117,7 @@ public class VersionManagerWindow extends JDialog {
                 ConfirmDialog.ConfirmDialogType.INFO,
                 confirmed -> {
                     if (confirmed) {
-                        UpdateManager.openLatestReleaseInDefaultBrowser();
+                        LauncherUpdateManager.openLatestReleaseInDefaultBrowser();
                     } else {
                         LOGGER.debug("Aborting update process due to user input");
                     }

@@ -31,7 +31,7 @@ public class GameVersion implements Comparable<GameVersion> {
      * Group 3: day
      * Group 4: build number
      */
-    private static final Pattern DATE_PATTERN = Pattern.compile("^(?:cdda-experimental-)?(\\d{4})-(\\d{2})-(\\d{2})-(\\d+)$");
+    private static final Pattern DATE_PATTERN = Pattern.compile("^(?:cdda-experimental-|cataclysm-tlg-.*)?(\\d{4})-(\\d{2})-(\\d{2})(-(\\d+))?$");
 
     /**
      * Enum representing the type of version.
@@ -74,7 +74,7 @@ public class GameVersion implements Comparable<GameVersion> {
 
         this.originalVersion = versionString.trim();
 
-        // Try to parse as stable version
+        // try to parse as stable version
         Matcher stableMatcher = STABLE_PATTERN.matcher(this.originalVersion);
         if (stableMatcher.matches()) {
             this.type = VersionType.STABLE;
@@ -84,7 +84,7 @@ public class GameVersion implements Comparable<GameVersion> {
             return;
         }
 
-        // Try to parse as experimental/date-based version
+        // try to parse as experimental/date-based version
         Matcher dateMatcher = DATE_PATTERN.matcher(this.originalVersion);
         if (dateMatcher.matches()) {
             this.type = VersionType.EXPERIMENTAL;
@@ -95,7 +95,7 @@ public class GameVersion implements Comparable<GameVersion> {
             return;
         }
 
-        // Fallback to generic type
+        // fallback to generic type
         this.type = VersionType.GENERIC;
     }
 
@@ -146,7 +146,7 @@ public class GameVersion implements Comparable<GameVersion> {
             return 1;
         }
 
-        // Same type comparison
+        // same type comparison
         if (this.type == that.type) {
             switch (this.type) {
                 case STABLE:
@@ -159,7 +159,7 @@ public class GameVersion implements Comparable<GameVersion> {
             }
         }
 
-        // Cross-type comparison: Experimental is always considered newer than Stable
+        // cross-type comparison: Experimental is always considered newer than Stable
         // (experimental builds are cutting-edge development versions)
         if (this.type == VersionType.EXPERIMENTAL && that.type == VersionType.STABLE) {
             return 1;
@@ -168,7 +168,7 @@ public class GameVersion implements Comparable<GameVersion> {
             return -1;
         }
 
-        // Generic versions compared by string
+        // generic versions compared by string
         return this.originalVersion.compareTo(that.originalVersion);
     }
 
