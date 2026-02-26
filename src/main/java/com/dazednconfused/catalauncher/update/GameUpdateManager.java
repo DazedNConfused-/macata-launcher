@@ -583,9 +583,99 @@ public class GameUpdateManager {
     }
 
     /**
+     * Checks if the configured repo is the official CleverRaven/Cataclysm-DDA repository.
+     * Only this repo has stable releases; all others are experimental-only.
+     */
+    public static boolean isOfficialCddaRepo() {
+        String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
+        String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
+        boolean result = "CleverRaven".equalsIgnoreCase(owner) && "Cataclysm-DDA".equalsIgnoreCase(repo);
+        LOGGER.trace("isOfficialCddaRepo: owner=[{}], repo=[{}], result={}", owner, repo, result);
+        return result;
+    }
+
+    /**
+     * Determines whether prereleases should be included based on configuration.
+     * For non-official repos, always includes prereleases (they don't have stable releases).
+     */
+    private static boolean shouldIncludePrereleases() {
+        boolean isOfficial = isOfficialCddaRepo();
+        boolean configValue = ConfigurationManager.getInstance().isIncludePreReleaseBuilds();
+
+        LOGGER.trace("shouldIncludePrereleases: isOfficialCddaRepo=[{}], configIncludePreReleases=[{}]", isOfficial, configValue);
+
+        if (!isOfficial) {
+            // non-official repos are all experimental, always use latest
+            LOGGER.debug("Not official repo, including all prereleases");
+            return true;
+        }
+        LOGGER.debug("Official repo, returning config value: {}", configValue);
+        return configValue;
+    }
+
+    /**
      * Queries GitHub API for latest release tag.
+     * Uses /releases/latest for stable releases, /releases for prereleases.
      */
     private static String getLatestReleaseTagFromGithub(String owner, String repo) throws IOException {
+        boolean includePrereleases = shouldIncludePrereleases();
+
+        // Use different endpoints based on whether we want stable or prerelease
+        String apiUrl;
+        if (includePrereleases) {
+            // Get all releases (first one is latest, including prereleases)
+            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+        } else {
+            // Use /releases/latest which returns latest non-prerelease, non-draft release
+            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases/latest";
+        }
+
+        LOGGER.debug("Fetching releases from: [{}] (includePrereleases={})", apiUrl, includePrereleases);
+
+        URL url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
+        connection.setConnectTimeout(CONNECTION_TIMEOUT);
+        connection.setReadTimeout(READ_TIMEOUT);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == 404 && !includePrereleases) {
+            // No stable release found, fall back to latest prerelease
+            LOGGER.warn("No stable release found (404), falling back to latest prerelease");
+            connection.disconnect();
+            return getLatestPrereleaseTag(owner, repo);
+        }
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+        }
+
+        connection.disconnect();
+
+        String jsonResponse = response.toString();
+
+        // parse JSON to find tag_name
+        int tagIdx = jsonResponse.indexOf("\"tag_name\":\"");
+        if (tagIdx == -1) {
+            throw new IOException("No tag_name found in response");
+        }
+        int tagStart = tagIdx + "\"tag_name\":\"".length();
+        int tagEnd = jsonResponse.indexOf("\"", tagStart);
+        String tagName = jsonResponse.substring(tagStart, tagEnd);
+
+        LOGGER.info("Found release tag: {}", tagName);
+        return tagName;
+    }
+
+    /**
+     * Gets the latest prerelease tag (fallback when no stable release exists).
+     */
+    private static String getLatestPrereleaseTag(String owner, String repo) throws IOException {
         String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
 
         URL url = new URL(apiUrl);
@@ -607,51 +697,161 @@ public class GameUpdateManager {
 
         String jsonResponse = response.toString();
 
-        // parse JSON to find first non-prerelease tag
-        int idx = 0;
-        String firstTag = null;
-        while (true) {
-            int tagIdx = jsonResponse.indexOf("\"tag_name\":\"", idx);
-            if (tagIdx == -1) {
-                break;
-            }
-            int tagStart = tagIdx + "\"tag_name\":\"".length();
-            int tagEnd = jsonResponse.indexOf("\"", tagStart);
-            String tagName = jsonResponse.substring(tagStart, tagEnd);
-
-            if (firstTag == null) {
-                firstTag = tagName;
-            }
-
-            int prereleaseIdx = jsonResponse.indexOf("\"prerelease\":", tagEnd);
-            if (prereleaseIdx == -1) {
-                break;
-            }
-            int prereleaseValueStart = prereleaseIdx + "\"prerelease\":".length();
-            int prereleaseValueEnd = jsonResponse.indexOf(",", prereleaseValueStart);
-            if (prereleaseValueEnd == -1) {
-                prereleaseValueEnd = jsonResponse.indexOf("}", prereleaseValueStart);
-            }
-            String prereleaseValue = jsonResponse
-                .substring(prereleaseValueStart, prereleaseValueEnd).trim();
-
-            if (!prereleaseValue.equals("true")) {
-                return tagName;
-            }
-            idx = tagEnd;
+        int tagIdx = jsonResponse.indexOf("\"tag_name\":\"");
+        if (tagIdx == -1) {
+            throw new IOException("No releases found in repository");
         }
-
-        if (firstTag != null) {
-            return firstTag;
-        }
-
-        throw new IOException("No releases found in repository");
+        int tagStart = tagIdx + "\"tag_name\":\"".length();
+        int tagEnd = jsonResponse.indexOf("\"", tagStart);
+        return jsonResponse.substring(tagStart, tagEnd);
     }
 
     /**
-     * Finds the macOS asset download URL from the latest release.
+     * Finds the macOS asset download URL from the appropriate release.
+     * Uses /releases/latest for stable releases, /releases for prereleases.
      */
     private static String findMacOsAssetUrl(String owner, String repo) throws IOException {
+        boolean includePrereleases = shouldIncludePrereleases();
+
+        // Use different endpoints based on whether we want stable or prerelease
+        String apiUrl;
+        if (includePrereleases) {
+            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+        } else {
+            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases/latest";
+        }
+
+        LOGGER.debug("Fetching assets from: {}", apiUrl);
+
+        URL url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
+        connection.setConnectTimeout(CONNECTION_TIMEOUT);
+        connection.setReadTimeout(READ_TIMEOUT);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == 404 && !includePrereleases) {
+            // No stable release found, fall back to latest prerelease
+            LOGGER.warn("No stable release found (404), falling back to prerelease assets");
+            connection.disconnect();
+            return findMacOsAssetUrlFromPrereleases(owner, repo);
+        }
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+        }
+
+        connection.disconnect();
+
+        String json = response.toString();
+
+        // For /releases endpoint, we need to extract just the first release's assets
+        // For /releases/latest, the entire response is the release object
+        String assetsSection;
+        if (includePrereleases) {
+            // Extract first release's assets section
+            int assetsIdx = json.indexOf("\"assets\":");
+            if (assetsIdx == -1) {
+                throw new IOException("No assets found in release");
+            }
+            int nextReleaseIdx = json.indexOf("\"tag_name\":", assetsIdx + 1);
+            assetsSection = nextReleaseIdx > 0 ? json.substring(assetsIdx, nextReleaseIdx) : json.substring(assetsIdx);
+        } else {
+            // The entire response is the release object
+            assetsSection = json;
+        }
+
+        return findLargestMacOsAsset(assetsSection);
+    }
+
+    /**
+     * Finds the largest macOS asset from the assets JSON section.
+     * The tiles version is always larger than the curses version due to included graphics.
+     *
+     * @param assetsSection JSON section containing asset information
+     * @return the download URL for the largest macOS asset
+     * @throws IOException if no macOS asset is found
+     */
+    private static String findLargestMacOsAsset(String assetsSection) throws IOException {
+        String[] macPatterns = {"osx", "macos", "mac", "darwin", "apple"};
+
+        String largestUrl = null;
+        long largestSize = 0;
+
+        // Parse each asset in the section
+        // Assets have format: {"name":"...", "size":12345, ..., "browser_download_url":"..."}
+        int searchIdx = 0;
+        while (true) {
+            // Find the next asset object (look for "name":" as indicator)
+            int nameIdx = assetsSection.indexOf("\"name\":\"", searchIdx);
+            if (nameIdx == -1) {
+                break;
+            }
+
+            // Extract asset name
+            int nameStart = nameIdx + "\"name\":\"".length();
+            int nameEnd = assetsSection.indexOf("\"", nameStart);
+            String assetName = assetsSection.substring(nameStart, nameEnd).toLowerCase();
+
+            // Check if this is a macOS asset
+            boolean isMacOs = false;
+            for (String pattern : macPatterns) {
+                if (assetName.contains(pattern)) {
+                    isMacOs = true;
+                    break;
+                }
+            }
+
+            // Must be .dmg or .zip, not .sha256 or other
+            if (isMacOs && (assetName.endsWith(".dmg") || assetName.endsWith(".zip"))) {
+                // Find the size for this asset
+                int sizeIdx = assetsSection.indexOf("\"size\":", nameEnd);
+                int downloadUrlIdx = assetsSection.indexOf("\"browser_download_url\":\"", nameEnd);
+
+                // Make sure we're still in the same asset object
+                if (sizeIdx != -1 && downloadUrlIdx != -1) {
+                    int sizeStart = sizeIdx + "\"size\":".length();
+                    int sizeEnd = assetsSection.indexOf(",", sizeStart);
+                    if (sizeEnd == -1 || sizeEnd > downloadUrlIdx) {
+                        sizeEnd = assetsSection.indexOf("}", sizeStart);
+                    }
+                    String sizeStr = assetsSection.substring(sizeStart, sizeEnd).trim();
+                    long size = Long.parseLong(sizeStr);
+
+                    int urlStart = downloadUrlIdx + "\"browser_download_url\":\"".length();
+                    int urlEnd = assetsSection.indexOf("\"", urlStart);
+                    String downloadUrl = assetsSection.substring(urlStart, urlEnd);
+
+                    LOGGER.debug("Found macOS asset: {} (size: {} bytes)", assetName, size);
+
+                    if (size > largestSize) {
+                        largestSize = size;
+                        largestUrl = downloadUrl;
+                    }
+                }
+            }
+
+            searchIdx = nameEnd;
+        }
+
+        if (largestUrl == null) {
+            throw new IOException("No macOS download found in release assets");
+        }
+
+        LOGGER.info("Selected largest macOS asset: {} ({} bytes)", largestUrl, largestSize);
+        return largestUrl;
+    }
+
+    /**
+     * Fallback method to find macOS asset URL from prereleases when no stable release exists.
+     */
+    private static String findMacOsAssetUrlFromPrereleases(String owner, String repo) throws IOException {
         String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
 
         URL url = new URL(apiUrl);
@@ -674,64 +874,15 @@ public class GameUpdateManager {
 
         String json = response.toString();
 
-        // find the first release's assets section
+        // Extract first release's assets section
         int assetsIdx = json.indexOf("\"assets\":");
         if (assetsIdx == -1) {
-            throw new IOException("No assets found in release");
+            throw new IOException("No assets found in releases");
         }
-
-        // look for macOS-related asset names
-        String[] macPatterns = {
-            "osx", "macos", "mac", "darwin", "apple"
-        };
-
         int nextReleaseIdx = json.indexOf("\"tag_name\":", assetsIdx + 1);
         String assetsSection = nextReleaseIdx > 0 ? json.substring(assetsIdx, nextReleaseIdx) : json.substring(assetsIdx);
 
-        // collect all macOS asset URLs
-        java.util.List<String> macOsUrls = new java.util.ArrayList<>();
-
-        int urlIdx = 0;
-        while (true) {
-            int downloadUrlIdx = assetsSection.indexOf("\"browser_download_url\":\"", urlIdx);
-            if (downloadUrlIdx == -1) {
-                break;
-            }
-
-            int urlStart = downloadUrlIdx + "\"browser_download_url\":\"".length();
-            int urlEnd = assetsSection.indexOf("\"", urlStart);
-            String downloadUrl = assetsSection.substring(urlStart, urlEnd);
-            String lowerUrl = downloadUrl.toLowerCase();
-
-            // check if this is a macOS asset
-            for (String pattern : macPatterns) {
-                if (lowerUrl.contains(pattern)) {
-                    // must be .dmg or .zip, avoid .sha256 etc
-                    if (lowerUrl.endsWith(".dmg") || lowerUrl.endsWith(".zip")) {
-                        macOsUrls.add(downloadUrl);
-                    }
-                    break;
-                }
-            }
-
-            urlIdx = urlEnd;
-        }
-
-        if (macOsUrls.isEmpty()) {
-            throw new IOException("No macOS download found in release assets");
-        }
-
-        // prefer tiles version over curses version
-        for (String macOsUrl : macOsUrls) {
-            if (macOsUrl.toLowerCase().contains("tiles")) {
-                LOGGER.debug("Found macOS tiles asset: {}", macOsUrl);
-                return macOsUrl;
-            }
-        }
-
-        // fallback to first macOS asset if no tiles-specific one found
-        LOGGER.debug("Found macOS asset (no tiles variant): {}", macOsUrls.get(0));
-        return macOsUrls.get(0);
+        return findLargestMacOsAsset(assetsSection);
     }
 
     /**

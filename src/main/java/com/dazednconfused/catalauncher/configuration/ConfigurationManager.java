@@ -125,6 +125,15 @@ public class ConfigurationManager {
         save(this.configuration);
     }
 
+    public boolean isIncludePreReleaseBuilds() {
+        return this.configuration.isIncludePreReleaseBuilds();
+    }
+
+    public void setIncludePreReleaseBuilds(boolean includePreReleaseBuilds) {
+        this.configuration.setIncludePreReleaseBuilds(includePreReleaseBuilds);
+        save(this.configuration);
+    }
+
     /**
      * Saves the given {@link Configuration} to disk.
      * */

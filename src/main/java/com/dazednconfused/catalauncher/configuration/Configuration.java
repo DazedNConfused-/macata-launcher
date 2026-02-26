@@ -14,6 +14,7 @@ public class Configuration {
     private String gameGithubRepoName;
     private boolean shouldCheckForGameUpdates;
     private String installedGameVersion;
+    private boolean includePreReleaseBuilds;
 
     public Configuration() {
     }
@@ -80,6 +81,14 @@ public class Configuration {
 
     public void setInstalledGameVersion(String installedGameVersion) {
         this.installedGameVersion = installedGameVersion;
+    }
+
+    public boolean isIncludePreReleaseBuilds() {
+        return includePreReleaseBuilds;
+    }
+
+    public void setIncludePreReleaseBuilds(boolean includePreReleaseBuilds) {
+        this.includePreReleaseBuilds = includePreReleaseBuilds;
     }
 
     @Override

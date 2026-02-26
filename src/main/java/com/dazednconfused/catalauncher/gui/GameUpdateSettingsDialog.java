@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,8 @@ public class GameUpdateSettingsDialog extends JDialog {
     private JTextField repoNameTextField;
     private JTextField installedVersionTextField;
     private JCheckBox autoCheckCheckbox;
+    private JCheckBox includePreReleasesCheckbox;
+    private JLabel preReleaseHintLabel;
     private JButton checkNowButton;
     private JButton saveButton;
     private JButton cancelButton;
@@ -69,6 +73,26 @@ public class GameUpdateSettingsDialog extends JDialog {
             checkForGameUpdates();
         });
 
+        // add listeners to repo fields to update prerelease checkbox state ---
+        DocumentListener repoChangeListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updatePreReleaseCheckboxState();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updatePreReleaseCheckboxState();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updatePreReleaseCheckboxState();
+            }
+        };
+        repoOwnerTextField.getDocument().addDocumentListener(repoChangeListener);
+        repoNameTextField.getDocument().addDocumentListener(repoChangeListener);
+
         // call onCancel() when cross is clicked ---
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -100,8 +124,35 @@ public class GameUpdateSettingsDialog extends JDialog {
         installedVersionTextField.setText(version != null ? version : "");
 
         boolean autoCheck = config.isShouldCheckForGameUpdates();
+        boolean includePreReleases = config.isIncludePreReleaseBuilds();
 
         autoCheckCheckbox.setSelected(autoCheck);
+        includePreReleasesCheckbox.setSelected(includePreReleases);
+
+        // update checkbox enabled state based on repo
+        updatePreReleaseCheckboxState();
+    }
+
+    /**
+     * Updates the prerelease checkbox enabled state based on the current repo values.
+     * Only CleverRaven/Cataclysm-DDA has stable releases, so the checkbox is only
+     * meaningful for that repo. For other repos, it's always "experimental".
+     */
+    private void updatePreReleaseCheckboxState() {
+        String owner = repoOwnerTextField.getText().trim();
+        String name = repoNameTextField.getText().trim();
+
+        boolean isOfficialRepo = "CleverRaven".equalsIgnoreCase(owner) && "Cataclysm-DDA".equalsIgnoreCase(name);
+
+        includePreReleasesCheckbox.setEnabled(isOfficialRepo);
+
+        if (isOfficialRepo) {
+            preReleaseHintLabel.setText("Stable releases are less frequent but more polished");
+        } else if (owner.isEmpty() && name.isEmpty()) {
+            preReleaseHintLabel.setText("Only CleverRaven/Cataclysm-DDA has stable releases");
+        } else {
+            preReleaseHintLabel.setText("This repo only has experimental builds (always latest)");
+        }
     }
 
     /**
@@ -114,14 +165,16 @@ public class GameUpdateSettingsDialog extends JDialog {
         String name = repoNameTextField.getText().trim();
         String version = installedVersionTextField.getText().trim();
         boolean autoCheck = autoCheckCheckbox.isSelected();
+        boolean includePreReleases = includePreReleasesCheckbox.isSelected();
 
         config.setGameGithubRepoOwner(owner.isEmpty() ? null : owner);
         config.setGameGithubRepoName(name.isEmpty() ? null : name);
         config.setInstalledGameVersion(version.isEmpty() ? null : version);
         config.setShouldCheckForGameUpdates(autoCheck);
+        config.setIncludePreReleaseBuilds(includePreReleases);
 
-        LOGGER.info("Game update settings saved: owner=[{}], repo=[{}], version=[{}], autoCheck=[{}]",
-            owner, name, version, autoCheck);
+        LOGGER.info("Game update settings saved: owner=[{}], repo=[{}], version=[{}], autoCheck=[{}], includePreReleases=[{}]",
+            owner, name, version, autoCheck, includePreReleases);
     }
 
     /**
