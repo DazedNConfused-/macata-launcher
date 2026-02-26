@@ -40,6 +40,8 @@ public class GameUpdateSettingsDialog extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
+    private Component parentComponent;
+
     /**
      * Constructor.
      */
@@ -69,6 +71,8 @@ public class GameUpdateSettingsDialog extends JDialog {
             LOGGER.trace("Check now button clicked");
             // save current values first...
             saveConfiguration();
+            // close dialog to prevent user from overwriting updated config...
+            dispose();
             // then check for updates...
             checkForGameUpdates();
         });
@@ -182,7 +186,7 @@ public class GameUpdateSettingsDialog extends JDialog {
      */
     private void checkForGameUpdates() {
         // use the new dialog that offers download option ---
-        GameUpdateAvailableDialog.checkAndShow(contentPane, true);
+        GameUpdateAvailableDialog.checkAndShow(parentComponent, true);
     }
 
     /**
@@ -191,6 +195,7 @@ public class GameUpdateSettingsDialog extends JDialog {
      * @param parent the parent component for centering
      */
     public void packCenterAndShow(Component parent) {
+        this.parentComponent = parent;
         this.pack();
         this.setLocationRelativeTo(parent);
         this.setVisible(true);
