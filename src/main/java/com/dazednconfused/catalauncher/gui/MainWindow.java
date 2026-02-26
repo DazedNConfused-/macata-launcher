@@ -4,6 +4,7 @@ import static com.dazednconfused.catalauncher.helper.Constants.APP_NAME;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.gui.listener.ExecutableLauncherActions;
+import com.dazednconfused.catalauncher.update.GameUpdateManager;
 import com.dazednconfused.catalauncher.gui.listener.ModActions;
 import com.dazednconfused.catalauncher.gui.listener.SaveBackupActions;
 import com.dazednconfused.catalauncher.gui.listener.SoundpackActions;
@@ -156,6 +157,9 @@ public class MainWindow {
 
         // CHECK FOR SOFTWARE UPDATES ---
         new Thread(this::checkForUpdates).start(); // check for updates on a background thread, to not slow down application's startup
+
+        // CHECK FOR GAME UPDATES ---
+        new Thread(this::checkForGameUpdates).start(); // check for game updates on a background thread
     }
 
     /**
@@ -354,5 +358,43 @@ public class MainWindow {
         if (ConfigurationManager.getInstance().isShouldLookForUpdates()) {
             VersionManagerWindow.checkForUpdates(this.mainPanel, false);
         }
+    }
+
+    /**
+     * Checks for game updates if the feature is configured and enabled.
+     * */
+    private void checkForGameUpdates() {
+        if (!ConfigurationManager.getInstance().isShouldCheckForGameUpdates()) {
+            LOGGER.trace("Automatic game update check disabled");
+            return;
+        }
+
+        if (!GameUpdateManager.isConfigured()) {
+            LOGGER.trace("Game update source not configured, skipping automatic check");
+            return;
+        }
+
+        if (!GameUpdateManager.isInstalledVersionConfigured()) {
+            LOGGER.trace("Installed game version not set, skipping automatic check");
+            return;
+        }
+
+        LOGGER.info("Checking for game updates...");
+        GameUpdateManager.isGameUpdateAvailable().ifPresent(updateAvailable -> {
+            if (updateAvailable) {
+                LOGGER.info("Game update available!");
+                new ConfirmDialog(
+                    "A new game version is available! Open the releases page?",
+                    ConfirmDialog.ConfirmDialogType.INFO,
+                    confirmed -> {
+                        if (confirmed) {
+                            GameUpdateManager.openLatestGameReleaseInDefaultBrowser();
+                        }
+                    }
+                ).packCenterAndShow(this.mainPanel);
+            } else {
+                LOGGER.debug("Game is up to date");
+            }
+        });
     }
 }

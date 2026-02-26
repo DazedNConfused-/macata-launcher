@@ -124,7 +124,7 @@ public class ConfirmDialog extends JDialog {
      * Packs ({@link #pack()}), centers ({@link #setLocationRelativeTo(Component)}) and sets the current dialog as visible
      * ({@link #setVisible(boolean)}).
      */
-    public void packCenterAndShow(JPanel parent) {
+    public void packCenterAndShow(Component parent) {
         this.pack();
         this.setLocationRelativeTo(parent);
         this.setVisible(true);

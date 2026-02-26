@@ -2,6 +2,7 @@ package com.dazednconfused.catalauncher.gui;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
+import com.dazednconfused.catalauncher.update.GameUpdateManager;
 
 import io.vavr.control.Try;
 
@@ -34,10 +35,13 @@ public class LauncherMenuBar {
 
     private final JMenu helpMenu;
     private final JMenu developerToolsMenu;
+    private final JMenu gameMenu;
 
     private final JMenuItem showConsoleLogMenuItem;
     private final JCheckBoxMenuItem debugModeCheckBoxMenuItem;
     private final JMenuItem aboutMenuItem;
+    private final JMenuItem checkForGameUpdatesMenuItem;
+    private final JMenuItem configureGameUpdateSourceMenuItem;
 
     /**
      * Public constructor.
@@ -79,6 +83,22 @@ public class LauncherMenuBar {
         this.aboutMenuItem.setMnemonic(KeyEvent.VK_T);
         this.aboutMenuItem.addActionListener(LauncherMenuBar.onAboutButtonClicked(parent));
         this.helpMenu.add(this.aboutMenuItem);
+
+        // game menu ---
+        this.gameMenu = new JMenu("Game");
+        this.gameMenu.setMnemonic(KeyEvent.VK_G);
+        this.menuBar.add(gameMenu);
+
+        // check for game updates button --
+        this.checkForGameUpdatesMenuItem = new JMenuItem("Check for Game Updates");
+        this.checkForGameUpdatesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));
+        this.checkForGameUpdatesMenuItem.addActionListener(LauncherMenuBar.onCheckForGameUpdatesClicked(parent));
+        this.gameMenu.add(this.checkForGameUpdatesMenuItem);
+
+        // configure game update source button --
+        this.configureGameUpdateSourceMenuItem = new JMenuItem("Configure Update Source...");
+        this.configureGameUpdateSourceMenuItem.addActionListener(LauncherMenuBar.onConfigureGameUpdateSourceClicked(parent));
+        this.gameMenu.add(this.configureGameUpdateSourceMenuItem);
     }
 
     /**
@@ -113,6 +133,76 @@ public class LauncherMenuBar {
 
             VersionManagerWindow versionManagerWindow = new VersionManagerWindow();
             versionManagerWindow.packCenterAndShow(parent);
+        };
+    }
+
+    /**
+     * The action to be performed on {@link #checkForGameUpdatesMenuItem}'s click.
+     * */
+    private static ActionListener onCheckForGameUpdatesClicked(Component parent) {
+        return e -> {
+            LOGGER.trace("Check for game updates button clicked");
+
+            if (!GameUpdateManager.isConfigured()) {
+                new ConfirmDialog(
+                    "Game update source not configured. Configure now?",
+                    ConfirmDialog.ConfirmDialogType.INFO,
+                    confirmed -> {
+                        if (confirmed) {
+                            GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
+                            dialog.packCenterAndShow(parent);
+                        }
+                    }
+                ).packCenterAndShow(parent);
+                return;
+            }
+
+            if (!GameUpdateManager.isInstalledVersionConfigured()) {
+                new ConfirmDialog(
+                    "Installed game version not set. Configure now?",
+                    ConfirmDialog.ConfirmDialogType.INFO,
+                    confirmed -> {
+                        if (confirmed) {
+                            GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
+                            dialog.packCenterAndShow(parent);
+                        }
+                    }
+                ).packCenterAndShow(parent);
+                return;
+            }
+
+            LOGGER.info("Checking for game updates...");
+            GameUpdateManager.isGameUpdateAvailable().ifPresentOrElse(
+                updateAvailable -> {
+                    if (updateAvailable) {
+                        new ConfirmDialog(
+                            "A new game version is available! Open the releases page?",
+                            ConfirmDialog.ConfirmDialogType.INFO,
+                            confirmed -> {
+                                if (confirmed) {
+                                    GameUpdateManager.openLatestGameReleaseInDefaultBrowser();
+                                }
+                            }
+                        ).packCenterAndShow(parent);
+                    } else {
+                        new ConfirmDialog("Your game is up to date!").packCenterAndShow(parent);
+                    }
+                },
+                () -> new ConfirmDialog(
+                    "Could not check for updates. Please verify your configuration."
+                ).packCenterAndShow(parent)
+            );
+        };
+    }
+
+    /**
+     * The action to be performed on {@link #configureGameUpdateSourceMenuItem}'s click.
+     * */
+    private static ActionListener onConfigureGameUpdateSourceClicked(Component parent) {
+        return e -> {
+            LOGGER.trace("Configure game update source button clicked");
+            GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
+            dialog.packCenterAndShow(parent);
         };
     }
 }

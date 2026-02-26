@@ -10,6 +10,10 @@ public class Configuration {
     private boolean backupOnExit;
     private boolean debug;
     private boolean shouldLookForUpdates;
+    private String gameGithubRepoOwner;
+    private String gameGithubRepoName;
+    private boolean shouldCheckForGameUpdates;
+    private String installedGameVersion;
 
     public Configuration() {
     }
@@ -44,6 +48,38 @@ public class Configuration {
 
     public void setShouldLookForUpdates(boolean shouldLookForUpdates) {
         this.shouldLookForUpdates = shouldLookForUpdates;
+    }
+
+    public String getGameGithubRepoOwner() {
+        return gameGithubRepoOwner;
+    }
+
+    public void setGameGithubRepoOwner(String gameGithubRepoOwner) {
+        this.gameGithubRepoOwner = gameGithubRepoOwner;
+    }
+
+    public String getGameGithubRepoName() {
+        return gameGithubRepoName;
+    }
+
+    public void setGameGithubRepoName(String gameGithubRepoName) {
+        this.gameGithubRepoName = gameGithubRepoName;
+    }
+
+    public boolean isShouldCheckForGameUpdates() {
+        return shouldCheckForGameUpdates;
+    }
+
+    public void setShouldCheckForGameUpdates(boolean shouldCheckForGameUpdates) {
+        this.shouldCheckForGameUpdates = shouldCheckForGameUpdates;
+    }
+
+    public String getInstalledGameVersion() {
+        return installedGameVersion;
+    }
+
+    public void setInstalledGameVersion(String installedGameVersion) {
+        this.installedGameVersion = installedGameVersion;
     }
 
     @Override
