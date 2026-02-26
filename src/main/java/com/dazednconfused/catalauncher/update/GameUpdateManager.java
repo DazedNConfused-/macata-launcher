@@ -613,7 +613,7 @@ public class GameUpdateManager {
 
         if (!isOfficial) {
             // non-official repos are all experimental, always use latest
-            LOGGER.debug("Not official repo, including all prereleases");
+            LOGGER.debug("Not official repo, including all prereleases...");
             return true;
         }
 

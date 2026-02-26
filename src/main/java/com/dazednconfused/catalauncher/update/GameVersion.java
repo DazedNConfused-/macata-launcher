@@ -91,7 +91,7 @@ public class GameVersion implements Comparable<GameVersion> {
             this.expYear = Integer.parseInt(dateMatcher.group(1));
             this.expMonth = Integer.parseInt(dateMatcher.group(2));
             this.expDay = Integer.parseInt(dateMatcher.group(3));
-            this.expBuild = Integer.parseInt(dateMatcher.group(4));
+            this.expBuild = dateMatcher.group(5) != null ? Integer.parseInt(dateMatcher.group(5)) : 0;
             return;
         }
 
