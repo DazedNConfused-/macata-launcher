@@ -5,14 +5,13 @@ import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.update.GameUpdateManager;
 import com.dazednconfused.catalauncher.update.GameVersion;
 
-import java.util.Optional;
-
 import io.vavr.control.Try;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Optional;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -23,6 +22,7 @@ import javax.swing.KeyStroke;
 import lombok.Getter;
 
 import org.apache.log4j.Level;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
