@@ -688,7 +688,9 @@ public class GameUpdateManager {
         int nextReleaseIdx = json.indexOf("\"tag_name\":", assetsIdx + 1);
         String assetsSection = nextReleaseIdx > 0 ? json.substring(assetsIdx, nextReleaseIdx) : json.substring(assetsIdx);
 
-        // find browser_download_url entries
+        // collect all macOS asset URLs
+        java.util.List<String> macOsUrls = new java.util.ArrayList<>();
+
         int urlIdx = 0;
         while (true) {
             int downloadUrlIdx = assetsSection.indexOf("\"browser_download_url\":\"", urlIdx);
@@ -704,18 +706,32 @@ public class GameUpdateManager {
             // check if this is a macOS asset
             for (String pattern : macPatterns) {
                 if (lowerUrl.contains(pattern)) {
-                    // prefer .dmg or .zip, avoid .sha256 etc
+                    // must be .dmg or .zip, avoid .sha256 etc
                     if (lowerUrl.endsWith(".dmg") || lowerUrl.endsWith(".zip")) {
-                        LOGGER.debug("Found macOS asset: {}", downloadUrl);
-                        return downloadUrl;
+                        macOsUrls.add(downloadUrl);
                     }
+                    break;
                 }
             }
 
             urlIdx = urlEnd;
         }
 
-        throw new IOException("No macOS download found in release assets");
+        if (macOsUrls.isEmpty()) {
+            throw new IOException("No macOS download found in release assets");
+        }
+
+        // prefer tiles version over curses version
+        for (String macOsUrl : macOsUrls) {
+            if (macOsUrl.toLowerCase().contains("tiles")) {
+                LOGGER.debug("Found macOS tiles asset: {}", macOsUrl);
+                return macOsUrl;
+            }
+        }
+
+        // fallback to first macOS asset if no tiles-specific one found
+        LOGGER.debug("Found macOS asset (no tiles variant): {}", macOsUrls.get(0));
+        return macOsUrls.get(0);
     }
 
     /**
