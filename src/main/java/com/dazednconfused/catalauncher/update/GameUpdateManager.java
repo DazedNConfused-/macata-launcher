@@ -226,7 +226,7 @@ public class GameUpdateManager {
                 statusCallback.accept("Error: Extraction failed");
                 return false;
             }
-            File extractedApp = extractResult.toEither().get().getResult().orElseThrow();
+            final File extractedApp = extractResult.toEither().get().getResult().orElseThrow();
 
             // move old binary to trash ---
             statusCallback.accept("Moving old binary to trash...");
