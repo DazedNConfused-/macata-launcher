@@ -71,7 +71,7 @@ public class GameUpdateDownloadDialog extends JDialog {
      * Starts the download process.
      */
     public void startDownload() {
-        downloadWorker = new SwingWorker<Boolean, Void>() {
+        downloadWorker = new SwingWorker<>() {
             @Override
             protected Boolean doInBackground() {
                 return GameUpdateManager.downloadAndInstallUpdate(
