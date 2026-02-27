@@ -293,29 +293,6 @@ public class GameUpdateManager {
     }
 
     /**
-     * Opens the releases page in the default browser.
-     */
-    public static void openReleasesPageInDefaultBrowser() {
-        String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
-        String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
-
-        if (StringUtils.isBlank(owner) || StringUtils.isBlank(repo)) {
-            LOGGER.warn("Cannot open releases page: repository not configured");
-            return;
-        }
-
-        String releasesUrl = String.format("https://github.com/%s/%s/releases", owner, repo);
-        LOGGER.info("Opening releases page [{}]...", releasesUrl);
-
-        Try.run(() -> {
-            Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                desktop.browse(java.net.URI.create(releasesUrl));
-            }
-        }).onFailure(t -> LOGGER.error("Error opening releases page", t));
-    }
-
-    /**
      * Downloads a file from URL to destination with progress reporting.
      */
     private static boolean downloadFile(String urlString, File destination, Consumer<Integer> progressCallback) {
@@ -369,8 +346,10 @@ public class GameUpdateManager {
 
     /**
      * Extracts the game binary from a downloaded archive.
+     * <br><br>
+     * Package-private for testing.
      */
-    private static File extractGameBinary(File archive, File extractDir) {
+    static File extractGameBinary(File archive, File extractDir) {
         String name = archive.getName().toLowerCase();
 
         try {
@@ -401,8 +380,13 @@ public class GameUpdateManager {
 
     /**
      * Finds a .app bundle at the root level of the given directory (no recursion).
+     * <br><br>
+     * Package-private for testing.
      */
-    private static File findAppBundle(File directory) {
+    static File findAppBundle(File directory) {
+        if (directory == null) {
+            return null;
+        }
         File[] files = directory.listFiles();
         if (files == null) {
             return null;
@@ -571,8 +555,10 @@ public class GameUpdateManager {
 
     /**
      * Extracts filename from URL.
+     * <br><br>
+     * Package-private for testing.
      */
-    private static String extractFileName(String url) {
+    static String extractFileName(String url) {
         int lastSlash = url.lastIndexOf('/');
         if (lastSlash >= 0 && lastSlash < url.length() - 1) {
             String name = url.substring(lastSlash + 1);
@@ -782,12 +768,14 @@ public class GameUpdateManager {
     /**
      * Finds the largest macOS asset from the assets JSON section.
      * The tiles version is always larger than the curses version due to included graphics.
+     * <br><br>
+     * Package-private for testing.
      *
      * @param assetsSection JSON section containing asset information
      * @return the download URL for the largest macOS asset
      * @throws IOException if no macOS asset is found
      */
-    private static String findLargestMacOsAsset(String assetsSection) throws IOException {
+    static String findLargestMacOsAsset(String assetsSection) throws IOException {
         String[] macPatterns = {"osx", "macos", "mac", "darwin", "apple"};
 
         String largestUrl = null;
