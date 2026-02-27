@@ -42,6 +42,11 @@ public class GameUpdateManager {
     private static final int READ_TIMEOUT = 60000;
 
     /**
+     * GitHub API base URL
+     */
+    protected static String GITHUB_API_URL = "https://api.github.com";
+
+    /**
      * Checks if the game update feature is properly configured.
      *
      * @return {@code true} if both repo owner and name are configured
@@ -295,7 +300,7 @@ public class GameUpdateManager {
     /**
      * Downloads a file from URL to destination with progress reporting.
      */
-    private static boolean downloadFile(String urlString, File destination, Consumer<Integer> progressCallback) {
+    protected static boolean downloadFile(String urlString, File destination, Consumer<Integer> progressCallback) {
         try {
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -346,10 +351,8 @@ public class GameUpdateManager {
 
     /**
      * Extracts the game binary from a downloaded archive.
-     * <br><br>
-     * Package-private for testing.
      */
-    static File extractGameBinary(File archive, File extractDir) {
+    protected static File extractGameBinary(File archive, File extractDir) {
         String name = archive.getName().toLowerCase();
 
         try {
@@ -380,10 +383,8 @@ public class GameUpdateManager {
 
     /**
      * Finds a .app bundle at the root level of the given directory (no recursion).
-     * <br><br>
-     * Package-private for testing.
      */
-    static File findAppBundle(File directory) {
+    protected static File findAppBundle(File directory) {
         if (directory == null) {
             return null;
         }
@@ -531,7 +532,7 @@ public class GameUpdateManager {
     /**
      * Moves a file or directory to the trash folder.
      */
-    private static boolean moveToTrash(File file) {
+    protected static boolean moveToTrash(File file) {
         try {
             Path trashDir = Paths.getCustomTrashedGamePath().resolve(CustomTimeUtils.getYyyyMmDdHhMmSsTimestamp());
             Files.createDirectories(trashDir);
@@ -555,10 +556,8 @@ public class GameUpdateManager {
 
     /**
      * Extracts filename from URL.
-     * <br><br>
-     * Package-private for testing.
      */
-    static String extractFileName(String url) {
+    protected static String extractFileName(String url) {
         int lastSlash = url.lastIndexOf('/');
         if (lastSlash >= 0 && lastSlash < url.length() - 1) {
             String name = url.substring(lastSlash + 1);
@@ -592,7 +591,7 @@ public class GameUpdateManager {
      * Determines whether prereleases should be included based on configuration.
      * For non-official repos, always includes prereleases (they don't have stable releases).
      */
-    private static boolean shouldIncludePrereleases() {
+    protected static boolean shouldIncludePrereleases() {
         boolean isOfficial = isOfficialCddaRepo();
         boolean configValue = ConfigurationManager.getInstance().isIncludePreReleaseBuilds();
 
@@ -612,17 +611,17 @@ public class GameUpdateManager {
      * Queries GitHub API for latest release tag.
      * Uses /releases/latest for stable releases, /releases for prereleases.
      */
-    private static String getLatestReleaseTagFromGithub(String owner, String repo) throws IOException {
+    protected static String getLatestReleaseTagFromGithub(String owner, String repo) throws IOException {
         boolean includePrereleases = shouldIncludePrereleases();
 
         // Use different endpoints based on whether we want stable or prerelease
         String apiUrl;
         if (includePrereleases) {
             // Get all releases (first one is latest, including prereleases)
-            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+            apiUrl = GITHUB_API_URL + "/repos/" + owner + "/" + repo + "/releases";
         } else {
             // Use /releases/latest which returns latest non-prerelease, non-draft release
-            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases/latest";
+            apiUrl = GITHUB_API_URL + "/repos/" + owner + "/" + repo + "/releases/latest";
         }
 
         LOGGER.debug("Fetching releases from: [{}] (includePrereleases={})", apiUrl, includePrereleases);
@@ -670,8 +669,8 @@ public class GameUpdateManager {
     /**
      * Gets the latest prerelease tag (fallback when no stable release exists).
      */
-    private static String getLatestPrereleaseTag(String owner, String repo) throws IOException {
-        String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+    protected static String getLatestPrereleaseTag(String owner, String repo) throws IOException {
+        String apiUrl = GITHUB_API_URL + "/repos/" + owner + "/" + repo + "/releases";
 
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -705,15 +704,15 @@ public class GameUpdateManager {
      * Finds the macOS asset download URL from the appropriate release.
      * Uses /releases/latest for stable releases, /releases for prereleases.
      */
-    private static String findMacOsAssetUrl(String owner, String repo) throws IOException {
+    protected static String findMacOsAssetUrl(String owner, String repo) throws IOException {
         boolean includePrereleases = shouldIncludePrereleases();
 
         // Use different endpoints based on whether we want stable or prerelease
         String apiUrl;
         if (includePrereleases) {
-            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+            apiUrl = GITHUB_API_URL + "/repos/" + owner + "/" + repo + "/releases";
         } else {
-            apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases/latest";
+            apiUrl = GITHUB_API_URL + "/repos/" + owner + "/" + repo + "/releases/latest";
         }
 
         LOGGER.debug("Fetching assets from: {}", apiUrl);
@@ -734,8 +733,7 @@ public class GameUpdateManager {
         }
 
         StringBuilder response = new StringBuilder();
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(connection.getInputStream()))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
                 response.append(line);
@@ -768,14 +766,12 @@ public class GameUpdateManager {
     /**
      * Finds the largest macOS asset from the assets JSON section.
      * The tiles version is always larger than the curses version due to included graphics.
-     * <br><br>
-     * Package-private for testing.
      *
      * @param assetsSection JSON section containing asset information
      * @return the download URL for the largest macOS asset
      * @throws IOException if no macOS asset is found
      */
-    static String findLargestMacOsAsset(String assetsSection) throws IOException {
+    protected static String findLargestMacOsAsset(String assetsSection) throws IOException {
         String[] macPatterns = {"osx", "macos", "mac", "darwin", "apple"};
 
         String largestUrl = null;
@@ -848,8 +844,8 @@ public class GameUpdateManager {
     /**
      * Fallback method to find macOS asset URL from prereleases when no stable release exists.
      */
-    private static String findMacOsAssetUrlFromPrereleases(String owner, String repo) throws IOException {
-        String apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+    protected static String findMacOsAssetUrlFromPrereleases(String owner, String repo) throws IOException {
+        String apiUrl = GITHUB_API_URL + "/repos/" + owner + "/" + repo + "/releases";
 
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
