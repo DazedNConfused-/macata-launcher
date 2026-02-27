@@ -261,7 +261,10 @@ public class GameUpdateManager {
 
             // cleanup downloads ---
             if (downloadFile.exists()) {
-                downloadFile.delete();
+                boolean downloadCleanupResult = downloadFile.delete();
+                if (!downloadCleanupResult) {
+                    LOGGER.error("Could not perform post-install download cleanup. Manual deletion of [{}] will be required.", downloadFile.getAbsolutePath());
+                }
             }
 
             statusCallback.accept("Update complete!");
@@ -526,7 +529,7 @@ public class GameUpdateManager {
                     unmountPb.start().waitFor();
                     LOGGER.debug("DMG unmounted: {}", mountPoint);
                 } catch (Exception e) {
-                    LOGGER.warn("Failed to unmount DMG: {}", e.getMessage());
+                    LOGGER.error("Failed to unmount DMG: {}", e.getMessage(), e);
                 }
             }
         }
