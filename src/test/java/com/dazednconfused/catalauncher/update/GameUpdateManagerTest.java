@@ -27,6 +27,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -1638,6 +1640,7 @@ public class GameUpdateManagerTest {
     // ========================================
 
     @Test
+    @EnabledOnOs(OS.MAC) // DMG extraction requires macOS-specific hdiutil command
     void extractGameBinary_extracts_dmg_with_app_bundle_success(@TempDir Path tempDir) {
         File dmgFile = TestUtils.getFromResource("gameupdate/dmg/game-macos.dmg");
 
@@ -2054,6 +2057,7 @@ public class GameUpdateManagerTest {
     }
 
     @Test
+    @EnabledOnOs(OS.MAC) // DMG extraction requires macOS-specific hdiutil command
     void full_dmg_extraction_and_app_discovery_workflow_success(@TempDir Path tempDir) throws IOException {
         // prepare mock data ---
         File dmgFile = TestUtils.getFromResource("gameupdate/dmg/game-macos.dmg");
