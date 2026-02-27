@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.dazednconfused.catalauncher.gui.GameUpdateSettingsDialog">
+  <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="9" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="10" left="10" bottom="10" right="10"/>
+    <constraints>
+      <xy x="48" y="54" width="500" height="361"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="title1" class="javax.swing.JLabel" binding="titleLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font size="14" style="1"/>
+          <text value="Game Update Source Configuration"/>
+        </properties>
+      </component>
+      <grid id="row1" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="10" vgap="-1">
+        <margin top="5" left="0" bottom="5" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="label1" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="150" height="-1"/>
+                <preferred-size width="150" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="GitHub Repo Owner:"/>
+            </properties>
+          </component>
+          <component id="field1" class="javax.swing.JTextField" binding="repoOwnerTextField">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="250" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <toolTipText value="e.g., CleverRaven"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="row2" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="10" vgap="-1">
+        <margin top="5" left="0" bottom="5" right="0"/>
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="label2" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="150" height="-1"/>
+                <preferred-size width="150" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="GitHub Repo Name:"/>
+            </properties>
+          </component>
+          <component id="field2" class="javax.swing.JTextField" binding="repoNameTextField">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="250" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <toolTipText value="e.g., Cataclysm-DDA"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="row3" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="10" vgap="-1">
+        <margin top="5" left="0" bottom="5" right="0"/>
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="label3" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <minimum-size width="150" height="-1"/>
+                <preferred-size width="150" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Installed Version:"/>
+            </properties>
+          </component>
+          <component id="field3" class="javax.swing.JTextField" binding="installedVersionTextField">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="250" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <toolTipText value="e.g., '0.H-RELEASE' or 'cdda-experimental-2026-02-26-0301' (without quotation marks) - leave blank to download latest available"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="check1" class="javax.swing.JCheckBox" binding="autoCheckCheckbox">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="false"/>
+          <text value="Automatically check for game updates at startup"/>
+        </properties>
+      </component>
+      <component id="check2" class="javax.swing.JCheckBox" binding="includePreReleasesCheckbox">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="false"/>
+          <text value="Include experimental/pre-release builds"/>
+          <toolTipText value="When enabled, checks for the latest experimental build instead of stable releases"/>
+        </properties>
+      </component>
+      <component id="hintLabel" class="javax.swing.JLabel" binding="preReleaseHintLabel">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="4" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font size="11" style="2"/>
+          <foreground color="-8355712"/>
+          <text value="Only CleverRaven/Cataclysm-DDA has stable releases"/>
+        </properties>
+      </component>
+      <vspacer id="spacer1">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <grid id="buttonRow" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="10" vgap="-1">
+        <margin top="10" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="btn1" class="javax.swing.JButton" binding="checkNowButton">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Check Now"/>
+            </properties>
+          </component>
+          <hspacer id="btnSpacer">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+          <component id="btn2" class="javax.swing.JButton" binding="saveButton">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Save"/>
+            </properties>
+          </component>
+          <component id="btn3" class="javax.swing.JButton" binding="cancelButton">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Cancel"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

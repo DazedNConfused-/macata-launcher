@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Represents a version with optional pre-release information. This class supports semantic versioning and pre-release tags.
+ * Represents a launcher version with optional pre-release information. This class supports semantic versioning and pre-release tags.
  * <br/><br/>
  * Examples of valid version strings:
  * <ul>
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * @see <a href="https://stackoverflow.com/a/11024200">https://stackoverflow.com/a/11024200</a>
  *
  */
-public class Version implements Comparable<Version> {
+public class LauncherVersion implements Comparable<LauncherVersion> {
 
     private static final Pattern VERSION_PATTERN = Pattern.compile("^(?:prerelease-)?v?([0-9]+(\\.[0-9]+)*)(?:-(.+))?$");
     private static final String PRERELEASE_PREFIX = "prerelease-";
@@ -26,12 +26,12 @@ public class Version implements Comparable<Version> {
     private final boolean isPreRelease;
 
     /**
-     * Constructs a {@link Version} object from a version string.
+     * Constructs a {@link LauncherVersion} object from a version string.
      *
      * @param versionString the version string, e.g., "v1.2.3", "prerelease-v1.2.3-alpha", etc
      * @throws IllegalArgumentException if the version string is null or does not match the expected format
      */
-    public Version(String versionString) {
+    public LauncherVersion(String versionString) {
         if (versionString == null) {
             throw new IllegalArgumentException("Version cannot be null");
         }
@@ -45,7 +45,7 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * Returns the semantic version of the {@link Version}.
+     * Returns the semantic version of the {@link LauncherVersion}.
      *
      * @return The semantic version (ie: {@code 1.2.3})
      */
@@ -54,7 +54,7 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * Returns the pre-release tag of the {@link Version}.
+     * Returns the pre-release tag of the {@link LauncherVersion}.
      *
      * @return The pre-release tag, or {@code null} if not a pre-release
      */
@@ -63,7 +63,7 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * Checks if the {@link Version} is a pre-release.
+     * Checks if the {@link LauncherVersion} is a pre-release.
      *
      * @return {@code true} if the version is a pre-release, {@code false} otherwise
      */
@@ -72,7 +72,7 @@ public class Version implements Comparable<Version> {
     }
 
     @Override
-    public int compareTo(Version that) {
+    public int compareTo(LauncherVersion that) {
         if (that == null) {
             return 1;
         }
@@ -123,7 +123,7 @@ public class Version implements Comparable<Version> {
         if (that == null || this.getClass() != that.getClass()) {
             return false;
         }
-        return this.compareTo((Version) that) == 0;
+        return this.compareTo((LauncherVersion) that) == 0;
     }
 
     @Override

@@ -2,6 +2,8 @@ package com.dazednconfused.catalauncher.gui;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
+import com.dazednconfused.catalauncher.update.GameUpdateManager;
+import com.dazednconfused.catalauncher.update.GameVersion;
 
 import io.vavr.control.Try;
 
@@ -9,6 +11,7 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Optional;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -19,6 +22,7 @@ import javax.swing.KeyStroke;
 import lombok.Getter;
 
 import org.apache.log4j.Level;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +38,13 @@ public class LauncherMenuBar {
 
     private final JMenu helpMenu;
     private final JMenu developerToolsMenu;
+    private final JMenu gameMenu;
 
     private final JMenuItem showConsoleLogMenuItem;
     private final JCheckBoxMenuItem debugModeCheckBoxMenuItem;
     private final JMenuItem aboutMenuItem;
+    private final JMenuItem checkForGameUpdatesMenuItem;
+    private final JMenuItem configureGameUpdateSourceMenuItem;
 
     /**
      * Public constructor.
@@ -79,6 +86,22 @@ public class LauncherMenuBar {
         this.aboutMenuItem.setMnemonic(KeyEvent.VK_T);
         this.aboutMenuItem.addActionListener(LauncherMenuBar.onAboutButtonClicked(parent));
         this.helpMenu.add(this.aboutMenuItem);
+
+        // game menu ---
+        this.gameMenu = new JMenu("Game");
+        this.gameMenu.setMnemonic(KeyEvent.VK_G);
+        this.menuBar.add(gameMenu);
+
+        // check for game updates button --
+        this.checkForGameUpdatesMenuItem = new JMenuItem("Check for Game Updates");
+        this.checkForGameUpdatesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK));
+        this.checkForGameUpdatesMenuItem.addActionListener(LauncherMenuBar.onCheckForGameUpdatesClicked(parent));
+        this.gameMenu.add(this.checkForGameUpdatesMenuItem);
+
+        // configure game update source button --
+        this.configureGameUpdateSourceMenuItem = new JMenuItem("Configure Update Source...");
+        this.configureGameUpdateSourceMenuItem.addActionListener(LauncherMenuBar.onConfigureGameUpdateSourceClicked(parent));
+        this.gameMenu.add(this.configureGameUpdateSourceMenuItem);
     }
 
     /**
@@ -114,5 +137,83 @@ public class LauncherMenuBar {
             VersionManagerWindow versionManagerWindow = new VersionManagerWindow();
             versionManagerWindow.packCenterAndShow(parent);
         };
+    }
+
+    /**
+     * The action to be performed on {@link #checkForGameUpdatesMenuItem}'s click.
+     * */
+    private static ActionListener onCheckForGameUpdatesClicked(Component parent) {
+        return e -> {
+            LOGGER.trace("Check for game updates button clicked");
+
+            if (!GameUpdateManager.isConfigured()) {
+                new ConfirmDialog(
+                    "Game update source not configured. Configure now?",
+                    ConfirmDialog.ConfirmDialogType.INFO,
+                    confirmed -> {
+                        if (confirmed) {
+                            GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
+                            dialog.packCenterAndShow(parent);
+                        }
+                    }
+                ).packCenterAndShow(parent);
+                return;
+            }
+
+            if (!GameUpdateManager.isInstalledVersionConfigured()) {
+                new ConfirmDialog(
+                    "Installed game version not set. Download latest version now?",
+                    ConfirmDialog.ConfirmDialogType.INFO,
+                    confirmed -> {
+                        if (confirmed) {
+                            // offer to download latest based on current configuration
+                            offerLatestDownload(parent);
+                        }
+                    }
+                ).packCenterAndShow(parent);
+                return;
+            }
+
+            // use the new dialog that offers download option ---
+            GameUpdateAvailableDialog.checkAndShow(parent, true);
+        };
+    }
+
+    /**
+     * The action to be performed on {@link #configureGameUpdateSourceMenuItem}'s click.
+     * */
+    private static ActionListener onConfigureGameUpdateSourceClicked(Component parent) {
+        return e -> {
+            LOGGER.trace("Configure game update source button clicked");
+            GameUpdateSettingsDialog dialog = new GameUpdateSettingsDialog();
+            dialog.packCenterAndShow(parent);
+        };
+    }
+
+    /**
+     * Offers to download the latest version when installed version is not configured.
+     */
+    private static void offerLatestDownload(Component parent) {
+        LOGGER.trace("Offering latest download (no installed version set)");
+
+        // check CDDA path first
+        if (!GameUpdateManager.isCddaPathConfigured()) {
+            new ConfirmDialog(
+                "CDDA executable path is not configured. Please set it in the Launcher tab first."
+            ).packCenterAndShow(parent);
+            return;
+        }
+
+        // get the latest version
+        Optional<GameVersion> latestVersion = GameUpdateManager.getLatestGameReleaseTag();
+        if (latestVersion.isEmpty()) {
+            new ConfirmDialog(
+                "Could not determine latest version. Check your repository configuration."
+            ).packCenterAndShow(parent);
+            return;
+        }
+
+        // show the download dialog
+        new GameUpdateAvailableDialog(parent, latestVersion.get()).packCenterAndShow(parent);
     }
 }

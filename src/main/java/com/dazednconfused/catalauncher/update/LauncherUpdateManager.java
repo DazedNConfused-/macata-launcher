@@ -19,16 +19,16 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UpdateManager {
+public class LauncherUpdateManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LauncherUpdateManager.class);
 
     /**
      * Determines if a software update is available to the user to be downloaded.
      * */
     public static Optional<Boolean> isUpdateAvailable() {
         Optional<String> currentVersion = Optional.ofNullable(GitInfoManager.getInstance().getBuildVersion()).filter(not(String::isBlank));
-        Optional<Version> latestVersionAvailable = getLatestReleaseTag();
+        Optional<LauncherVersion> latestVersionAvailable = getLatestReleaseTag();
 
         if (currentVersion.isEmpty() || latestVersionAvailable.isEmpty()) {
             LOGGER.info("Could not gather all the required information to determine if an update should be carried out or not.");
@@ -36,8 +36,8 @@ public class UpdateManager {
             return Optional.empty();
         }
 
-        Version current = new Version(currentVersion.get());
-        Version latest = latestVersionAvailable.get();
+        LauncherVersion current = new LauncherVersion(currentVersion.get());
+        LauncherVersion latest = latestVersionAvailable.get();
 
         return Optional.of(latest.compareTo(current) > 0);
     }
@@ -45,16 +45,16 @@ public class UpdateManager {
     /**
      * Opens the webpage for the latest binary release in the official remote repository.
      *
-     * @implNote Shortcut operation that chains both {@link #getLatestReleaseTag()} and {@link #openReleaseInDefaultBrowser(Version)}.
+     * @implNote Shortcut operation that chains both {@link #getLatestReleaseTag()} and {@link #openReleaseInDefaultBrowser(LauncherVersion)}.
      * */
     public static void openLatestReleaseInDefaultBrowser() {
-        getLatestReleaseTag().ifPresent(UpdateManager::openReleaseInDefaultBrowser);
+        getLatestReleaseTag().ifPresent(LauncherUpdateManager::openReleaseInDefaultBrowser);
     }
 
     /**
      * Opens the webpage for the given binary release in the official remote repository.
      * */
-    public static void openReleaseInDefaultBrowser(Version tag) {
+    public static void openReleaseInDefaultBrowser(LauncherVersion tag) {
         LOGGER.info("Opening [{}]'s release's homepage using default browser...", tag);
 
         Try.run(() -> openGithubReleaseInDefaultBrowser(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, tag.toString()))
@@ -64,11 +64,11 @@ public class UpdateManager {
     /**
      * Queries for the latest binary release's tag available to the public in the official remote repository.
      * */
-    public static Optional<Version> getLatestReleaseTag() {
+    public static Optional<LauncherVersion> getLatestReleaseTag() {
         LOGGER.info("Querying latest release's tag from internet repository...");
 
         return Try.of(() -> getLatestReleaseTagFromGithub(GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, true))
-            .map(Version::new)
+            .map(LauncherVersion::new)
             .onFailure(t -> LOGGER.error("There was an error retrieving the latest release from remote repository [{}/{}]", GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, t))
             .toJavaOptional();
     }

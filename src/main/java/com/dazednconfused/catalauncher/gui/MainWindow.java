@@ -10,6 +10,7 @@ import com.dazednconfused.catalauncher.gui.listener.SoundpackActions;
 import com.dazednconfused.catalauncher.helper.GitInfoManager;
 import com.dazednconfused.catalauncher.helper.LogLevelManager;
 import com.dazednconfused.catalauncher.helper.sysinfo.SystemInfoManager;
+import com.dazednconfused.catalauncher.update.GameUpdateManager;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 
@@ -156,6 +157,9 @@ public class MainWindow {
 
         // CHECK FOR SOFTWARE UPDATES ---
         new Thread(this::checkForUpdates).start(); // check for updates on a background thread, to not slow down application's startup
+
+        // CHECK FOR GAME UPDATES ---
+        new Thread(this::checkForGameUpdates).start(); // check for game updates on a background thread
     }
 
     /**
@@ -354,5 +358,28 @@ public class MainWindow {
         if (ConfigurationManager.getInstance().isShouldLookForUpdates()) {
             VersionManagerWindow.checkForUpdates(this.mainPanel, false);
         }
+    }
+
+    /**
+     * Checks for game updates if the feature is configured and enabled.
+     * */
+    private void checkForGameUpdates() {
+        if (!ConfigurationManager.getInstance().isShouldCheckForGameUpdates()) {
+            LOGGER.trace("Automatic game update check disabled");
+            return;
+        }
+
+        if (!GameUpdateManager.isConfigured()) {
+            LOGGER.trace("Game update source not configured, skipping automatic check");
+            return;
+        }
+
+        if (!GameUpdateManager.isInstalledVersionConfigured()) {
+            LOGGER.trace("Installed game version not set, skipping automatic check");
+            return;
+        }
+
+        // use the dialog that offers download option (don't show if no update) ---
+        GameUpdateAvailableDialog.checkAndShow(this.mainPanel, false);
     }
 }

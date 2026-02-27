@@ -89,6 +89,51 @@ public class ConfigurationManager {
         save(this.configuration);
     }
 
+    public String getGameGithubRepoOwner() {
+        return this.configuration.getGameGithubRepoOwner();
+    }
+
+    public void setGameGithubRepoOwner(String gameGithubRepoOwner) {
+        this.configuration.setGameGithubRepoOwner(gameGithubRepoOwner);
+        save(this.configuration);
+    }
+
+    public String getGameGithubRepoName() {
+        return this.configuration.getGameGithubRepoName();
+    }
+
+    public void setGameGithubRepoName(String gameGithubRepoName) {
+        this.configuration.setGameGithubRepoName(gameGithubRepoName);
+        save(this.configuration);
+    }
+
+    public boolean isShouldCheckForGameUpdates() {
+        return this.configuration.isShouldCheckForGameUpdates();
+    }
+
+    public void setShouldCheckForGameUpdates(boolean shouldCheckForGameUpdates) {
+        this.configuration.setShouldCheckForGameUpdates(shouldCheckForGameUpdates);
+        save(this.configuration);
+    }
+
+    public String getInstalledGameVersion() {
+        return this.configuration.getInstalledGameVersion();
+    }
+
+    public void setInstalledGameVersion(String installedGameVersion) {
+        this.configuration.setInstalledGameVersion(installedGameVersion);
+        save(this.configuration);
+    }
+
+    public boolean isIncludePreReleaseBuilds() {
+        return this.configuration.isIncludePreReleaseBuilds();
+    }
+
+    public void setIncludePreReleaseBuilds(boolean includePreReleaseBuilds) {
+        this.configuration.setIncludePreReleaseBuilds(includePreReleaseBuilds);
+        save(this.configuration);
+    }
+
     /**
      * Saves the given {@link Configuration} to disk.
      * */
