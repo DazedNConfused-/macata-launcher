@@ -68,11 +68,11 @@ While not mandatory, if commits are not properly formatted, they may get rejecte
 - [x] Mod management
 - [x] [Bright Nights](https://github.com/cataclysmbnteam/Cataclysm-BN) support
 - [x] [The Last Generation](https://github.com/Cataclysm-TLG/Cataclysm-TLG) support
+- [x] Automatic CDDA binary updates & backups
 
 ### Planned
 
 - [ ] Tileset support (soon)
-- [ ] Automatic CDDA binary updates & backups
 
 ### Maybes
 
