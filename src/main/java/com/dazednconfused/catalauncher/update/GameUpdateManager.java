@@ -42,7 +42,7 @@ public class GameUpdateManager {
     private static final int READ_TIMEOUT = 60000;
 
     /**
-     * GitHub API base URL
+     * GitHub API base URL.
      */
     protected static String GITHUB_API_URL = "https://api.github.com";
 
