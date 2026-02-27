@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import net.lingala.zip4j.ZipFile;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class GameUpdateManager {
     public static boolean isConfigured() {
         String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
         String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
-        return !isBlank(owner) && !isBlank(repo);
+        return !StringUtils.isBlank(owner) && !StringUtils.isBlank(repo);
     }
 
     /**
@@ -58,7 +59,7 @@ public class GameUpdateManager {
      */
     public static boolean isInstalledVersionConfigured() {
         String installedVersion = ConfigurationManager.getInstance().getInstalledGameVersion();
-        return !isBlank(installedVersion);
+        return !StringUtils.isBlank(installedVersion);
     }
 
     /**
@@ -68,7 +69,7 @@ public class GameUpdateManager {
      */
     public static boolean isCddaPathConfigured() {
         String cddaPath = ConfigurationManager.getInstance().getCddaPath();
-        return !isBlank(cddaPath);
+        return !StringUtils.isBlank(cddaPath);
     }
 
     /**
@@ -84,7 +85,7 @@ public class GameUpdateManager {
         }
 
         String installedVersionStr = ConfigurationManager.getInstance().getInstalledGameVersion();
-        if (isBlank(installedVersionStr)) {
+        if (StringUtils.isBlank(installedVersionStr)) {
             LOGGER.info("Game update check skipped: installed version not set");
             return Optional.empty();
         }
@@ -116,7 +117,7 @@ public class GameUpdateManager {
         String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
         String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
 
-        if (isBlank(owner) || isBlank(repo)) {
+        if (StringUtils.isBlank(owner) || StringUtils.isBlank(repo)) {
             LOGGER.warn("Cannot query releases: repository not configured");
             return Optional.empty();
         }
@@ -138,7 +139,7 @@ public class GameUpdateManager {
         String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
         String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
 
-        if (isBlank(owner) || isBlank(repo)) {
+        if (StringUtils.isBlank(owner) || StringUtils.isBlank(repo)) {
             return Optional.empty();
         }
 
@@ -165,7 +166,7 @@ public class GameUpdateManager {
             }
 
             String cddaPath = ConfigurationManager.getInstance().getCddaPath();
-            if (isBlank(cddaPath)) {
+            if (StringUtils.isBlank(cddaPath)) {
                 statusCallback.accept("Error: CDDA path not configured");
                 return false;
             }
@@ -298,7 +299,7 @@ public class GameUpdateManager {
         String owner = ConfigurationManager.getInstance().getGameGithubRepoOwner();
         String repo = ConfigurationManager.getInstance().getGameGithubRepoName();
 
-        if (isBlank(owner) || isBlank(repo)) {
+        if (StringUtils.isBlank(owner) || StringUtils.isBlank(repo)) {
             LOGGER.warn("Cannot open releases page: repository not configured");
             return;
         }
@@ -423,7 +424,7 @@ public class GameUpdateManager {
         try {
             // mount the DMG and parse output to find mount point ---
             ProcessBuilder mountPb = new ProcessBuilder(
-                "hdiutil", "attach", dmgFile.getAbsolutePath(), "-nobrowse"
+                getHdiutilPath(), "attach", dmgFile.getAbsolutePath(), "-nobrowse"
             );
             mountPb.redirectErrorStream(true);
             Process mountProcess = mountPb.start();
@@ -476,7 +477,7 @@ public class GameUpdateManager {
             // use ditto to copy (handles macOS resource forks and permissions) ---
             File destApp = new File(extractDir, appBundle.getName());
             ProcessBuilder copyPb = new ProcessBuilder(
-                "ditto", appBundle.getAbsolutePath(), destApp.getAbsolutePath()
+                getDittoPath(), appBundle.getAbsolutePath(), destApp.getAbsolutePath()
             );
             copyPb.redirectErrorStream(true);
             Process copyProcess = copyPb.start();
@@ -500,14 +501,14 @@ public class GameUpdateManager {
 
             // remove quarantine attributes ---
             ProcessBuilder xattrPb = new ProcessBuilder(
-                "xattr", "-cr", destApp.getAbsolutePath()
+                getXattrPath(), "-cr", destApp.getAbsolutePath()
             );
             xattrPb.start().waitFor();
             LOGGER.debug("Cleared extended attributes from: {}", destApp.getAbsolutePath());
 
             // ensure executable permissions on the main binaries ---
             ProcessBuilder chmodMacOsPb = new ProcessBuilder(
-                "chmod", "-R", "+x", destApp.getAbsolutePath() + "/Contents/MacOS"
+                getChmodPath(), "-R", "+x", destApp.getAbsolutePath() + "/Contents/MacOS"
             );
             chmodMacOsPb.start().waitFor();
             LOGGER.debug("Set executable permissions on: {}/Contents/MacOS", destApp.getAbsolutePath());
@@ -516,7 +517,7 @@ public class GameUpdateManager {
             File resourcesDir = new File(destApp, "Contents/Resources");
             if (resourcesDir.exists()) {
                 ProcessBuilder chmodResourcesPb = new ProcessBuilder(
-                    "chmod", "-R", "+x", resourcesDir.getAbsolutePath()
+                    getChmodPath(), "-R", "+x", resourcesDir.getAbsolutePath()
                 );
                 chmodResourcesPb.start().waitFor();
                 LOGGER.debug("Set executable permissions on: {}", resourcesDir.getAbsolutePath());
@@ -532,7 +533,7 @@ public class GameUpdateManager {
             if (mountPoint != null) {
                 try {
                     ProcessBuilder unmountPb = new ProcessBuilder(
-                        "hdiutil", "detach", mountPoint, "-quiet", "-force"
+                        getHdiutilPath(), "detach", mountPoint, "-quiet", "-force"
                     );
                     unmountPb.start().waitFor();
                     LOGGER.debug("DMG unmounted: {}", mountPoint);
@@ -907,9 +908,51 @@ public class GameUpdateManager {
     }
 
     /**
-     * Checks if a string is null or blank.
+     * Resolve the {@code hdiutil} executable to an absolute path where possible.
      */
-    private static boolean isBlank(String str) {
-        return str == null || str.trim().isEmpty();
+    private static String getHdiutilPath() {
+        return getNormalizedPath("hdiutil");
+    }
+
+    /**
+     * Resolve the {@code ditto} executable to an absolute path where possible.
+     */
+    private static String getDittoPath() {
+        return getNormalizedPath("ditto");
+    }
+
+    /**
+     * Resolve the {@code xattr} executable to an absolute path where possible.
+     */
+    private static String getXattrPath() {
+        return getNormalizedPath("xattr");
+    }
+
+    /**
+     * Resolve the {@code chmod} executable to an absolute path where possible.
+     */
+    private static String getChmodPath() {
+        return getNormalizedPath("chmod");
+    }
+
+    /**
+     * Resolve a binary name to a normalized absolute path when possible.
+     *
+     * <p>This method checks the conventional macOS location {@code /usr/bin/<name>} and returns its absolute path if that
+     * file exists and is executable. If the standard location is not present or not executable, the original {@code path} (binary name)
+     * is returned so the system PATH can be relied upon at runtime.</p>
+     *
+     * @param path the binary name (for example, {@code "hdiutil"} or {@code "ditto"})
+     * @return an absolute path to the binary if found in /usr/bin and executable, otherwise the
+     *         original {@code path} value to be resolved via the environment PATH
+     */
+    private static String getNormalizedPath(String path) {
+        Path binPath = java.nio.file.Paths.get("/usr/bin", path); // standard location of binaries on macOS
+
+        if (Files.isRegularFile(binPath) && Files.isExecutable(binPath)) {
+            return binPath.toAbsolutePath().toString();
+        }
+
+        return path; // fallback to relying on PATH if the standard location is not usable
     }
 }
