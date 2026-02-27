@@ -5,6 +5,7 @@ import static com.dazednconfused.catalauncher.helper.Constants.OFFICIAL_CDDA_REP
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.Paths;
+import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.utils.CustomTimeUtils;
 
 import io.vavr.control.Try;
@@ -220,11 +221,12 @@ public class GameUpdateManager {
             statusCallback.accept("Extracting...");
             progressCallback.accept(65);
 
-            File extractedApp = extractGameBinary(downloadFile, downloadsDir.toFile());
-            if (extractedApp == null) {
+            Result<Throwable, File> extractResult = extractGameBinary(downloadFile, downloadsDir.toFile());
+            if (extractResult.toEither().isLeft()) {
                 statusCallback.accept("Error: Extraction failed");
                 return false;
             }
+            final File extractedApp = extractResult.toEither().get().getResult().orElseThrow();
 
             // move old binary to trash ---
             statusCallback.accept("Moving old binary to trash...");
@@ -352,7 +354,7 @@ public class GameUpdateManager {
     /**
      * Extracts the game binary from a downloaded archive.
      */
-    protected static File extractGameBinary(File archive, File extractDir) {
+    protected static Result<Throwable, File> extractGameBinary(File archive, File extractDir) {
         String name = archive.getName().toLowerCase();
 
         try {
@@ -369,42 +371,42 @@ public class GameUpdateManager {
 
             } else if (name.endsWith(".app")) {
                 // Already an app bundle
-                return archive;
+                return Result.success(archive);
             }
 
             LOGGER.warn("Unknown archive format: {}", name);
-            return null;
+            return Result.failure(new IOException("Unknown archive format: " + name));
 
         } catch (Exception e) {
             LOGGER.error("Extraction failed: {}", e.getMessage(), e);
-            return null;
+            return Result.failure(e);
         }
     }
 
     /**
      * Finds a .app bundle at the root level of the given directory (no recursion).
      */
-    protected static File findAppBundle(File directory) {
+    protected static Result<Throwable, File> findAppBundle(File directory) {
         if (directory == null) {
-            return null;
+            return Result.failure(new IllegalArgumentException("directory cannot be null"));
         }
         File[] files = directory.listFiles();
         if (files == null) {
-            return null;
+            return Result.failure(new IllegalArgumentException("Cannot list files in directory: " + directory));
         }
 
         for (File file : files) {
             if (file.getName().endsWith(".app")) {
-                return file;
+                return Result.success(file);
             }
         }
-        return null;
+        return Result.failure(new IOException("No .app bundle found in: " + directory));
     }
 
     /**
      * Extracts .app from a DMG file using hdiutil.
      */
-    private static File extractFromDmg(File dmgFile, File extractDir) {
+    private static Result<Throwable, File> extractFromDmg(File dmgFile, File extractDir) {
         String mountPoint = null;
         try {
             // mount the DMG and parse output to find mount point ---
@@ -429,7 +431,7 @@ public class GameUpdateManager {
             int mountResult = mountProcess.waitFor();
             if (mountResult != 0) {
                 LOGGER.error("Failed to mount DMG (exit code {}): {}", mountResult, mountOutput);
-                return null;
+                return Result.failure(new IOException("Failed to mount DMG (exit code " + mountResult + "): " + mountOutput));
             }
 
             // parse mount point from output (format: "/dev/diskX  Apple_HFS  /Volumes/Name")
@@ -444,18 +446,19 @@ public class GameUpdateManager {
 
             if (mountPoint == null) {
                 LOGGER.error("Could not determine mount point from output: {}", mountOutput);
-                return null;
+                return Result.failure(new IOException("Could not determine mount point from output: " + mountOutput));
             }
 
             LOGGER.debug("DMG mounted at: {}", mountPoint);
 
             // find .app in mounted volume ---
             File mountDir = new File(mountPoint);
-            File appBundle = findAppBundle(mountDir);
-            if (appBundle == null) {
+            Result<Throwable, File> appBundleResult = findAppBundle(mountDir);
+            if (appBundleResult.toEither().isLeft()) {
                 LOGGER.error("No .app found in DMG at {}", mountPoint);
-                return null;
+                return appBundleResult;
             }
+            File appBundle = appBundleResult.toEither().get().getResult().orElseThrow();
 
             LOGGER.debug("Found app bundle: {}", appBundle.getAbsolutePath());
 
@@ -479,7 +482,7 @@ public class GameUpdateManager {
             int copyResult = copyProcess.waitFor();
             if (copyResult != 0) {
                 LOGGER.error("Failed to copy app bundle (exit code {})", copyResult);
-                return null;
+                return Result.failure(new IOException("Failed to copy app bundle (exit code " + copyResult + ")"));
             }
 
             LOGGER.debug("App bundle copied to: {}", destApp.getAbsolutePath());
@@ -508,11 +511,11 @@ public class GameUpdateManager {
                 LOGGER.debug("Set executable permissions on: {}", resourcesDir.getAbsolutePath());
             }
 
-            return destApp;
+            return Result.success(destApp);
 
         } catch (Exception e) {
             LOGGER.error("DMG extraction failed: {}", e.getMessage(), e);
-            return null;
+            return Result.failure(e);
         } finally {
             // always try to unmount ---
             if (mountPoint != null) {

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.dazednconfused.catalauncher.configuration.ConfigurationManager;
 import com.dazednconfused.catalauncher.helper.Paths;
+import com.dazednconfused.catalauncher.helper.result.Result;
 import com.dazednconfused.catalauncher.utils.TestUtils;
 import com.sun.net.httpserver.HttpServer;
 
@@ -1496,29 +1497,29 @@ public class GameUpdateManagerTest {
         Path appPath = tempDir.resolve("TestGame.app");
         Files.createDirectories(appPath.resolve("Contents/MacOS"));
 
-        File result = GameUpdateManager.findAppBundle(tempDir.toFile());
+        Result<Throwable, File> result = GameUpdateManager.findAppBundle(tempDir.toFile());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo("TestGame.app");
+        assertThat(result.toEither().isRight()).isTrue();
+        assertThat(result.getOrElseThrowUnchecked().getName()).isEqualTo("TestGame.app");
     }
 
     @Test
-    void findAppBundle_returns_null_when_no_app_success(@TempDir Path tempDir) throws IOException {
+    void findAppBundle_returns_failure_when_no_app_success(@TempDir Path tempDir) throws IOException {
         Files.createDirectories(tempDir.resolve("SomeFolder"));
 
-        File result = GameUpdateManager.findAppBundle(tempDir.toFile());
+        Result<Throwable, File> result = GameUpdateManager.findAppBundle(tempDir.toFile());
 
-        assertThat(result).isNull();
+        assertThat(result.toEither().isLeft()).isTrue();
     }
 
     @Test
-    void findAppBundle_returns_null_for_null_directory_success() {
-        assertThat(GameUpdateManager.findAppBundle(null)).isNull();
+    void findAppBundle_returns_failure_for_null_directory_success() {
+        assertThat(GameUpdateManager.findAppBundle(null).toEither().isLeft()).isTrue();
     }
 
     @Test
-    void findAppBundle_returns_null_for_nonexistent_directory_success() {
-        assertThat(GameUpdateManager.findAppBundle(new File("/nonexistent/path"))).isNull();
+    void findAppBundle_returns_failure_for_nonexistent_directory_success() {
+        assertThat(GameUpdateManager.findAppBundle(new File("/nonexistent/path")).toEither().isLeft()).isTrue();
     }
 
     // ========================================
@@ -1606,22 +1607,23 @@ public class GameUpdateManagerTest {
     void extractGameBinary_extracts_zip_with_app_bundle_success(@TempDir Path tempDir) {
         File zipFile = TestUtils.getFromResource("gameupdate/zip/game-macos.zip");
 
-        File result = GameUpdateManager.extractGameBinary(zipFile, tempDir.toFile());
+        Result<Throwable, File> result = GameUpdateManager.extractGameBinary(zipFile, tempDir.toFile());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo("TestGame.app");
-        assertThat(new File(result, "Contents/Info.plist")).exists();
-        assertThat(new File(result, "Contents/MacOS/TestGame")).exists();
+        assertThat(result.toEither().isRight()).isTrue();
+        File resultFile = result.getOrElseThrowUnchecked();
+        assertThat(resultFile.getName()).isEqualTo("TestGame.app");
+        assertThat(new File(resultFile, "Contents/Info.plist")).exists();
+        assertThat(new File(resultFile, "Contents/MacOS/TestGame")).exists();
     }
 
     @Test
-    void extractGameBinary_returns_null_for_unknown_format_success(@TempDir Path tempDir) throws IOException {
+    void extractGameBinary_returns_failure_for_unknown_format_success(@TempDir Path tempDir) throws IOException {
         File unknownFile = tempDir.resolve("game.tar.gz").toFile();
         Files.createFile(unknownFile.toPath());
 
-        File result = GameUpdateManager.extractGameBinary(unknownFile, tempDir.toFile());
+        Result<Throwable, File> result = GameUpdateManager.extractGameBinary(unknownFile, tempDir.toFile());
 
-        assertThat(result).isNull();
+        assertThat(result.toEither().isLeft()).isTrue();
     }
 
     @Test
@@ -1629,10 +1631,10 @@ public class GameUpdateManagerTest {
         Path appPath = tempDir.resolve("DirectGame.app");
         Files.createDirectories(appPath);
 
-        File result = GameUpdateManager.extractGameBinary(appPath.toFile(), tempDir.toFile());
+        Result<Throwable, File> result = GameUpdateManager.extractGameBinary(appPath.toFile(), tempDir.toFile());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo("DirectGame.app");
+        assertThat(result.toEither().isRight()).isTrue();
+        assertThat(result.getOrElseThrowUnchecked().getName()).isEqualTo("DirectGame.app");
     }
 
     // ========================================
@@ -1644,13 +1646,14 @@ public class GameUpdateManagerTest {
     void extractGameBinary_extracts_dmg_with_app_bundle_success(@TempDir Path tempDir) {
         File dmgFile = TestUtils.getFromResource("gameupdate/dmg/game-macos.dmg");
 
-        File result = GameUpdateManager.extractGameBinary(dmgFile, tempDir.toFile());
+        Result<Throwable, File> result = GameUpdateManager.extractGameBinary(dmgFile, tempDir.toFile());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo("TestGame.app");
-        assertThat(new File(result, "Contents/Info.plist")).exists();
-        assertThat(new File(result, "Contents/MacOS/TestGame")).exists();
-        assertThat(new File(result, "Contents/Resources/game.dat")).exists();
+        assertThat(result.toEither().isRight()).isTrue();
+        File resultFile = result.getOrElseThrowUnchecked();
+        assertThat(resultFile.getName()).isEqualTo("TestGame.app");
+        assertThat(new File(resultFile, "Contents/Info.plist")).exists();
+        assertThat(new File(resultFile, "Contents/MacOS/TestGame")).exists();
+        assertThat(new File(resultFile, "Contents/Resources/game.dat")).exists();
     }
 
     // ========================================
@@ -2042,10 +2045,11 @@ public class GameUpdateManagerTest {
         File zipFile = TestUtils.getFromResource("gameupdate/zip/game-macos.zip");
 
         // execute test ---
-        File extractedApp = GameUpdateManager.extractGameBinary(zipFile, tempDir.toFile());
+        Result<Throwable, File> extractResult = GameUpdateManager.extractGameBinary(zipFile, tempDir.toFile());
 
         // verify assertions ---
-        assertThat(extractedApp).isNotNull();
+        assertThat(extractResult.toEither().isRight()).isTrue();
+        File extractedApp = extractResult.getOrElseThrowUnchecked();
         assertThat(extractedApp.isDirectory()).isTrue();
 
         // verify complete app bundle structure
@@ -2063,10 +2067,11 @@ public class GameUpdateManagerTest {
         File dmgFile = TestUtils.getFromResource("gameupdate/dmg/game-macos.dmg");
 
         // execute test ---
-        File extractedApp = GameUpdateManager.extractGameBinary(dmgFile, tempDir.toFile());
+        Result<Throwable, File> extractResult = GameUpdateManager.extractGameBinary(dmgFile, tempDir.toFile());
 
         // verify assertions ---
-        assertThat(extractedApp).isNotNull();
+        assertThat(extractResult.toEither().isRight()).isTrue();
+        File extractedApp = extractResult.getOrElseThrowUnchecked();
 
         // verify Info.plist content
         String plistContent = Files.readString(extractedApp.toPath().resolve("Contents/Info.plist"));
@@ -2101,10 +2106,11 @@ public class GameUpdateManagerTest {
         assertThat(downloadDest).exists();
 
         // execute extraction ---
-        File extractedApp = GameUpdateManager.extractGameBinary(downloadDest, tempDir.toFile());
+        Result<Throwable, File> extractResult = GameUpdateManager.extractGameBinary(downloadDest, tempDir.toFile());
 
         // verify extraction ---
-        assertThat(extractedApp).isNotNull();
+        assertThat(extractResult.toEither().isRight()).isTrue();
+        File extractedApp = extractResult.getOrElseThrowUnchecked();
         assertThat(extractedApp.getName()).isEqualTo("TestGame.app");
     }
 
