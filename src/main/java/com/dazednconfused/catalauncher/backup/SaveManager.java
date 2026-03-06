@@ -114,7 +114,7 @@ public class SaveManager {
 
     /**
      * If save files exist in {@link Paths#getCustomSavePath()}, returns the last modified valid save file. Save file is valid
-     * if it has a {@code .sav} file in it.
+     * if it has a {@code .sav} file (old format) or a {@code .sav.zzip} file (new format) in it.
      * */
     private static Optional<File> getLastModifiedValidSave() {
         File savesFolder = Paths.getCustomSavePath().toFile();
@@ -125,13 +125,13 @@ public class SaveManager {
         Arrays.sort(saveDirs, Comparator.comparingLong(File::lastModified).reversed());
 
         for (File directory : saveDirs) {
-            File[] savFiles = directory.listFiles((dir, name) -> name.endsWith(".sav"));
+            File[] savFiles = directory.listFiles((dir, name) -> name.endsWith(".sav") || name.endsWith(".sav.zzip"));
             if (savFiles != null && savFiles.length > 0) {
                 return Optional.of(directory);
             }
         }
 
-        return Optional.empty(); // No directory with .sav file found
+        return Optional.empty(); // No directory with .sav or .sav.zzip file found
 
     }
 
