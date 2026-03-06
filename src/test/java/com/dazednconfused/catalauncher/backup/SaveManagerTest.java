@@ -196,6 +196,35 @@ class SaveManagerTest {
     }
 
     @Test
+    void get_latest_save_success_new_zzip_format(@TempDir Path mockedSavePath) {
+        try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
+
+            // prepare mock data ---
+            mockedPaths.when(Paths::getCustomSavePath).thenReturn(mockedSavePath);
+
+            // pre-test assertions ---
+            assertThat(Paths.getCustomSavePath().toFile()).exists();
+
+            File MOCKED_BACKUP = Paths.getCustomSavePath().resolve("Elk Point").toFile();
+            FileUtils.copyDirectory(
+                TestUtils.getFromResource("save/sample/Elk Point"),
+                MOCKED_BACKUP
+            );
+
+            // execute test ---
+            Optional<File> result = SaveManager.getLatestSave();
+
+            // verify assertions ---
+            assertThat(result).isNotEmpty().contains(
+                MOCKED_BACKUP
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void get_latest_save_success_empty_when_latest_save_is_invalid(@TempDir Path mockedSavePath) {
         try (MockedStatic<Paths> mockedPaths = mockStatic(Paths.class)) {
 
